@@ -1,5 +1,3 @@
-//testing something by putting this here, istg if git doesnt work
-
 //sdk stuff idk
 const sdk = require("matrix-bot-sdk");
 const MatrixClient = sdk.MatrixClient;

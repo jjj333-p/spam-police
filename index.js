@@ -39,8 +39,8 @@ client.on("room.message", async (roomId, event) => {
     //grab the content from the message, and put it to lowercase to prevent using caps to evade
     let scannableContent = event["content"]["body"].toLowerCase()
     
-    //keywords for the telegram investment scam
-    if ((scannableContent.includes("earn") || scannableContent.includes("make")) && scannableContent.includes("$") && (scannableContent.includes("t.me/") || scannableContent.includes("wa.me/") || scannableContent.includes("telegram") || scannableContent.includes("whatsapp"))){
+    //keywords for the telegram investment scam (i wish i had a cleaner way to do this 😕)
+    if ((scannableContent.includes("earn") || scannableContent.includes("make")) && (scannableContent.includes("$") || scannableContent.includes("£") || scannableContent.includes("€") || scannableContent.includes("money") || scannableContent.includes("dolars") || scannableContent.includes("pounds") || scannableContent.includes("euros") ) && (scannableContent.includes("t.me/") || scannableContent.includes("wa.me/") || scannableContent.includes("telegram") || scannableContent.includes("whatsapp"))){
 
         //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
         sendjson(roomId, event)

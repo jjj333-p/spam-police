@@ -40,24 +40,38 @@ client.on("room.message", async (roomId, event) => {
     let scannableContent = event["content"]["body"].toLowerCase()
     
     //keywords for the telegram investment scam (i wish i had a cleaner way to do this 😕)
-    if ((scannableContent.includes("earn") || scannableContent.includes("make")) && (scannableContent.includes("$") || scannableContent.includes("£") || scannableContent.includes("€") || scannableContent.includes("money") || scannableContent.includes("dolars") || scannableContent.includes("pounds") || scannableContent.includes("euros") ) && (scannableContent.includes("t.me/") || scannableContent.includes("wa.me/") || scannableContent.includes("telegram") || scannableContent.includes("whatsapp"))){
+    if ( (scannableContent.includes("earn") || scannableContent.includes("make")) && (scannableContent.includes("$") || scannableContent.includes("£") || scannableContent.includes("€") || scannableContent.includes("money") || scannableContent.includes("dolars") || scannableContent.includes("pounds") || scannableContent.includes("euros") ) && (scannableContent.includes("t.me/") || scannableContent.includes("wa.me/") || scannableContent.includes("telegram") || scannableContent.includes("whatsapp"))){
 
-        //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-        sendjson(roomId, event)
+        if(roomId == logindata[2]){
 
-        //React to the message with a little warning so its obvious what msg im referring to
-        await client.sendEvent(roomId, "m.reaction", ({
-            "m.relates_to": {
-                "event_id":event["event_id"],
-                "key":"🚨 scam! 🚨",
-                "rel_type": "m.annotation"
-            }
-        }))
+            client.sendEvent(roomId, "m.reaction", ({
+                "m.relates_to": {
+                    "event_id":event["event_id"],
+                    "key":"✅",
+                    "rel_type": "m.annotation"
+                }
+            }))
 
-        //send warning message
-        let responseID = await client.sendText(roomId, 'That is likely a scam and what we call "too good to be true". For more information go to https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert')
+        } else {
 
-        tgScams.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+            //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
+            sendjson(roomId, event)
+
+            //React to the message with a little warning so its obvious what msg im referring to
+            await client.sendEvent(roomId, "m.reaction", ({
+                "m.relates_to": {
+                    "event_id":event["event_id"],
+                    "key":"🚨 scam! 🚨",
+                    "rel_type": "m.annotation"
+                }
+            }))
+
+            //send warning message
+            let responseID = await client.sendText(roomId, 'That is likely a scam and what we call "too good to be true". For more information go to https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert')
+
+            tgScams.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+
+        }
 
     //common drug ad
     }  else if (scannableContent.includes("!uptime")) {

@@ -35,5 +35,3 @@ Do note that some homeservers require you to use https://matrix. before the home
 5. In the same folder as index.js make an empty textfile called bot.json. This appears to be how the matrix bot sdk saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
 6. Run npm install to install the node dependencies to run the bot
 7. The bot can now be launched using node index.js or node . depending on which you prefer
-
-.

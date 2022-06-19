@@ -12,12 +12,12 @@ You can use the instance of the bot I host, `@anti-spam:matrix.org` or you can s
 
 This assumes you have an up to date node and npm installed. On debian based systems (including ubuntu, pop!os, and linux mint) you can run `sudo apt install node npm` and on arch based systems (including manjaro) you can run `sudo pacman -S node npm`
 
-1. Download the bot to a folder on your computer (hopefuly obvious). You can do this easily by running
-```
-git clone https://github.com/jjj333-p
-```
+1. Download the latest stable branch of the bot to a folder on your computer (hopefuly obvious). I recomend you do this by going to the `master▾` button on the top left of this github page, select the highest version number labeled `stable`, click the green `code▾` button on the top right, and download the zip and extract it. If you use the https or ssh url to clone, it will clone the master which is more of a developer beta than a stable release.
+
 2. Create a folder named `db` in the same folder as `index.js`
+
 3. In the `db` folder you just created, make a file called `login.txt`
+
 4. In `login.txt` put the login information in the following format:
 ```
 homeserver
@@ -33,5 +33,7 @@ https://matrix.org
 Do note that some homeservers require you to use https://matrix. before the homeserver domain.
 
 5. In the same folder as index.js make an empty textfile called bot.json. This appears to be how the matrix bot sdk saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
+
 6. Run npm install to install the node dependencies to run the bot
+
 7. The bot can now be launched using node index.js or node . depending on which you prefer

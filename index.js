@@ -64,7 +64,7 @@ client.on("room.message", async (roomId, event) => {
                     "key":"🚨 scam! 🚨",
                     "rel_type": "m.annotation"
                 }
-            })).finally(() => {
+            })).finally(async () => {
 
                 //send warning message
                 let responseID = await client.sendText(roomId, 'That is likely a scam and what we call "too good to be true". For more information go to https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert and https://www.youtube.com/watch?v=gFWaA7mt9oM&list=LL&index=4')

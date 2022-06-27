@@ -6,7 +6,13 @@ const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
 const fs = require("fs");
 
 //map to relate scams and their responses (for deletion)
-let tgScams = new Map()
+let tgScamResponses = new Map()
+
+//create array to store scams to help limit duplicates (when spammed)
+let tgScams = []
+
+//fetch keywords
+let keywords = require("./keywords.json")
 
 //fetch login details
 const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
@@ -20,9 +26,6 @@ const storage = new SimpleFsStorageProvider("bot.json");
 //login to client
 const client = new MatrixClient(homeserverUrl, accessToken, storage);
 AutojoinRoomsMixin.setupOnClient(client);
-
-//fetch keywords
-let keywords = require("./keywords.json")
 
 //start client
 client.start().then(() => console.log("Client started!"));
@@ -43,7 +46,7 @@ client.on("room.message", async (roomId, event) => {
     let scannableContent = event["content"]["body"].toLowerCase()
 
     //scan for common scam words (still not as clean as I would wish but better.)
-    if (includesWord(scannableContent, keywords.scams.currencies), includesWord(scannableContent, keywords.scams.socials), includesWord(scannableContent, keywords.scams.verbs)) {
+    if (includesWord(scannableContent, keywords.scams.currencies) && includesWord(scannableContent, keywords.scams.socials) && includesWord(scannableContent, keywords.scams.verbs)) {
     
         //if the scam is posted in the room deticated to posting tg scams
         if(roomId == logindata[2]){
@@ -75,7 +78,7 @@ client.on("room.message", async (roomId, event) => {
                 let responseID = await client.sendText(roomId, keywords.scams.response)
 
                 //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
-                tgScams.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+                tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
             
             })
 
@@ -166,6 +169,13 @@ function includesWord (str, words) {
 
 async function sendjson (roomId, event){ 
 
+    //limit duplicates
+    if (tgScams.some(scam => (scam["content"]["body"] == event["content"]["body"]) && (scam["room_id"] == event["room_id"]))) { return } else {
+
+        tgScams.push(event)
+
+    }
+
     //check to make sure folders are there
     if(!fs.readdirSync("./db/").some(dir => dir == "tg-scams")){fs.mkdirSync("./db/tg-scams")}
     let currentDir = "./db/tg-scams/"
@@ -202,7 +212,7 @@ client.on("room.event", async (roomId, event) => {
 
     if(event["type"] == "m.room.redaction"){
 
-        let response = tgScams.get(event["redacts"])
+        let response = tgScamResponses.get(event["redacts"])
 
         if (response) {client.redactEvent(response.roomId, response.responseID, "Investment scam that this message was replying to was deleted.")}
 

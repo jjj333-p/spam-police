@@ -39,9 +39,36 @@ client.on("room.message", async (roomId, event) => {
     //grab the content from the message, and put it to lowercase to prevent using caps to evade
     let scannableContent = event["content"]["body"].toLowerCase()
     
-    //keywords for the telegram investment scam (i wish i had a cleaner way to do this 😕)
-    if ( (scannableContent.includes("earn") || scannableContent.includes("make")) && (scannableContent.includes("$") || scannableContent.includes("£") || scannableContent.includes("€") || scannableContent.includes("money") || scannableContent.includes("dolars") || scannableContent.includes("pounds") || scannableContent.includes("euros") ) && (scannableContent.includes("t.me/") || scannableContent.includes("wa.me/") || scannableContent.includes("telegram") || scannableContent.includes("whatsapp"))){
-
+    //keywords for the telegram investment scam (move to json later)
+    const verbs = [
+        "earn",
+        "make",
+    ]
+    
+    const currencies = [
+        "$", "£", "€",
+        "money",
+        "dollars",
+        "pounds",
+        "euros",
+        "bitcoin", "btc",
+        "etherium", "eth"
+    ]
+    
+    const socials = [
+        "t.me/",
+        "wa.me/",
+        "telegram",
+        "whatsapp",
+        "wickr",
+    ]
+    
+    let contains = (words) => {
+        return scannableContent.split(" ").some(w => words.some(key => key == w))
+    }
+    
+    if (contains(verbs) && contains(currencies) && contains(socials)) {
+    
         if(roomId == logindata[2]){
 
             client.sendEvent(roomId, "m.reaction", ({

@@ -21,6 +21,9 @@ const storage = new SimpleFsStorageProvider("bot.json");
 const client = new MatrixClient(homeserverUrl, accessToken, storage);
 AutojoinRoomsMixin.setupOnClient(client);
 
+//fetch keywords
+let keywords = require("./keywords.json")
+
 //start client
 client.start().then(() => console.log("Client started!"));
 
@@ -38,39 +41,14 @@ client.on("room.message", async (roomId, event) => {
 
     //grab the content from the message, and put it to lowercase to prevent using caps to evade
     let scannableContent = event["content"]["body"].toLowerCase()
+
+    //scan for common scam words (still not as clean as I would wish but better.)
+    if (includesWord(scannableContent, keywords.scams.currencies), includesWord(scannableContent, keywords.scams.socials), includesWord(scannableContent, keywords.scams.verbs)) {
     
-    //keywords for the telegram investment scam (move to json later)
-    const verbs = [
-        "earn",
-        "make",
-    ]
-    
-    const currencies = [
-        "$", "£", "€",
-        "money",
-        "dollars",
-        "pounds",
-        "euros",
-        "bitcoin", "btc",
-        "etherium", "eth"
-    ]
-    
-    const socials = [
-        "t.me/",
-        "wa.me/",
-        "telegram",
-        "whatsapp",
-        "wickr",
-    ]
-    
-    let contains = (words) => {
-        return scannableContent.split(" ").some(w => words.some(key => key == w))
-    }
-    
-    if (contains(verbs) && contains(currencies) && contains(socials)) {
-    
+        //if the scam is posted in the room deticated to posting tg scams
         if(roomId == logindata[2]){
 
+            //confirm it matches the keywords
             client.sendEvent(roomId, "m.reaction", ({
                 "m.relates_to": {
                     "event_id":event["event_id"],
@@ -94,15 +72,16 @@ client.on("room.message", async (roomId, event) => {
             })).finally(async () => {
 
                 //send warning message
-                let responseID = await client.sendText(roomId, 'That is likely a scam and what we call "too good to be true". For more information go to https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert and https://www.youtube.com/watch?v=gFWaA7mt9oM&list=LL&index=4')
+                let responseID = await client.sendText(roomId, keywords.scams.response)
 
+                //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
                 tgScams.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
             
             })
 
         }
 
-    //common drug ad
+    //check uptime
     }  else if (scannableContent.includes("!uptime")) {
 
         //let user know that the bot is online even if the matrix room is being laggy and the message event isnt comming across
@@ -179,6 +158,11 @@ client.on("room.message", async (roomId, event) => {
 
 });
 
+function includesWord (str, words) {
+
+    return words.some(w => str. includes(w))
+
+}
 
 async function sendjson (roomId, event){ 
 

@@ -12,7 +12,7 @@ You can use the instance of the bot I host, `@anti-spam:matrix.org` or you can s
 
 This assumes you have an up to date node and npm installed. On debian based systems (including ubuntu, pop!os, and linux mint) you can run `sudo apt install node npm` and on arch based systems (including manjaro) you can run `sudo pacman -S node npm`
 
-1. Download the latest stable branch of the bot to a folder on your computer (hopefuly obvious). I recomend you do this by going to the `master▾` button on the top left of this github page, select the highest version number labeled `stable`, click the green `code▾` button on the top right, and download the zip and extract it. If you use the https or ssh url to clone, it will clone the master which is more of a developer beta than a stable release.
+1. Download the latest stable branch of the bot to a folder on your computer (hopefuly obvious). I recomend you do this by going to the `master▾` button on the top left of this github page, select the highest version number labeled `stable`, click the green `code▾` button on the top right, and download the zip and extract it. If you use the https or ssh url to clone, it will clone the master which is more of a developer beta than a stable release, which you can use if you wish to live on the edge but its not the recomended way.
 
 2. Create a folder named `db` in the same folder as `index.js`
 

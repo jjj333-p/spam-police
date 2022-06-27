@@ -43,7 +43,7 @@ client.on("room.message", async (roomId, event) => {
     let scannableContent = event["content"]["body"].toLowerCase()
 
     //scan for common scam words (still not as clean as I would wish but better.)
-    if (includesWord(scannableContent, keywords.scams.currencies), includesWord(scannableContent, keywords.scams.socials), includesWord(scannableContent, keywords.scams.verbs)) {
+    if (includesWord(scannableContent, keywords.scams.currencies) && includesWord(scannableContent, keywords.scams.socials) && includesWord(scannableContent, keywords.scams.verbs)) {
     
         //if the scam is posted in the room deticated to posting tg scams
         if(roomId == logindata[2]){

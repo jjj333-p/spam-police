@@ -28,7 +28,13 @@ const client = new MatrixClient(homeserverUrl, accessToken, storage);
 AutojoinRoomsMixin.setupOnClient(client);
 
 //start client
-client.start().then(() => console.log("Client started!"));
+client.start().then(() => {
+
+    console.log("Client started!")
+
+    client.sendText(logindata[2], "Started.")
+    
+});
 
 //when recieve a message
 client.on("room.message", async (roomId, event) => {

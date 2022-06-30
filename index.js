@@ -175,6 +175,28 @@ function includesWord (str, words) {
 
 async function sendjson (roomId, event){ 
 
+    //if the message is replying
+    let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
+    if (replyRelation){
+
+        //pull the id of the event its replying to
+        replyID = replyRelation["m.in_reply_to"]["event_id"]
+
+        //fetch the event from that id
+        let repliedEvent = await client.getEvent(roomId, replyID)
+
+        //make the content scanable
+        let scannableContent = repliedEvent["content"]["body"].toLowerCase()
+
+        //if the message is replying to a scam, it doesnt need to be logged
+        if (includesWord(scannableContent, keywords.scams.currencies) && includesWord(scannableContent, keywords.scams.socials) && includesWord(scannableContent, keywords.scams.verbs)) {
+            return
+        }
+
+    }
+
+    // client.sendNotice(roomId, JSON.stringify(replyid))
+
     //limit duplicates
     if (tgScams.some(scam => (scam["content"]["body"] == event["content"]["body"]) && (scam["room_id"] == event["room_id"]))) { return } else {
 

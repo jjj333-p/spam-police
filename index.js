@@ -195,8 +195,6 @@ async function sendjson (roomId, event){
 
     }
 
-    // client.sendNotice(roomId, JSON.stringify(replyid))
-
     //limit duplicates
     if (tgScams.some(scam => (scam["content"]["body"] == event["content"]["body"]) && (scam["room_id"] == event["room_id"]))) { return } else {
 

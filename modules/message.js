@@ -132,3 +132,5 @@ function includesWord (str, words) {
     return words.some(w => str. includes(w))
 
 }
+
+module.exports = {rmsg}

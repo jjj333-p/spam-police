@@ -37,8 +37,10 @@ client.start().then(() => {
     
 });
 
+let {rmsg} = require("./modules/message")
+
 //when recieve a message
-// client.on("room.message", async (roomId, event) => );
+client.on("room.message", async (roomId, event) => rmsg(client, roomId, event));
 
 
 client.on("room.event", async (roomId, event) => {

@@ -40,13 +40,6 @@ client.start().then(() => {
 //when recieve a message
 // client.on("room.message", async (roomId, event) => );
 
-function includesWord (str, words) {
-
-    return words.some(w => str. includes(w))
-
-}
-
-
 
 client.on("room.event", async (roomId, event) => {
 

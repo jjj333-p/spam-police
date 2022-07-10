@@ -5,13 +5,17 @@ var sendjson = new Sendjson()
 
 class message {
 
-    constructor (){
+    constructor (keywords, logindata){
 
+        //map to relate scams and their responses (for deletion)
+        this.tgScamResponses = new Map()
 
+        this.keywords = keywords
+        this.logindata = logindata
         
     }
 
-    async rmsg (client, roomId, event, logindata, keywords){
+    async run (client, roomId, event, ){
 
         //if no content in message
         if (! event["content"]) return;
@@ -26,10 +30,10 @@ class message {
         let scannableContent = event["content"]["body"].toLowerCase()
 
         //scan for common scam words (still not as clean as I would wish but better.)
-        if (includesWord(scannableContent, keywords.scams.currencies) && includesWord(scannableContent, keywords.scams.socials) && includesWord(scannableContent, keywords.scams.verbs)) {
+        if (includesWord(scannableContent, this.keywords.scams.currencies) && includesWord(scannableContent, this.keywords.scams.socials) && includesWord(scannableContent, this.keywords.scams.verbs)) {
         
             //if the scam is posted in the room deticated to posting tg scams
-            if(roomId == logindata[2]){
+            if(roomId == this.logindata[2]){
 
                 //confirm it matches the keywords
                 client.sendEvent(roomId, "m.reaction", ({
@@ -43,7 +47,7 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(client, roomId, logindata[2], event)
+                sendjson.send(client, roomId, this.logindata[2], event)
 
                 //React to the message with a little warning so its obvious what msg im referring to
                 await client.sendEvent(roomId, "m.reaction", ({
@@ -55,10 +59,10 @@ class message {
                 })).finally(async () => {
 
                     //send warning message
-                    let responseID = await client.sendText(roomId, keywords.scams.response)
+                    let responseID = await client.sendText(roomId, this.keywords.scams.response)
 
                     //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
-                    tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+                    this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
                 
                 })
 
@@ -148,4 +152,4 @@ function includesWord (str, words) {
 
 }
 
-module.exports = {rmsg}
+module.exports = {message}

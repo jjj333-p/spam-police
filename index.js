@@ -5,8 +5,7 @@ const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
 const fs = require("fs");
 
-//map to relate scams and their responses (for deletion)
-let tgScamResponses = new Map()
+
 
 //fetch keywords
 let keywords = require("./keywords.json")
@@ -33,17 +32,18 @@ client.start().then(() => {
     
 });
 
-let {rmsg} = require("./modules/message")
+const {message} = require("./modules/message")
+var recievedMessage = new message(keywords, logindata)
 
 //when recieve a message
-client.on("room.message", async (roomId, event) => rmsg(client, roomId, event, logindata, keywords));
+client.on("room.message", async (roomId, event) => recievedMessage.run(client, roomId, event,));
 
 
 client.on("room.event", async (roomId, event) => {
 
     if(event["type"] == "m.room.redaction"){
 
-        let response = tgScamResponses.get(event["redacts"])
+        let response = recievedMessage.tgScamResponses.get(event["redacts"])
 
         if (response) {client.redactEvent(response.roomId, response.responseID, "Investment scam that this message was replying to was deleted.")}
 

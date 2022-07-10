@@ -11,10 +11,6 @@ let tgScamResponses = new Map()
 //fetch keywords
 let keywords = require("./keywords.json")
 
-//sendjson class
-const {Sendjson} = require("./modules/sendjson")
-var sendjson = new Sendjson()
-
 //fetch login details
 const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
 const logindata = logintxt.split("\n")
@@ -40,7 +36,7 @@ client.start().then(() => {
 let {rmsg} = require("./modules/message")
 
 //when recieve a message
-client.on("room.message", async (roomId, event) => rmsg(client, roomId, event));
+client.on("room.message", async (roomId, event) => rmsg(client, roomId, event, logindata, keywords));
 
 
 client.on("room.event", async (roomId, event) => {

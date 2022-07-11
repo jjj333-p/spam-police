@@ -21,43 +21,34 @@ const storage = new SimpleFsStorageProvider("bot.json");
 const client = new MatrixClient(homeserverUrl, accessToken, storage);
 AutojoinRoomsMixin.setupOnClient(client);
 
-//start client
-client.start().then(() => {
-
-    console.log("Client started!")
-
-    client.sendText(logindata[2], "Started.")
-    
-});
-
-//map to put the handlers for each event type in
+//map to put the handlers for each event type in (i guess this is fine here)
 let eventhandlers = new Map()
 
 //event handler for m.room.message
 const {message} = require("./modules/message")
 eventhandlers.set("m.room.message", new message(keywords, logindata))
 
-//handler for redactions (will separate out later 😩)
-eventhandlers.set("m.room.redaction",{"run" : (client, roomId, event) => {
+//event handler for m.room.redaction
+const {redaction} = require("./modules/redaction")
+eventhandlers.set("m.room.redaction", new redaction(eventhandlers))
 
-    //fetch the bots response to the scam
-    let response = eventhandlers.get("m.room.message").tgScamResponses.get(event["redacts"])
-
-    //if there is a response to the redacted message then redact the response
-    if (response) {client.redactEvent(response.roomId, response.responseID, "Investment scam that this message was replying to was deleted.")}
-
-    // let modroom = "!xWGMKuBpJrtGDSfmaF:matrix.org"
-
-    // client.sendHtmlText(modroom, "Deleted by " + event["sender"]+ " for the reason of { " + event["content"]["reason"] + " }\n<pre><code class=\"language-json\">" + JSON.stringify(msgCache.get(roomId).msgs.find(msg => msg["event_id"] == event["redacts"]), null, 2) + "</code></pre>")
-
-    // client.getPublishedAlias()
-
-}})
-
+//when the client recieves an event
 client.on("room.event", async (roomId, event) => {
 
+    //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])
     
+    //if there is a handler for that event, run it.
     if (handler) handler.run(client, roomId, event)
 
 })
+
+//start client
+client.start().then(() => {
+
+    console.log("Client started!")
+
+    //to remotely monitor how often the bot restarts, to spot issues
+    client.sendText(logindata[2], "Started.")
+    
+});

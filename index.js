@@ -8,7 +8,7 @@ const fs = require("fs");
 //fetch keywords
 let keywords = require("./keywords.json")
 
-//fetch login details
+//fetch login details (not handled in the db because its good practice to keep this as far from the userspace as possible)
 const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
 const logindata = logintxt.split("\n")
 const homeserverUrl = logindata[0]
@@ -29,7 +29,7 @@ const {message} = require("./modules/message")
 eventhandlers.set("m.room.message", new message(keywords, logindata))
 
 //event handler for m.room.redaction
-const {redaction} = require("./modules/redaction")
+const {redaction} = require("./modules/redaction");
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))
 
 //when the client recieves an event

@@ -55,4 +55,29 @@ class database {
 
     }
 
+    setConfig (roomId, config, value, callback) {
+
+        //fetch the existing config
+        let cachedconfig = this.cache.get(roomId)
+
+        //if no config exists, make one
+        if (!cachedconfig) cachedconfig = new Map()
+
+        //write setting to the config
+        cachedconfig.set(config, value)
+
+        //write the config to the global cache
+        this.cache.set(roomId, cachedconfig)
+
+        //write current config to disk
+        fs.writeFile(("./db/config/" + roomId + ".json"), JSON.stringify(Object.fromEntries(cachedconfig), null, 2), err =>{
+
+            if(err) callback("I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
+
+            else callback("✅ | Successfully saved.")
+            
+        })
+
+    }
+
 }

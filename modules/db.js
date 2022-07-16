@@ -16,6 +16,9 @@ class database {
         //fetch the stored config files
         let configfilelist = fs.readdirSync("./db/config")
 
+            //set up cache for db so dont have to wait on disk every time
+            this.cache = new Map()
+
         // go ahead and load configs so dont have to wait for disk.
         // size should be small enough to cache it all without
         // worrying about ram usage
@@ -33,10 +36,22 @@ class database {
             //pull the individual configs into a uniform map format
             Object.entries(rawconfig).forEach((key, value) => { configMap.set(key, value)})
 
+            this.cache.set(id, configMap)
+
         })
 
-        //set up cache for db so dont have to wait on disk every time
-        this.cache = new Map()
+    }
+
+    getConfig (roomId, config) {
+
+        //make sure there is a config for this room
+        let cache = this.cache.get(roomId)
+
+        //if we have a config file for the room, return the requested config
+        if (cache) return cache.get(config)
+
+        //if not return null (defaults to falsey value for config)
+        return null
 
     }
 

@@ -16,8 +16,8 @@ class database {
         //fetch the stored config files
         let configfilelist = fs.readdirSync("./db/config")
 
-            //set up cache for db so dont have to wait on disk every time
-            this.cache = new Map()
+        //set up cache for db so dont have to wait on disk every time
+        this.cache = new Map()
 
         // go ahead and load configs so dont have to wait for disk.
         // size should be small enough to cache it all without
@@ -72,9 +72,37 @@ class database {
         //write current config to disk
         fs.writeFile(("./db/config/" + roomId + ".json"), JSON.stringify(Object.fromEntries(cachedconfig), null, 2), err =>{
 
-            if(err) callback("I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
+            if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
 
             else callback("✅ | Successfully saved.")
+            
+        })
+
+    }
+
+    cloneRoom (fromId, toId, callback){
+
+        //fetch the existing config
+        let from = this.cache.get(fromId)
+
+        //make sure we have something to copy
+        if (!from) {
+            
+            callback("🍃 | There is no customized config to copy.")
+
+            return
+
+        }
+
+        //clone the config in memory
+        this.cache.set(toId, from)
+
+        //write current config to disk
+        fs.writeFile(("./db/config/" + toId + ".json"), JSON.stringify(Object.fromEntries(from), null, 2), err =>{
+
+            if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
+
+            else callback("✅ | Successfully copied config.")
             
         })
 

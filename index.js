@@ -25,8 +25,8 @@ AutojoinRoomsMixin.setupOnClient(client);
 let eventhandlers = new Map()
 
 //database for the config
-const {configdb} = require("./modules/db")
-const config = new configdb()
+const {database} = require("./modules/db")
+const config = new database()
 
 //event handler for m.room.message
 const {message} = require("./modules/message")

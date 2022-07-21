@@ -26,7 +26,7 @@ class database {
         configfilelist.forEach(fileName => {
 
             //filename is derived from the room id (map key)
-            let id = filename.substring(0, fileName.length - 5)
+            let id = fileName.substring(0, fileName.length - 5)
 
             //map to shove data into
             configMap = new Map()

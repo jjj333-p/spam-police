@@ -29,7 +29,7 @@ class database {
             let id = fileName.substring(0, fileName.length - 5)
 
             //map to shove data into
-            configMap = new Map()
+            let configMap = new Map()
 
             //read the config and parse it to add it to cache
             let rawconfig = JSON.parse(fs.readFileSync("./db/config/" + fileName))

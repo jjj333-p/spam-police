@@ -6,7 +6,7 @@ class database {
 
         //check if the config part of the db is there
         let a = fs.readdirSync("./db")
-        if(a.some(b => b == "config")){
+        if(a.some(b => b != "config")){
 
             //if not, make the folder for it
             fs.mkdirSync("./db/config")

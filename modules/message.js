@@ -92,38 +92,48 @@ class message {
         //join cmd 
         } else if (scannableContent.startsWith("+join")) {
 
+            //grep out the room indicated by the user
             let joinroom = event["content"]["body"].split(" ")[1]
 
+            //evaluate if its a valid alias
             client.resolveRoom(joinroom).then(async joinroomid => {
 
+                //try to join
                 client.joinRoom(joinroomid).then(() => {
 
+                    //greeting message
                     let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333_p_1325:matrix.org (pls dm for questions). My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room."
 
+                    //try to send the greeting
                     client.sendNotice(joinroomid, greeting).then(() => {
 
+                        //confirm joined and can send messages
                         client.sendNotice(roomId, "✅ | successfully joined room!")
 
                     }).catch(err => {
 
+                        //confirm could join, but show error that couldn't send messages
                         client.sendNotice(roomId, "🍃 | I was able to join the provided room however I am unable to send messages, and therefore will only be able to react to messages with my warning.")
 
                     })
 
                 }).catch(err => {
 
+                    //throw error about joining room
                     client.sendHtmlNotice(roomId, "❌ | I ran into the following error while trying to join that room:<blockquote>"  + JSON.stringify(err.body, null, 2) + "</blockquote>")
 
                 })
 
             }).catch(err => {
 
+                //throw error about invalid alias
                 client.sendHtmlNotice(roomId, "❌ | I ran into the following error while trying to resolve that room ID:<blockquote>" + err.message + "</blockquote>")
 
             })
 
         } else if (scannableContent.startsWith("+leave")){
 
+            //this is only for me, and a temporary cmd to alter later
             if (event["sender"] == "@jjj333_p_1325:matrix.org"){
 
                 client.leaveRoom(roomId)
@@ -136,20 +146,26 @@ class message {
 
         } else if (scannableContent.startsWith("+restart")) {
 
+            //this is only for me, and a temporary cmd to alter later
             if (event["sender"] == "@jjj333_p_1325:matrix.org"){
 
                 process.exit(0)
 
             }
             
+        //mute cmd
         } else if (scannableContent.startsWith("+mute")){
 
+            //confirm got message, idk if this actually works lmao
             client.sendReadReceipt(roomId, event["event_id"])
 
+            //grab the opposite of what is in the db
             let mute = !Boolean(this.config.getConfig(roomId, "muted"))
 
+            //set the new config
             this.config.setConfig(roomId, "muted", mute, response => {
 
+                //send confirmation
                 client.sendNotice(roomId, response)
 
             })
@@ -159,6 +175,7 @@ class message {
 
 }
 
+//temporary function to scan if it matches the keywords
 function includesWord (str, words) {
 
     return words.some(w => str. includes(w))

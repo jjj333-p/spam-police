@@ -49,8 +49,6 @@ class database {
         //make sure there is a config for this room
         let cache = this.cache.get(roomId)
 
-        // cache.forEach(a => console.log(a))
-
         //if we have a config file for the room, return the requested config
         if (cache) return cache.get(config)
 

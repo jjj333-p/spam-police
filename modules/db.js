@@ -109,3 +109,5 @@ class database {
     }
 
 }
+
+module.exports = database

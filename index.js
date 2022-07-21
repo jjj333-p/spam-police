@@ -24,6 +24,10 @@ AutojoinRoomsMixin.setupOnClient(client);
 //map to put the handlers for each event type in (i guess this is fine here)
 let eventhandlers = new Map()
 
+//database for the config
+const {configdb} = require("./modules/db")
+const config = new configdb()
+
 //event handler for m.room.message
 const {message} = require("./modules/message")
 eventhandlers.set("m.room.message", new message(keywords, logindata))

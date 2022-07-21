@@ -5,13 +5,14 @@ var sendjson = new Sendjson()
 
 class message {
 
-    constructor (keywords, logindata){
+    constructor (keywords, logindata, config){
 
         //map to relate scams and their responses (for deletion)
         this.tgScamResponses = new Map()
 
         this.keywords = keywords
         this.logindata = logindata
+        this.config = config
         
     }
 
@@ -141,6 +142,18 @@ class message {
 
             }
             
+        } else if (scannableContent.startsWith("+mute")){
+
+            client.sendReadReceipt(roomId, event["event_id"])
+
+            let mute = !this.config.getConfig(roomId, "muted")
+
+            this.config.setConfig(roomId, "muted", mute, response => {
+
+                client.sendNotice(roomId, response)
+
+            })
+
         }
     }
 

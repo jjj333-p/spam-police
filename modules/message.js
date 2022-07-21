@@ -146,7 +146,7 @@ class message {
 
             client.sendReadReceipt(roomId, event["event_id"])
 
-            let mute = !this.config.getConfig(roomId, "muted")
+            let mute = !Boolean(this.config.getConfig(roomId, "muted"))
 
             this.config.setConfig(roomId, "muted", mute, response => {
 

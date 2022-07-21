@@ -35,7 +35,8 @@ class database {
             let rawconfig = JSON.parse(fs.readFileSync("./db/config/" + fileName))
 
             //pull the individual configs into a uniform map format
-            Object.entries(rawconfig).forEach((key, value) => { configMap.set(key, value)})
+            Object.entries(rawconfig).forEach(([key, value]) => {configMap.set(key, value)})
+
 
             this.cache.set(id, configMap)
 
@@ -47,6 +48,8 @@ class database {
 
         //make sure there is a config for this room
         let cache = this.cache.get(roomId)
+
+        // cache.forEach(a => console.log(a))
 
         //if we have a config file for the room, return the requested config
         if (cache) return cache.get(config)

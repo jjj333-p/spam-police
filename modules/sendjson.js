@@ -25,7 +25,7 @@ class Sendjson {
             let scannableContent = repliedEvent["content"]["body"].toLowerCase()
     
             //if the message is replying to a scam, it doesnt need to be logged
-            if (includesWord(scannableContent, keywords.scams.currencies) && includesWord(scannableContent, keywords.scams.socials) && includesWord(scannableContent, keywords.scams.verbs)) {
+            if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
                 return
             }
     
@@ -69,6 +69,22 @@ class Sendjson {
         })    
         
     }
+
+}
+
+//function to scan if it matches the keywords
+function includesWord (str, catgs) {
+
+    //assume true if you dont have any missing
+    let result = true
+
+    catgs.forEach(cat => {
+
+        if(!cat.some(word => str.includes(word))) result = false
+        
+    });
+
+    return result
 
 }
 

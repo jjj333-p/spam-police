@@ -59,6 +59,9 @@ class message {
                     }
                 })).finally(async () => {
 
+                    //if the room is in mute mode, dont respond
+                    if (Boolean(this.config.getConfig(roomId, "muted"))) return
+
                     //send warning message
                     let responseID = await client.sendText(roomId, this.keywords.scams.response)
 
@@ -161,6 +164,16 @@ class message {
 
             //grab the opposite of what is in the db
             let mute = !Boolean(this.config.getConfig(roomId, "muted"))
+
+            if (mute) {
+
+                client.sendNotice(roomId, "Putting the bot into mute mode for this channel...")
+
+            } else {
+
+                client.sendNotice(roomId, "Taking the bot out of mute mode for this channel...")
+                
+            }
 
             //set the new config
             this.config.setConfig(roomId, "muted", mute, response => {

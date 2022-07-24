@@ -191,13 +191,16 @@ class message {
 //function to scan if it matches the keywords
 function includesWord (str, catgs) {
 
-    //for each category supplied
-    return catgs.some(cat => {
+    //assume true if you dont have any missing
+    let result = true
 
-        //for each word in that category
-        return cat.some(word => str.includes(word))
+    catgs.forEach(cat => {
 
-    })
+        if(!cat.some(word => str.includes(word))) result = false
+        
+    });
+
+    return result
 
 }
 

@@ -30,8 +30,8 @@ class message {
         //grab the content from the message, and put it to lowercase to prevent using caps to evade
         let scannableContent = event["content"]["body"].toLowerCase()
 
-        //scan for common scam words (still not as clean as I would wish but better.)
-        if (includesWord(scannableContent, this.keywords.scams.currencies) && includesWord(scannableContent, this.keywords.scams.socials) && includesWord(scannableContent, this.keywords.scams.verbs)) {
+        //scan for common scam words
+        if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
         
             //if the scam is posted in the room deticated to posting tg scams
             if(roomId == this.logindata[2]){
@@ -175,10 +175,16 @@ class message {
 
 }
 
-//temporary function to scan if it matches the keywords
-function includesWord (str, words) {
+//function to scan if it matches the keywords
+function includesWord (str, catgs) {
 
-    return words.some(w => str. includes(w))
+    //for each category supplied
+    return catgs.some(cat => {
+
+        //for each word in that category
+        return cat.some(word => str.includes(word))
+
+    })
 
 }
 

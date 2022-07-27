@@ -159,6 +159,17 @@ class message {
         //mute cmd
         } else if (scannableContent.startsWith("+mute")){
 
+            //im equivicating muting the bot to redacting its messages right after they are sent.
+            if (!client.userHasPowerLevelFor(event["sender"], roomId, "m.room.redaction")){
+
+                //error msg
+                client.sendNotice(roomId, "🍃 | This command requires you have a powerlevel high enough to redact other users messages.")
+
+                //dont run the cmd
+                return
+
+            }
+
             //confirm got message, idk if this actually works lmao
             client.sendReadReceipt(roomId, event["event_id"])
 
@@ -184,6 +195,9 @@ class message {
             })
 
         }
+
+        // client.sendNotice(roomId, String(await client.userHasPowerLevelForAction(event["sender"], roomId, "kick")))
+
     }
 
 }

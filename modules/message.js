@@ -159,9 +159,7 @@ class message {
             
         //mute cmd
         } else if (scannableContent.startsWith("+mute")){
-
-            // client.sendNotice(roomId, JSON.stringify(client.userHasPowerLevelForAction(event["sender"], roomId, PowerLevelAction.RedactEvents)))
-
+            
             //im equivicating muting the bot to redacting its messages right after they are sent.
             if (!await client.userHasPowerLevelForAction(event["sender"], roomId, "redact")){  //"redact")){
 

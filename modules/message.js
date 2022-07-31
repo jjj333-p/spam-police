@@ -1,4 +1,5 @@
 //sendjson class
+const { PowerLevelAction } = require("matrix-bot-sdk/lib/models/PowerLevelAction")
 const {Sendjson} = require("./sendjson")
 var sendjson = new Sendjson()
 
@@ -159,8 +160,10 @@ class message {
         //mute cmd
         } else if (scannableContent.startsWith("+mute")){
 
+            // client.sendNotice(roomId, JSON.stringify(client.userHasPowerLevelForAction(event["sender"], roomId, PowerLevelAction.RedactEvents)))
+
             //im equivicating muting the bot to redacting its messages right after they are sent.
-            if (!client.userHasPowerLevelFor(event["sender"], roomId, "m.room.redaction")){
+            if (!await client.userHasPowerLevelForAction(event["sender"], roomId, "redact")){  //"redact")){
 
                 //error msg
                 client.sendNotice(roomId, "🍃 | This command requires you have a powerlevel high enough to redact other users messages.")

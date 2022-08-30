@@ -2,7 +2,8 @@
     "scams":{
         "verbs":[
             "earn",
-            "make", "making", "made"
+            "make", "making", "made",
+            "free"
         ],
         "currencies":[
             "$", "£", "€",

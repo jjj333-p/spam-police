@@ -10,6 +10,8 @@
             "dollars",
             "pounds",
             "euros",
+            "crypto",
+            "paypal",
             "bitcoin", "btc",
             "etherium", "eth"
         ],

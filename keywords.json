@@ -3,7 +3,8 @@
         "verbs":[
             "earn",
             "make", "making", "made",
-            "free"
+            "free",
+            "win"
         ],
         "currencies":[
             "$", "£", "€",

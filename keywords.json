@@ -4,7 +4,9 @@
             "earn",
             "make", "making", "made",
             "free",
-            "win"
+            "win",
+            "invest"
+            "cashout"
         ],
         "currencies":[
             "$", "£", "€",

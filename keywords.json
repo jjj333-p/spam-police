@@ -5,7 +5,8 @@
             "make", "making", "made",
             "win",
             "invest",
-            "cashout"
+            "cashout",
+            "get"
         ],
         "currencies":[
             "$", "£", "€",

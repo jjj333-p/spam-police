@@ -36,6 +36,22 @@ eventhandlers.set("m.room.message", new message(keywords, logindata, config))
 const {redaction} = require("./modules/redaction");
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))
 
+let mxid; let displayname;
+
+//start client
+client.start().then( async () => {
+
+    console.log("Client started!")
+
+    //to remotely monitor how often the bot restarts, to spot issues
+    client.sendText(logindata[2], "Started.")
+
+    //get mxid
+    mxid = await client.getUserId()
+    displayname = (await client.getUserProfile(mxid))["displayname"]
+
+});
+
 //when the client recieves an event
 client.on("room.event", async (roomId, event) => {
 
@@ -43,18 +59,6 @@ client.on("room.event", async (roomId, event) => {
     let handler = eventhandlers.get(event["type"])
     
     //if there is a handler for that event, run it.
-    if (handler) handler.run(client, roomId, event, await client.getUserId())
+    if (handler) handler.run(client, roomId, event, mxid, displayname)
 
 })
-
-//start client
-client.start().then(() => {
-
-    console.log("Client started!")
-
-    //to remotely monitor how often the bot restarts, to spot issues
-    client.sendText(logindata[2], "Started.")
-    
-});
-
-

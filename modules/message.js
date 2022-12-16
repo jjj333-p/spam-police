@@ -19,7 +19,7 @@ class message {
         
     }
 
-    async run (client, roomId, event, mxid){
+    async run (client, roomId, event, mxid, displayname){
 
         //if no content in message
         if (! event["content"]) return;
@@ -219,7 +219,7 @@ class message {
 
             }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
 
-        } else if (scannableContent.includes(mxid)) {
+        } else if (scannableContent.includes(mxid) || scannableContent.includes(displayname)) {
 
             //greeting message
             let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 

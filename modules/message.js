@@ -106,7 +106,7 @@ class message {
                 client.joinRoom(joinroomid).then(() => {
 
                     //greeting message
-                    let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333_p_1325:matrix.org (pls dm for questions). My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room."
+                    let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room."
 
                     //try to send the greeting
                     client.sendNotice(joinroomid, greeting).then(() => {

@@ -14,10 +14,12 @@ class message {
         this.keywords = keywords
         this.logindata = logindata
         this.config = config
+
+        
         
     }
 
-    async run (client, roomId, event, ){
+    async run (client, roomId, event, mxid){
 
         //if no content in message
         if (! event["content"]) return;
@@ -106,7 +108,9 @@ class message {
                 client.joinRoom(joinroomid).then(() => {
 
                     //greeting message
-                    let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room."
+                    let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). " + 
+                    "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
+                    "For more information please visit https://github.com/jjj333-p/spam-police"
 
                     //try to send the greeting
                     client.sendNotice(joinroomid, greeting).then(() => {
@@ -215,6 +219,13 @@ class message {
 
             }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
 
+        } else if (scannableContent.includes(mxid)) {
+
+            //greeting message
+            let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 
+            "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
+            "For more information please visit https://github.com/jjj333-p/spam-police"
+            
         }
 
         // client.sendNotice(roomId, String(await client.userHasPowerLevelForAction(event["sender"], roomId, "kick")))

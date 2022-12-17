@@ -52,10 +52,22 @@ class Sendjson {
         //save the json of the recieved message
         fs.writeFileSync(file, JSON.stringify(event, null, 2))
     
-        //upload the file to homeserver
+        //upload the file to homeserver (outputs mxc:// or whatever)
         let linktofile = await client.uploadContent(fs.readFileSync(file))
+
+        //fetch the set alias of the room
+        let mainRoomAlias = await client.getPublishedAlias(roomId)
+
+        //if there is no alias of the room
+        if(!mainRoomAlias){
+
+            //dig through the state, find room name, and use that in place of the main room alias
+            mainRoomAlias = (await client.getRoomState(roomId)).find(state => state.type == "m.room.name")["content"]["name"]
+
+            //should still be able to go to the link using the https://matrix.to/#/ link
+        }
     
-        await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ await client.getPublishedAlias(roomId) + "\n<blockquote>" + event["content"]["body"] + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"]))
+        await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"]))
     
         //send the file that was uploaded
         await client.sendMessage(logchannel, {

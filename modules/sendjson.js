@@ -9,7 +9,7 @@ class Sendjson {
 
     }
 
-    async send (client, roomId, logchannel, event){ 
+    async send (client, roomId, logchannel, event, mxid){ 
 
         //if the message is replying
         let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
@@ -66,8 +66,13 @@ class Sendjson {
 
             //should still be able to go to the link using the https://matrix.to/#/ link
         }
+
+        //if the bot is in the room, that mean it's homeserver can be used for a via
+        let via = mxid.split(":")[1]
     
-        await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"]))
+        //send log message
+        await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] 
+        + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"] + "?via=" + via))
     
         //send the file that was uploaded
         await client.sendMessage(logchannel, {

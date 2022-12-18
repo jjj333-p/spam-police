@@ -10,7 +10,7 @@
         ],
         "currencies":[
             "$", "£", "€",
-            "money",
+            "money", "millions",
             "dollars",
             "pounds",
             "euros",

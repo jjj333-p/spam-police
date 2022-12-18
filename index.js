@@ -19,7 +19,9 @@ const storage = new SimpleFsStorageProvider("bot.json");
 
 //login to client
 const client = new MatrixClient(homeserverUrl, accessToken, storage);
-AutojoinRoomsMixin.setupOnClient(client);
+
+//currently testing without accepting invites
+//AutojoinRoomsMixin.setupOnClient(client);
 
 //map to put the handlers for each event type in (i guess this is fine here)
 let eventhandlers = new Map()

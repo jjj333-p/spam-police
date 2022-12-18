@@ -63,7 +63,5 @@ client.on("room.event", async (roomId, event) => {
     //if there is a handler for that event, run it.
     if (handler) handler.run(client, roomId, event, mxid, displayname)
 
-    console.log (event)
-
 })
 

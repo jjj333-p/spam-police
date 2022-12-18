@@ -98,6 +98,14 @@ class message {
         //join cmd 
         } else if (scannableContent.startsWith("+join")) {
 
+            if(roomId != this.logindata[3]){
+
+                client.sendNotice(roomId, "❌ | you must run +join commands in https://matrix.to/#/" + this.logindata[3] + "?via=" + mxid.split(":")[1])
+
+                return
+
+            }
+
             //grep out the room indicated by the user
             let joinroom = event["content"]["body"].split(" ")[1]
 
@@ -142,7 +150,7 @@ class message {
         } else if (scannableContent.startsWith("+leave")){
 
             //this is only for me, and a temporary cmd to alter later
-            if (event["sender"] == "@jjj333_p_1325:matrix.org"){
+            if (event["sender"] == "@jjj333_p_1325:matrix.org" || event["sender"] == "@jjj333:pain.agency"){
 
                 client.leaveRoom(roomId)
 

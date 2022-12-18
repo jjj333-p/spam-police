@@ -11,8 +11,6 @@ A matrix bot to monitor and respond to investment scam spamming across the matri
 
 You can use the instance of the bot I host (preferred), `@anti-spam:matrix.org`, or you can selfhost below. Do note that the bot does not currently support encrypted rooms.
 
-- You can invite the bot account to a room, the bot is set up to auto accept invites if it is online.
-
 - You can run `+invite [room alias or id]` in a room that the bot is in and if it is able to join the room it will. If you need a channel to run this command, feel free to join `#anti-scam-cmds:matrix.org`.
 
 My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`. 
@@ -31,12 +29,14 @@ This assumes you have an up to date node and npm installed. On debian based syst
 homeserver
 login token
 channel to log discovered telegram scams
+command channel
 ```
 For example, an account on matrix.org would be
 ```
 https://matrix.org
 [redacted]
 !xWGMKuBpJrtGDSfmaF:matrix.org
+!dSGCuhsxXDDJxhJxJH:matrix.org
 ```
 Do note that some homeservers require you to use https://matrix. before the homeserver domain.
 

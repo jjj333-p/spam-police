@@ -30,6 +30,10 @@ let eventhandlers = new Map()
 const {database} = require("./modules/db")
 const config = new database()
 
+//blacklist object
+const {blacklist} = require("./modules/blacklist")
+const banlist = new blacklist()
+
 //event handler for m.room.message
 const {message} = require("./modules/message")
 eventhandlers.set("m.room.message", new message(keywords, logindata, config))

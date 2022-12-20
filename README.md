@@ -2,6 +2,10 @@
 
 A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.
 
+> **Warning**
+>
+> This bot does not support encrypted rooms yet
+
 ## Discussion
 
 - Matrix Space: [`#spam-police:matrix.org`](https://matrix.to/#/#spam-police:matrix.org)
@@ -11,11 +15,22 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 
 ## Inviting the bot
 
-You can use the instance of the bot I host (preferred), `@anti-spam:matrix.org`, or you can selfhost below. Do note that the bot does not currently support encrypted rooms.
+You can use my instance: [`@anti-spam:matrix.org`](https://matrix.to/#/@anti-spam:matrix.org), or [self-host](https://github.com/jjj333-p/spam-police#inviting-the-bot) your own!
 
-- You can run `+invite [room alias or id]` in a room that the bot is in and if it is able to join the room it will. If you need a channel to run this command, feel free to join `#anti-scam-cmds:matrix.org`.
+To invite it, you can run the command below in a room that the bot is also in.
+```matrix
++invite [Alias/ID to room]
+```
 
-My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`. 
+> **Note**
+>
+> If you have problems inviting the bot, make sure the bot can join it. If you still have problems, join our [support room](https://matrix.to/#/#anti-scam-support:matrix.org).
+
+> **Note**
+>
+> If you need a room to run the command, feel free to join [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
+>
+> My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org)
 
 ## Self-hosting
 

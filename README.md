@@ -2,7 +2,7 @@
 
 A matrix bot to monitor and respond to investment scam spamming across the matrix platform, for example in rooms with a permanently offline admin.
 
-## Contact
+## Discussion
 
 - Matrix Space: [`#spam-police:matrix.org`](https://matrix.to/#/#spam-police:matrix.org)
 - Support Room: [`#anti-scam-support:matrix.org`](https://matrix.to/#/#anti-scam-support:matrix.org)

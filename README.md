@@ -15,7 +15,7 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 
 ## Inviting the bot
 
-You can use my instance: `@anti-spam:matrix.org`, or [self-host](https://github.com/jjj333-p/spam-police#inviting-the-bot) your own!
+You can use my instance: `@anti-spam:matrix.org`, or [self-host](https://github.com/jjj333-p/spam-police#self-hosting) your own!
 
 To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
 ```matrix

@@ -27,7 +27,7 @@ My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`.
 - [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 	- [Installation Documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
-### Production
+### Instructions
 
 ### Development
 

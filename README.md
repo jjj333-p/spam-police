@@ -29,8 +29,16 @@ My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`.
 
 ### Instructions
 
-1. Download the latest stable branch of the bot to a folder on your computer (hopefuly obvious). I recomend you do this by going to the `master▾` button on the top left of this github page, select the highest version number labeled `stable`, click the green `code▾` button on the top right, and download the zip and extract it. If you use the https or ssh url to clone, it will clone the master which is more of a developer beta than a stable release, which you can use if you wish to live on the edge but its not the recomended way.
+1. Download the latest stable version located in the [branches](https://github.com/jjj333-p/spam-police/branches)
+	- Stable branches are formatted as `stable-vX.X.X-(version-X,-minor-release-X)`
+	- Downloading the branch as a ZIP and extracting it is recommended
+		- Using git: `git clone --branch <branch> --single-branch https://github.com/archeite/spam-police.git`
 
+> **Note**
+> For a development version, you download from the `master` branch instead of the stable branch. The git command is shown below
+> ```bash
+> $ git clone --branch master --single-branch https://github.com/archeite/spam-police.git
+> ```
 2. Create a folder named `db` in the same folder as `index.js`
 
 3. In the `db` folder you just created, make a file called `login.txt`

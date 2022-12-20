@@ -4,10 +4,10 @@ A matrix bot to monitor and respond to investment scam spamming across the matri
 
 ## Contact
 
-- spam police space: `#spam-police:matrix.org`
-- support channel: `#anti-scam-support:matrix.org`
-- updates channel: (e.g. code changes, etc) `#spam-police-rss:matrix.org`
-- general moderation automation ideas room: `#mod-ideas:matrix.org`
+- Matrix Space: [`#spam-police:matrix.org`](https://matrix.to/#/#spam-police:matrix.org)
+- Support Room: [`#anti-scam-support:matrix.org`](https://matrix.to/#/#anti-scam-support:matrix.org)
+- Update and Announcements: [`#spam-police-rss:matrix.org`](https://matrix.to/#/#spam-police-rss:matrix.org)
+- General Moderation Automation Ideas Room: [`#mod-ideas:matrix.org`](https://matrix.to/#/#mod-ideas:matrix.org)
 
 ## How to add the bot to a room
 

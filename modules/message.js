@@ -19,7 +19,7 @@ class message {
         
     }
 
-    async run (client, roomId, event, mxid, displayname){
+    async run (client, roomId, event, mxid, displayname, blacklist){
 
         //if no content in message
         if (! event["content"]) return;

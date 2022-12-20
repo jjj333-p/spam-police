@@ -35,6 +35,7 @@ My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`.
 		- Using git: `git clone --branch <branch> --single-branch https://github.com/archeite/spam-police.git`
 
 > **Note**
+>
 > For a development version, you download from the `master` branch instead of the stable branch. The git command is shown below
 > ```bash
 > $ git clone --branch master --single-branch https://github.com/archeite/spam-police.git
@@ -57,6 +58,7 @@ Command Room
 ```
 
 > **Note**
+>
 > Note that some homeservers have `matrix.` prepended onto the homeserver domain.
 
 > **Example** of an account on matrix.org
@@ -66,11 +68,11 @@ Command Room
 > !xWGMKuBpJrtGDSfmaF:matrix.org
 > !dSGCuhsxXDDJxhJxJH:matrix.org
 > ```
- 
 
 5. Go back to the root directory (`cd ..`) and create `bot.json` (`touch bot.json`)
 
 > **Note**
+>
 > You don't need to put anything in `bot.json`, leave it empty
 > 
 > This appears to be how the bot SDK saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?

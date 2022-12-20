@@ -34,10 +34,6 @@ const config = new database()
 const {blacklist} = require("./modules/blacklist")
 const banlist = new blacklist()
 
-//membership handler
-const {membership} = require("./modules/membership")
-eventhandlers.set("m.room.member", new membership())
-
 //event handler for m.room.message
 const {message} = require("./modules/message")
 eventhandlers.set("m.room.message", new message(keywords, logindata, config))
@@ -73,3 +69,8 @@ client.on("room.event", async (roomId, event) => {
 
 })
 
+client.on("room.leave", (roomId) => {
+
+    banlist.add(roomId, "kicked")
+
+})

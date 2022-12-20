@@ -31,18 +31,17 @@ My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`.
 
 1. Download the latest stable version located in the [branches](https://github.com/jjj333-p/spam-police/branches)
 	- Stable branches are formatted as `stable-vX.X.X-(version-X,-minor-release-X)`
-	- Downloading the branch as a ZIP and extracting it is recommended
-		- Using git: `git clone --branch <branch> --single-branch https://github.com/archeite/spam-police.git`
+	- Downloading as a ZIP and extracting it is recommended
+		- Using git: `git clone -b <branch> --single-branch https://github.com/archeite/spam-police.git`
 
 > **Note**
->
+  >
 > For a development version, you download from the `master` branch instead of the stable branch. The git command is shown below
 > ```bash
-> $ git clone --branch master --single-branch https://github.com/archeite/spam-police.git
+> $ git clone -b master --single-branch https://github.com/archeite/spam-police.git
 > ```
 
 2. Go into the folder you cloned (`cd spam-police`), create a directory named `db` (`mkdir -p db`), and enter it (`cd db`)
-
 ```bash
 cd spam-police && mkdir -p db && cd db
 ```
@@ -58,8 +57,8 @@ Command Room
 ```
 
 > **Note**
->
-> Note that some homeservers have `matrix.` prepended onto the homeserver domain.
+> 
+> Some homeservers have `matrix.` prepended onto the homeserver domain.
 
 > **Example** of an account on matrix.org
 > ```txt
@@ -68,15 +67,15 @@ Command Room
 > !xWGMKuBpJrtGDSfmaF:matrix.org
 > !dSGCuhsxXDDJxhJxJH:matrix.org
 > ```
-
+ 
 5. Go back to the root directory (`cd ..`) and create `bot.json` (`touch bot.json`)
 
 > **Note**
->
+> 
 > You don't need to put anything in `bot.json`, leave it empty
 > 
 > This appears to be how the bot SDK saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
 
 6. To install dependencies, run `npm install`
 
-7. Start with `node index.js` or `node .`
+7. Start the bot with `node index.js` or `node .`

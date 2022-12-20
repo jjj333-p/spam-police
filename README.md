@@ -9,7 +9,7 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 - Update and Announcement Room: [`#spam-police-rss:matrix.org`](https://matrix.to/#/#spam-police-rss:matrix.org)
 - General Moderation Automation Ideas Room: [`#mod-ideas:matrix.org`](https://matrix.to/#/#mod-ideas:matrix.org)
 
-## How to add the bot to a room
+## Inviting the bot
 
 You can use the instance of the bot I host (preferred), `@anti-spam:matrix.org`, or you can selfhost below. Do note that the bot does not currently support encrypted rooms.
 
@@ -17,7 +17,13 @@ You can use the instance of the bot I host (preferred), `@anti-spam:matrix.org`,
 
 My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`. 
 
-## How to selfhost:
+## Self-hosting
+
+### Requirements
+
+### Production
+
+### Development
 
 This assumes you have an up to date node and npm installed. On debian based systems (including ubuntu, pop!os, and linux mint) you can run `sudo apt install nodejs npm` and on arch based systems (including manjaro) you can run `sudo pacman -S nodejs npm`
 

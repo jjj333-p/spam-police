@@ -2,19 +2,22 @@
 
 A matrix bot to monitor and respond to investment scam spamming across the matrix platform, for example in rooms with a permanently offline admin.
 
+## Contact
+
 - spam police space: `#spam-police:matrix.org`
 - support channel: `#anti-scam-support:matrix.org`
 - updates channel: (e.g. code changes, etc) `#spam-police-rss:matrix.org`
 - general moderation automation ideas room: `#mod-ideas:matrix.org`
 
-# How to add the bot to a room
+## How to add the bot to a room
 
 You can use the instance of the bot I host (preferred), `@anti-spam:matrix.org`, or you can selfhost below. Do note that the bot does not currently support encrypted rooms.
 
 - You can run `+invite [room alias or id]` in a room that the bot is in and if it is able to join the room it will. If you need a channel to run this command, feel free to join `#anti-scam-cmds:matrix.org`.
 
 My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`. 
-# How to selfhost:
+
+## How to selfhost:
 
 This assumes you have an up to date node and npm installed. On debian based systems (including ubuntu, pop!os, and linux mint) you can run `sudo apt install nodejs npm` and on arch based systems (including manjaro) you can run `sudo pacman -S nodejs npm`
 

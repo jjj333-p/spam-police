@@ -1,6 +1,6 @@
 # Spam Police
 
-A matrix bot to monitor and respond to investment scam spamming across the matrix platform, for example in rooms with a permanently offline admin.
+A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.
 
 ## Discussion
 

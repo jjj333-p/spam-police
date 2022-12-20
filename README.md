@@ -39,28 +39,42 @@ My instance of the bot logs the scams it finds to `#jjj-tg-scams:matrix.org`.
 > ```bash
 > $ git clone --branch master --single-branch https://github.com/archeite/spam-police.git
 > ```
-2. Create a folder named `db` in the same folder as `index.js`
 
-3. In the `db` folder you just created, make a file called `login.txt`
+2. Go into the folder you cloned (`cd spam-police`), create a directory named `db` (`mkdir -p db`), and enter it (`cd db`)
+
+```bash
+cd spam-police && mkdir -p db && cd db
+```
+
+3. Create a file named `login.txt` (`touch login.txt`)
 
 4. In `login.txt` put the login information in the following format:
+```txt
+Homeserver
+Login Token
+Log Room for discovered Telegram scams
+Command Room
 ```
-homeserver
-login token
-channel to log discovered telegram scams
-command channel
-```
-For example, an account on matrix.org would be
-```
-https://matrix.org
-[redacted]
-!xWGMKuBpJrtGDSfmaF:matrix.org
-!dSGCuhsxXDDJxhJxJH:matrix.org
-```
-Do note that some homeservers require you to use https://matrix. before the homeserver domain.
 
-5. In the same folder as index.js make an empty textfile called bot.json. This appears to be how the matrix bot sdk saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
+> **Note**
+> Note that some homeservers have `matrix.` prepended onto the homeserver domain.
 
-6. Run npm install to install the node dependencies to run the bot
+> **Example** of an account on matrix.org
+> ```txt
+> https://matrix.org
+> [redacted]
+> !xWGMKuBpJrtGDSfmaF:matrix.org
+> !dSGCuhsxXDDJxhJxJH:matrix.org
+> ```
+ 
 
-7. The bot can now be launched using node index.js or node . depending on which you prefer
+5. Go back to the root directory (`cd ..`) and create `bot.json` (`touch bot.json`)
+
+> **Note**
+> You don't need to put anything in `bot.json`, leave it empty
+> 
+> This appears to be how the bot SDK saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
+
+6. To install dependencies, run `npm install`
+
+7. Start with `node index.js` or `node .`

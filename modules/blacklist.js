@@ -7,7 +7,7 @@ class blacklist {
         this.filepath = "./db/blacklist.txt"
 
         //make sure file exists
-        fs.closeSync(fs.openSync(this.filePath, 'w'))
+        fs.closeSync(fs.openSync(this.filepath, 'w'))
 
         //read file
         this.blacklistTXT = fs.readFileSync(this.filepath, "utf-8")

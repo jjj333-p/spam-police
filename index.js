@@ -65,7 +65,7 @@ client.on("room.event", async (roomId, event) => {
     let handler = eventhandlers.get(event["type"])
     
     //if there is a handler for that event, run it.
-    if (handler) handler.run(client, roomId, event, mxid, displayname)
+    if (handler) handler.run(client, roomId, event, mxid, displayname, banlist)
 
 })
 

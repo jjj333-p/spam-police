@@ -41,6 +41,8 @@ To invite it, you can run the command below in a room that the bot is also in.
 	- [NodeJS Installer](https://nodejs.org/en/download/)
 - [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 	- [Installation Documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [git](https://git-scm.com/) *(optional)*
+	- [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 ### Instructions
 

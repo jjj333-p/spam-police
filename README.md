@@ -15,9 +15,9 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 
 ## Inviting the bot
 
-You can use my instance: [`@anti-spam:matrix.org`](https://matrix.to/#/@anti-spam:matrix.org), or [self-host](https://github.com/jjj333-p/spam-police#inviting-the-bot) your own!
+You can use my instance: `@anti-spam:matrix.org`, or [self-host](https://github.com/jjj333-p/spam-police#inviting-the-bot) your own!
 
-To invite it, you can run the command below in a room that the bot is also in.
+To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
 ```matrix
 +invite [Alias/ID to room]
 ```
@@ -27,8 +27,6 @@ To invite it, you can run the command below in a room that the bot is also in.
 > If you have problems inviting the bot, make sure the bot can join it. If you still have problems, join our [support room](https://matrix.to/#/#anti-scam-support:matrix.org).
 
 > **Note**
->
-> If you need a room to run the command, feel free to join [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
 >
 > My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org)
 

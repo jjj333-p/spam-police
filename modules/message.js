@@ -6,16 +6,16 @@ var sendjson = new Sendjson()
 
 class message {
 
-    constructor (keywords, logindata, config){
+    constructor (logindata, config){
 
         //map to relate scams and their responses (for deletion)
         this.tgScamResponses = new Map()
 
-        this.keywords = keywords
         this.logindata = logindata
         this.config = config
 
-        
+        //fetch keywords
+        this.keywords = require("../keywords.json")
         
     }
 

@@ -34,7 +34,7 @@ const banlist = new blacklist()
 
 //event handler for m.room.message
 const {message} = require("./modules/message")
-eventhandlers.set("m.room.message", new message(keywords, logindata, config))
+eventhandlers.set("m.room.message", new message(logindata, config))
 
 //event handler for m.room.redaction
 const {redaction} = require("./modules/redaction");

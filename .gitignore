@@ -2,7 +2,6 @@
 logs
 *.log
 npm-debug.log*
-lerna-debug.log*
 .pnpm-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
@@ -33,9 +32,6 @@ jspm_packages/
 # Optional stylelint cache
 .stylelintcache
 
-# Optional REPL history
-.node_repl_history
-
 # Output of 'npm pack'
 *.tgz
 
@@ -46,7 +42,7 @@ jspm_packages/
 .env.production.local
 .env.local
 
-# Don't leak out credentails
+# Don't leak out bot credentails
 db/
 
 # ???

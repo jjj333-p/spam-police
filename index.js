@@ -16,7 +16,7 @@ const { redaction } = require("./modules/redaction");
 
 //Parse YAML file
 //(not handled in the db because its good practice to keep this as far from the userspace as possible)
-const loginFile   = fs.readFileSync('./examples/login.yaml', 'utf8');
+const loginFile   = fs.readFileSync('./db/login.yaml', 'utf8');
 const loginParsed = YAML.parse(loginFile);
 const homeserver  = loginParsed["homeserver-url"];
 const accessToken = loginParsed["login-token"];

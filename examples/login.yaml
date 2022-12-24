@@ -1,2 +1,15 @@
 # Example configuration file for spam-police
 # Copy this to spam-police/db/login.yaml and edit it to your liking
+
+# The homeserver your bot is on
+# Note that some homeservers have `matrix.` prepended onto the URL
+homeserver: 'https://matrix.org'
+
+# The login token for the bot
+login-token: 'token'
+
+# The room where the bot will log discovered Telegram scams
+log-room: '!xWGMKuBpJrtGDSfmaF:matrix.org'
+
+# Room to send bot commands
+command-room: '!dSGCuhsxXDDJxhJxJH:matrix.org'

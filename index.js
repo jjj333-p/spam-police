@@ -1,25 +1,28 @@
 //Import dependencies
 const sdk  = require("matrix-bot-sdk");
 const fs   = require("fs");
-const YAML = require('yaml')
+const YAML = require('yaml');
 
 //Some SDK stuff
 const MatrixClient = sdk.MatrixClient;
 const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
 
-//fetch login details (not handled in the db because its good practice to keep this as far from the userspace as possible)
-const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
-const logindata = logintxt.split("\n")
-const homeserverUrl = logindata[0]
-const accessToken = logindata[1]
+//Parse YAML file
+//(not handled in the db because its good practice to keep this as far from the userspace as possible)
+const loginFile   = fs.readFileSync('./examples/login.yaml', 'utf8');
+const loginParsed = YAML.parse(loginFile);
+
+//Define them into variables
+const homeserver  = loginParsed["homeserver-url"];
+const accessToken = loginParsed["login-token"];
 
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");
 
 //login to client
-const client = new MatrixClient(homeserverUrl, accessToken, storage);
+const client = new MatrixClient(homeserver, accessToken, storage);
 
 //currently testing without accepting invites
 //AutojoinRoomsMixin.setupOnClient(client);
@@ -37,7 +40,7 @@ const banlist = new blacklist()
 
 //event handler for m.room.message
 const {message} = require("./modules/message")
-eventhandlers.set("m.room.message", new message(logindata, config))
+eventhandlers.set("m.room.message", new message(loginParsed, config))
 
 //event handler for m.room.redaction
 const {redaction} = require("./modules/redaction");
@@ -51,7 +54,7 @@ client.start().then( async () => {
     console.log("Client started!")
 
     //to remotely monitor how often the bot restarts, to spot issues
-    client.sendText(logindata[2], "Started.")
+    client.sendText(accessToken, "Started.")
 
     //get mxid
     mxid = await client.getUserId()

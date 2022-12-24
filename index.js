@@ -20,6 +20,8 @@ const loginFile   = fs.readFileSync('./examples/login.yaml', 'utf8');
 const loginParsed = YAML.parse(loginFile);
 const homeserver  = loginParsed["homeserver-url"];
 const accessToken = loginParsed["login-token"];
+const logRoom     = loginParsed["log-room"];
+const commandRoom = loginParsed["command-room"];
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");
@@ -46,7 +48,7 @@ client.start().then( async () => {
     console.log("Client started!")
 
     //to remotely monitor how often the bot restarts, to spot issues
-    client.sendText(accessToken, "Started.")
+    client.sendText(logRoom, "Started.")
 
     //get mxid
     mxid = await client.getUserId()

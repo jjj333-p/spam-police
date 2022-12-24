@@ -61,28 +61,10 @@ To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](ht
 cd spam-police && mkdir -p db && cd db
 ```
 
-3. Create a file named `login.txt` (`touch login.txt`)
+3. Copy the example configuration file from `examples/login.yaml` to `db` (cp ../examples/login.yaml ./)
 
-4. In `login.txt` put the login information in the following format:
-```txt
-Homeserver
-Login Token
-Log Room for discovered Telegram scams
-Command Room
-```
+4. Edit the configuration file to your liking
 
-> **Note**
-> 
-> Some homeservers have `matrix.` prepended onto the homeserver domain.
-
-> **Example** of an account on matrix.org
-> ```txt
-> https://matrix.org
-> [redacted]
-> !xWGMKuBpJrtGDSfmaF:matrix.org
-> !dSGCuhsxXDDJxhJxJH:matrix.org
-> ```
- 
 5. Go back to the root directory (`cd ..`) and create `bot.json` (`touch bot.json`)
 
 > **Note**

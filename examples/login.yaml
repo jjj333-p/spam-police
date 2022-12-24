@@ -6,6 +6,7 @@
 homeserver: 'https://matrix.org'
 
 # The login token for the bot
+# You can obtain this by going into Element and navigating to Settings > Advanced > Login Token
 login-token: 'token'
 
 # The room where the bot will log discovered Telegram scams

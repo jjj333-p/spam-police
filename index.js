@@ -1,16 +1,19 @@
-//sdk stuff idk
-const sdk = require("matrix-bot-sdk");
+//Import dependencies
+const sdk  = require("matrix-bot-sdk");
+const fs   = require("fs");
+const YAML = require('yaml')
+
+//Some SDK stuff
 const MatrixClient = sdk.MatrixClient;
 const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
-const fs = require("fs");
-
 
 //fetch login details (not handled in the db because its good practice to keep this as far from the userspace as possible)
 const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
 const logindata = logintxt.split("\n")
 const homeserverUrl = logindata[0]
 const accessToken = logindata[1]
+
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");

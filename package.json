@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "matrix-bot-sdk": "^0.6.3"
+    "matrix-bot-sdk": "^0.6.3",
+    "yaml": "^2.2.0"
   }
 }

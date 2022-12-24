@@ -8,15 +8,18 @@ const MatrixClient = sdk.MatrixClient;
 const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
 
+//Import modules
+const { database  } = require("./modules/db");
+const { blacklist } = require("./modules/blacklist");
+const { message   } = require("./modules/message");
+const { redaction } = require("./modules/redaction");
+
 //Parse YAML file
 //(not handled in the db because its good practice to keep this as far from the userspace as possible)
 const loginFile   = fs.readFileSync('./examples/login.yaml', 'utf8');
 const loginParsed = YAML.parse(loginFile);
-
-//Define them into variables
 const homeserver  = loginParsed["homeserver-url"];
 const accessToken = loginParsed["login-token"];
-
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");
@@ -30,25 +33,14 @@ const client = new MatrixClient(homeserver, accessToken, storage);
 //map to put the handlers for each event type in (i guess this is fine here)
 let eventhandlers = new Map()
 
-//database for the config
-const {database} = require("./modules/db")
-const config = new database()
-
-//blacklist object
-const {blacklist} = require("./modules/blacklist")
-const banlist = new blacklist()
-
-//event handler for m.room.message
-const {message} = require("./modules/message")
-eventhandlers.set("m.room.message", new message(loginParsed, config))
-
-//event handler for m.room.redaction
-const {redaction} = require("./modules/redaction");
-eventhandlers.set("m.room.redaction", new redaction(eventhandlers))
+const config = new database()   // Database for the config
+const banlist = new blacklist() // Blacklist object
+eventhandlers.set("m.room.message", new message(loginParsed, config)) // Event handler for m.room.message
+eventhandlers.set("m.room.redaction", new redaction(eventhandlers))   // Event handler for m.room.redaction
 
 let mxid; let displayname;
 
-//start client
+//Start Client
 client.start().then( async () => {
 
     console.log("Client started!")

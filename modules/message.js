@@ -14,8 +14,7 @@ class message {
         this.logindata = logindata
         this.config = config
 
-        //fetch keywords
-        this.keywords = require("../keywords.json")
+        
         
     }
 

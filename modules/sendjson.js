@@ -7,6 +7,10 @@ class Sendjson {
         //create array to store scams to help limit duplicates (when spammed)  
         this.tgScams = []
 
+
+        //fetch keywords
+        this.keywords = require("../keywords.json")
+
     }
 
     async send (client, roomId, logchannel, event, mxid){ 

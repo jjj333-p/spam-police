@@ -5,8 +5,6 @@ const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
 const fs = require("fs");
 
-//fetch keywords
-let keywords = require("./keywords.json")
 
 //fetch login details (not handled in the db because its good practice to keep this as far from the userspace as possible)
 const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this

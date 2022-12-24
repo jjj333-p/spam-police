@@ -3,7 +3,7 @@
 
 # The homeserver your bot is on
 # Note that some homeservers have `matrix.` prepended onto the URL
-homeserver: 'https://matrix.org'
+homeserver-url: 'https://matrix.org'
 
 # The login token for the bot
 # You can obtain this by going into Element and navigating to Settings > Advanced > Login Token

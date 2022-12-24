@@ -34,7 +34,7 @@ const banlist = new blacklist()
 
 //event handler for m.room.message
 const {message} = require("./modules/message")
-eventhandlers.set("m.room.message", new message(keywords, logindata, config))
+eventhandlers.set("m.room.message", new message(logindata, config))
 
 //event handler for m.room.redaction
 const {redaction} = require("./modules/redaction");
@@ -58,6 +58,8 @@ client.start().then( async () => {
 
 //when the client recieves an event
 client.on("room.event", async (roomId, event) => {
+
+    console.log("ran event")
 
     //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])

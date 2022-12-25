@@ -18,10 +18,11 @@ const { redaction } = require("./modules/redaction");
 //(not handled in the db because its good practice to keep this as far from the userspace as possible)
 const loginFile   = fs.readFileSync('./db/login.yaml', 'utf8');
 const loginParsed = YAML.parse(loginFile);
-const homeserver  = loginParsed["homeserver-url"];
-const accessToken = loginParsed["login-token"];
-const logRoom     = loginParsed["log-room"];
-const commandRoom = loginParsed["command-room"];
+const homeserver      = loginParsed["homeserver-url"];
+const accessToken     = loginParsed["login-token"];
+const logRoom         = loginParsed["log-room"];
+const commandRoom     = loginParsed["command-room"];
+const authorizedUsers = loginParsed["authorized-users"];
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");

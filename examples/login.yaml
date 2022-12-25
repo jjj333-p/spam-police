@@ -12,5 +12,12 @@ login-token: 'token'
 # The room where the bot will log discovered Telegram scams
 log-room: '!xWGMKuBpJrtGDSfmaF:matrix.org'
 
-# Room to send bot commands
+# The room to send bot commands
 command-room: '!dSGCuhsxXDDJxhJxJH:matrix.org'
+
+# Authorized Users
+# Users who can run admin commands on the bot (Restarting, banlist, etc.)
+authorized-users:
+  - @erin:matrix.org
+  - @carlos:example.com
+  - @bob:example.org

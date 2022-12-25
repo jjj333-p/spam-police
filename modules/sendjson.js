@@ -20,7 +20,7 @@ class Sendjson {
         if (replyRelation){
     
             //pull the id of the event its replying to
-            let replyID = replyRelation["m.in_reply_to"]["event_id"]
+            if (replyRelation["m.in_reply_to"]) { var replyID = replyRelation["m.in_reply_to"]["event_id"] }
     
             //fetch the event from that id
             let repliedEvent = await client.getEvent(roomId, replyID)

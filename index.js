@@ -59,8 +59,6 @@ client.start().then( async () => {
 //when the client recieves an event
 client.on("room.event", async (roomId, event) => {
 
-    console.log("ran event")
-
     //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])
     

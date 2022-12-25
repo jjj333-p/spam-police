@@ -43,7 +43,7 @@ jspm_packages/
 .env.local
 
 # Don't leak out bot credentails
-db/
+db
 
 # ???
 notepad.txt

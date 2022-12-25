@@ -1,22 +1,34 @@
-//sdk stuff idk
-const sdk = require("matrix-bot-sdk");
+//Import dependencies
+const sdk  = require("matrix-bot-sdk");
+const fs   = require("fs");
+const YAML = require('yaml');
+
+//Some SDK stuff
 const MatrixClient = sdk.MatrixClient;
 const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
 const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
-const fs = require("fs");
 
+//Import modules
+const { database  } = require("./modules/db");
+const { blacklist } = require("./modules/blacklist");
+const { message   } = require("./modules/message");
+const { redaction } = require("./modules/redaction");
 
-//fetch login details (not handled in the db because its good practice to keep this as far from the userspace as possible)
-const logintxt = fs.readFileSync("./db/login.txt", "utf-8") //this is a fetch, why couldnt i find this
-const logindata = logintxt.split("\n")
-const homeserverUrl = logindata[0]
-const accessToken = logindata[1]
+//Parse YAML file
+//(not handled in the db because its good practice to keep this as far from the userspace as possible)
+const loginFile   = fs.readFileSync('./db/login.yaml', 'utf8');
+const loginParsed = YAML.parse(loginFile);
+const homeserver      = loginParsed["homeserver-url"];
+const accessToken     = loginParsed["login-token"];
+const logRoom         = loginParsed["log-room"];
+const commandRoom     = loginParsed["command-room"];
+const authorizedUsers = loginParsed["authorized-users"];
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");
 
 //login to client
-const client = new MatrixClient(homeserverUrl, accessToken, storage);
+const client = new MatrixClient(homeserver, accessToken, storage);
 
 //currently testing without accepting invites
 //AutojoinRoomsMixin.setupOnClient(client);
@@ -24,31 +36,20 @@ const client = new MatrixClient(homeserverUrl, accessToken, storage);
 //map to put the handlers for each event type in (i guess this is fine here)
 let eventhandlers = new Map()
 
-//database for the config
-const {database} = require("./modules/db")
-const config = new database()
-
-//blacklist object
-const {blacklist} = require("./modules/blacklist")
-const banlist = new blacklist()
-
-//event handler for m.room.message
-const {message} = require("./modules/message")
-eventhandlers.set("m.room.message", new message(logindata, config))
-
-//event handler for m.room.redaction
-const {redaction} = require("./modules/redaction");
-eventhandlers.set("m.room.redaction", new redaction(eventhandlers))
+const config = new database()   // Database for the config
+const banlist = new blacklist() // Blacklist object
+eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config)) // Event handler for m.room.message
+eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 
 let mxid; let displayname;
 
-//start client
+//Start Client
 client.start().then( async () => {
 
     console.log("Client started!")
 
     //to remotely monitor how often the bot restarts, to spot issues
-    client.sendText(logindata[2], "Started.")
+    client.sendText(logRoom, "Started.")
 
     //get mxid
     mxid = await client.getUserId()

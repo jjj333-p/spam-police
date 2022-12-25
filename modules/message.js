@@ -6,13 +6,14 @@ var sendjson = new Sendjson()
 
 class message {
 
-    constructor (logindata, config){
+    constructor (logRoom, commandRoom, config){
 
         //map to relate scams and their responses (for deletion)
         this.tgScamResponses = new Map()
 
-        this.logindata = logindata
-        this.config = config
+        this.logRoom     = logRoom
+	this.commandRoom = commandRoom
+        this.config      = config
 
         //fetch keywords
         this.keywords = require("../keywords.json")
@@ -37,7 +38,7 @@ class message {
         if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
         
             //if the scam is posted in the room deticated to posting tg scams
-            if(roomId == this.logindata[2]){
+            if(roomId == this.logRoom){
 
                 //confirm it matches the keywords
                 client.sendEvent(roomId, "m.reaction", ({
@@ -51,7 +52,7 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(client, roomId, this.logindata[2], event, mxid)
+                sendjson.send(client, roomId, this.logRoom, event, mxid)
 
                 //React to the message with a little warning so its obvious what msg im referring to
                 await client.sendEvent(roomId, "m.reaction", ({
@@ -98,9 +99,9 @@ class message {
         //join cmd 
         } else if (scannableContent.startsWith("+join")) {
 
-            if(roomId != this.logindata[3]){
+            if(roomId != this.commandRoom){
 
-                client.sendNotice(roomId, "❌ | you must run +join commands in https://matrix.to/#/" + this.logindata[3] + "?via=" + mxid.split(":")[1])
+                client.sendNotice(roomId, "❌ | you must run +join commands in https://matrix.to/#/" + this.commandRoom + "?via=" + mxid.split(":")[1])
 
                 return
 

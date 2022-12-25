@@ -1,0 +1,23 @@
+# Example configuration file for spam-police
+# Copy this to spam-police/db/login.yaml and edit it to your liking
+
+# The homeserver your bot is on
+# Note that some homeservers have `matrix.` prepended onto the URL
+homeserver-url: 'https://matrix.org'
+
+# The login token for the bot
+# You can obtain this by going into Element and navigating to Settings > Help & About > Advanced > Access Token
+login-token: 'token'
+
+# The room where the bot will log discovered Telegram scams
+log-room: '!xWGMKuBpJrtGDSfmaF:matrix.org'
+
+# The room to send bot commands
+command-room: '!dSGCuhsxXDDJxhJxJH:matrix.org'
+
+# Authorized Users
+# Users who can run admin commands on the bot (Restarting, banlist, etc.)
+authorized-users:
+  - @erin:matrix.org
+  - @carlos:example.com
+  - @bob:example.org

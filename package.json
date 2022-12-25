@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jjj333-p/spam-police#readme",
   "dependencies": {
-    "matrix-bot-sdk": "^0.6.3"
+    "matrix-bot-sdk": "^0.6.3",
+    "yaml": "^2.2.0"
   }
 }

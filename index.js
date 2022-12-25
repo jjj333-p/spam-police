@@ -38,7 +38,7 @@ let eventhandlers = new Map()
 
 const config = new database()   // Database for the config
 const banlist = new blacklist() // Blacklist object
-eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config)) // Event handler for m.room.message
+eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 
 let mxid; let displayname;

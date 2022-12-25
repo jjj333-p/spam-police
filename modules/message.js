@@ -6,14 +6,16 @@ var sendjson = new Sendjson()
 
 class message {
 
-    constructor (logRoom, commandRoom, config){
+    constructor (logRoom, commandRoom, config, authorizedUsers){
 
         //map to relate scams and their responses (for deletion)
         this.tgScamResponses = new Map()
 
-        this.logRoom     = logRoom
-	this.commandRoom = commandRoom
-        this.config      = config
+        //config thingys
+        this.logRoom         = logRoom
+	    this.commandRoom     = commandRoom
+        this.config          = config
+        this.authorizedUsers = authorizedUsers
 
         //fetch keywords
         this.keywords = require("../keywords.json")
@@ -164,8 +166,8 @@ class message {
 
         } else if (scannableContent.startsWith("+leave")){
 
-            //this is only for me, and a temporary cmd to alter later
-            if (event["sender"] == "@jjj333_p_1325:matrix.org" || event["sender"] == "@jjj333:pain.agency"){
+            //verify is sent by an admin
+            if ( this.authorizedUsers.some(u => u == event["sender"]) ){
 
                 client.leaveRoom(roomId)
 

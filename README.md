@@ -42,6 +42,10 @@ To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](ht
 - [git](https://git-scm.com/) *(optional)*
 	- [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
+> **Note**
+> 
+> The bot is very light during run time and barely uses any resources, however it sees a large resource spike at startup due to initial sync. This can cause it to crash on lower powered systems (like the hetzner cpx11 vps) if you have an old sync token. What I do to fix this is I run the bot on a higher powered system like my dev machine, and then copy that sync token in bot.json into the bot.json on my vps. Please let me know or contribute if you know how to make the initial sync less resource intense.
+
 ### Instructions
 
 1. Download the latest stable version located in the [branches](https://github.com/jjj333-p/spam-police/branches)

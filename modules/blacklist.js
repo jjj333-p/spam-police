@@ -7,7 +7,11 @@ class blacklist {
         this.filepath = "./db/blacklist.txt"
 
         //make sure file exists
-        fs.closeSync(fs.openSync(this.filepath, 'w'))
+        if(!fs.readdirSync("./db/").some(d => d = "blacklist.txt")){
+
+            fs.closeSync(fs.openSync(this.filepath, 'w'))
+
+        }
 
         //read file
         this.blacklistTXT = fs.readFileSync(this.filepath, "utf-8")
@@ -37,7 +41,7 @@ class blacklist {
         if(match) {
 
             //return the reason part of the entry
-            return (match.substring(match.split(" ")[0].length))
+            return (match.substring(match.split(" ")[0].length + 1))
 
         //if no entry, return empty
         } else { return (null) }

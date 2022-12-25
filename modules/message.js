@@ -180,7 +180,7 @@ class message {
         } else if (scannableContent.startsWith("+restart")) {
 
             //this is only for me, and a temporary cmd to alter later
-            if (event["sender"] == "@jjj333_p_1325:matrix.org"){
+            if ( this.authorizedUsers.some(u => u == event["sender"]) ){
 
                 process.exit(0)
 

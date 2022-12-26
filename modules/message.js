@@ -13,7 +13,7 @@ class message {
 
         //config thingys
         this.logRoom         = logRoom
-	    this.commandRoom     = commandRoom
+        this.commandRoom     = commandRoom
         this.config          = config
         this.authorizedUsers = authorizedUsers
 

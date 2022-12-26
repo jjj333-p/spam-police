@@ -192,7 +192,8 @@ class message {
 
                         //let the room know why the bot is leaving
                         client.sendHtmlNotice(leaveroomid, "Leaving room for reason <code>" + reason + "</code>.")
-                            .finally(() => { //doesnt matter if unable to send to the room
+                            .catch(() => {}) //doesnt matter if unable to send to the room
+                            .finally(() => { 
 
                                 //attempt to leave the room
                                 client.leaveRoom(leaveroomid).then(() => {

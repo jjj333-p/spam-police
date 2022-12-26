@@ -173,7 +173,7 @@ class message {
 
             } else {
 
-                client.sendText(roomId, "Sorry, only my owner can do that. If you are a moderator of the room please just kick me from the room, I will not join back unless someone tells me to (and I will disclose who told me to).")
+                client.sendText(roomId, "Sorry, only my owner(s) can do that. If you are a moderator of the room please just kick me from the room, I will not join back unless someone tells me to (and I will disclose who told me to).")
 
             }
 

@@ -18,6 +18,6 @@ command-room: '!dSGCuhsxXDDJxhJxJH:matrix.org'
 # Authorized Users
 # Users who can run admin commands on the bot (Restarting, blacklist, etc.)
 authorized-users:
-  - @erin:matrix.org
-  - @carlos:example.com
-  - @bob:example.org
+  - '@erin:matrix.org'
+  - '@carlos:example.com'
+  - '@bob:example.org'

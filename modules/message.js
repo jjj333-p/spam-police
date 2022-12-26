@@ -187,6 +187,9 @@ class message {
                         //parce out the reason
                         let reason = event["content"]["body"].substring(substringStart)
 
+                        //make sure reason is in the banlist
+                        if (!reason) { reason = "<No reason provided.>" }
+
                         //add room to blacklist
                         blacklist.add(leaveroomid, reason)
 

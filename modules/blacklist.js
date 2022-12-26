@@ -41,7 +41,7 @@ class blacklist {
         if(match) {
 
             //return the reason part of the entry
-            return (match.substring(match.split(" ")[0].length + 1))
+            return (match.substring(match.split(" ")[0].length + 1) + " ")
 
         //if no entry, return empty
         } else { return (null) }

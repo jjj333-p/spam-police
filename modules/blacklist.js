@@ -7,7 +7,7 @@ class blacklist {
         this.filepath = "./db/blacklist.txt"
 
         //make sure file exists
-        if(!fs.readdirSync("./db/").some(d => d = "blacklist.txt")){
+        if(!fs.readdirSync("./db/").some(d => d == "blacklist.txt")){
 
             fs.closeSync(fs.openSync(this.filepath, 'w'))
 
@@ -85,6 +85,8 @@ class blacklist {
     }
 
     async remove (roomId) {
+        
+        let er;
 
         //filter to only include entries without that room id
         this.blacklistARRAY = this.blacklistARRAY.filter(( entry => !entry.split(" ")[0].includes(roomId) ))

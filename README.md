@@ -28,7 +28,7 @@ To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](ht
 
 > **Note**
 >
-> My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org)
+> My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to/#/#jjj-tg-scams:matrix.org)
 
 ## Self-hosting
 

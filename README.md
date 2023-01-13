@@ -49,7 +49,7 @@ To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](ht
 ### Instructions
 
 1. Download the latest stable version located in the [branches](https://github.com/jjj333-p/spam-police/branches)
-	- Stable branches are formatted as `stable-vX.X.X-(version-X,-minor-release-X)`
+	- Stable branches are formatted as `stable-vX.X.X-(version-X,-update-x,-patch-X)`
 	- Downloading as a ZIP and extracting it is recommended
 		- Using git: `git clone -b <branch> --single-branch https://github.com/archeite/spam-police.git`
 

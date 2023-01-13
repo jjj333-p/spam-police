@@ -19,8 +19,10 @@ You can use my instance: `@anti-spam:matrix.org`, or [self-host](https://github.
 
 To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
 ```matrix
-+invite [Alias/ID to room]
++join [Alias/ID to room]
 ```
+
+Mentioning the bot will bring up a link back to this github, no need to bookmark this page. 😉
 
 > **Note**
 >
@@ -30,7 +32,7 @@ To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](ht
 >
 > My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to/#/#jjj-tg-scams:matrix.org)
 
-## Self-hosting
+## Self-hostin
 
 ### Requirements
 

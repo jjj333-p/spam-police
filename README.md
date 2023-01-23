@@ -77,7 +77,7 @@ cd spam-police && mkdir -p db && cd db
 > 
 > You don't need to put anything in `bot.json`, leave it empty
 > 
-> This appears to be how the bot SDK saves the sync token and stuff, however it seems to work just fine if I delete this so maybe the code could be changed around to not require it?
+> This appears to be how the bot SDK saves the sync token and stuff.
 
 6. To install dependencies, run `npm install`
 

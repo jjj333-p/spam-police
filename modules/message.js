@@ -73,6 +73,20 @@ class message {
 
                     //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
                     this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+
+                    let scamAction = this.config.getConfig(roomId, "scamAction")
+
+                    let reason = "Scam Likely"
+
+                    if (!scamAction) {
+
+                        if ( client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
+
+                            client.kickUser(event["sender"], roomId, reason).catch(() => {})
+
+                        }
+
+                    }
                 
                 })
 

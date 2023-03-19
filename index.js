@@ -73,3 +73,4 @@ client.on("room.leave", (roomId) => {
     banlist.add(roomId, "kicked")
 
 })
+

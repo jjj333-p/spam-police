@@ -80,7 +80,7 @@ class message {
 
                     if (!scamAction) {
 
-                        if ( client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
+                        if ( await client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
 
                             client.kickUser(event["sender"], roomId, reason).catch(() => {})
 

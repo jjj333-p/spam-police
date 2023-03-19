@@ -32,7 +32,7 @@ Mentioning the bot will bring up a link back to this github, no need to bookmark
 >
 > My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to/#/#jjj-tg-scams:matrix.org)
 
-## Self-hostin
+## Self-hosting
 
 ### Requirements
 

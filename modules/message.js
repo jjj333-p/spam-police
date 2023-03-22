@@ -74,6 +74,29 @@ class message {
                     //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
                     this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
 
+                    //if the message is replying
+                    let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
+                    if (replyRelation){
+
+                        //pull the id of the event its replying to
+                        if (replyRelation["m.in_reply_to"]) { 
+                            let replyID = replyRelation["m.in_reply_to"]["event_id"]
+
+                            //fetch the event from that id
+                            let repliedEvent = await client.getEvent(roomId, replyID)
+                    
+                            //make the content scanable
+                            let scannableContent = repliedEvent["content"]["body"].toLowerCase()
+                    
+                            //if the message is replying to a scam, it doesnt need to be acted upon
+                            if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
+                                return
+                            }
+
+                        }
+
+                    }
+
                     let scamAction = this.config.getConfig(roomId, "scamAction")
 
                     let reason = "Scam Likely"
@@ -83,6 +106,28 @@ class message {
                         if ( await client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
 
                             client.kickUser(event["sender"], roomId, reason).catch(() => {})
+
+                        }
+
+                    } else if (scamAction == -1) {
+
+                        if ( await client.userHasPowerLevelForAction(mxid, roomId, "redact") ) {
+
+                            client.redactEvent(roomId, event["event_id"], reason)
+
+                        }
+
+                    } else if (scamAction == 1 ) {
+
+                        //     userHasPowerLevelFor(userId: string, roomId: string, eventType: string, isState: boolean): Promise<boolean>;
+                        // setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
+                        // client.setUserPowerLevel(user, roomId, newlevel)
+                        
+
+
+                        if ( await client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
+
+
 
                         }
 

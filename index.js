@@ -41,6 +41,7 @@ const banlist = new blacklist() // Blacklist object
 eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 
+//preallocate variables so they have a global scope
 let mxid; let displayname;
 
 //Start Client
@@ -73,4 +74,3 @@ client.on("room.leave", (roomId) => {
     banlist.add(roomId, "kicked")
 
 })
-

@@ -32,6 +32,6 @@
             "👇", "👆️",
             "+1", "+2"
         ],
-        "response":"That is likely a scam and what we call 'too good to be true'. For more information go to https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert and https://www.youtube.com/watch?v=gFWaA7mt9oM\n[!mods !modhelp]"
+        "response":"<p>That message is likely <b>scam</b> and what we call 'too good to be true'. For more information go to\n<ul>\n<li>https://www.sec.gov/oiea/investor-alerts-and-bulletins/digital-asset-and-crypto-investment-scams-investor-alert</li>\n<li>https://www.youtube.com/watch?v=gFWaA7mt9oM</li></ul>[!mods !modhelp]</p>"
     }
 }

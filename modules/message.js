@@ -96,7 +96,7 @@ class message {
             let rMinutes = minutes - (hours*60)
 
             //send the uptime to the room
-            client.sendText(roomId, ("> " + seconds + "\n" + hours + " hours, " + rMinutes + " minutes, and " + Math.floor(rSeconds) + " seconds."))
+            client.sendHtmlText(roomId, ("<blockquote>\n<p>" + seconds + "</p>\n</blockquote>\n<p>" + hours + " hours, " + rMinutes + " minutes, and " + Math.floor(rSeconds) + " seconds.</p>"))
 
         //join cmd 
         } else if (scannableContent.startsWith("+join")) {

@@ -58,87 +58,112 @@ class message {
 
                 //React to the message with a little warning so its obvious what msg im referring to
                 await client.sendEvent(roomId, "m.reaction", ({
+
                     "m.relates_to": {
                         "event_id":event["event_id"],
                         "key":"🚨 scam! 🚨",
                         "rel_type": "m.annotation"
                     }
-                })).finally(async () => {
 
-                    //if the room is in mute mode, dont respond
-                    if (Boolean(this.config.getConfig(roomId, "muted"))) return
+                }))
 
-                    //send warning message
-                    let responseID = await client.sendText(roomId, this.keywords.scams.response)
-
-                    //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
-                    this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
-
-                    //if the message is replying
-                    let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
-                    if (replyRelation){
-
-                        //pull the id of the event its replying to
-                        if (replyRelation["m.in_reply_to"]) { 
-                            let replyID = replyRelation["m.in_reply_to"]["event_id"]
-
-                            //fetch the event from that id
-                            let repliedEvent = await client.getEvent(roomId, replyID)
+                    //catch the error to prevent crashing, however if it cant send theres not much to do
+                    .catch(() => {})
                     
-                            //make the content scanable
-                            let scannableContent = repliedEvent["content"]["body"].toLowerCase()
-                    
-                            //if the message is replying to a scam, it doesnt need to be acted upon
-                            if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
-                                return
-                            }
+                    //dont care if it was successful, carry on with the code
+                    .finally(async () => {
 
-                        }
+                        //if the room is in mute mode, dont respond
+                        if (Boolean(this.config.getConfig(roomId, "muted"))) return
 
-                    }
+                        // //send warning message
+                        // let responseID = await client.sendText(roomId, this.keywords.scams.response)
 
-                    let scamAction = this.config.getConfig(roomId, "scamAction")
+                        // //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
+                        // this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
 
-                    let reason = "Scam Likely"
-
-                    if (!scamAction) {
-
-                        if ( await client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
-
-                            client.kickUser(event["sender"], roomId, reason).catch(() => {})
-
-                        }
-
-                    } else if (scamAction == -1) {
-
-                        if ( await client.userHasPowerLevelForAction(mxid, roomId, "redact") ) {
-
-                            client.redactEvent(roomId, event["event_id"], reason)
-
-                        }
-
-                    } else if (scamAction == 1 ) {
-
-                        //     userHasPowerLevelFor(userId: string, roomId: string, eventType: string, isState: boolean): Promise<boolean>;
-                        // setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
-                        // client.setUserPowerLevel(user, roomId, newlevel)
+                        //send warning message
+                        client.sendText(roomId, this.keywords.scams.response)
                         
+                            //if warning is sent, associate it with the original scam for later redaction
+                            .then(responseID => { this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID}) })
+
+                            //catch error without crashing
+                            .catch(() => {})
+
+                            .finally(async () => {
+
+                                //if the message is replying
+                                let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
+                                if (replyRelation){
+
+                                    //pull the id of the event its replying to
+                                    if (replyRelation["m.in_reply_to"]) { 
+                                        let replyID = replyRelation["m.in_reply_to"]["event_id"]
+
+                                        //fetch the event from that id
+                                        let repliedEvent = await client.getEvent(roomId, replyID)
+                                
+                                        //make the content scanable
+                                        let scannableContent = repliedEvent["content"]["body"].toLowerCase()
+                                
+                                        //if the message is replying to a scam, it doesnt need to be acted upon
+                                        if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
+                                            return
+                                        }
+
+                                    }
+
+                                }
+
+                                let scamAction = this.config.getConfig(roomId, "scamAction")
+
+                                let reason = "Scam Likely"
+
+                                if (!scamAction) {
+
+                                    if ( await client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
+
+                                        client.kickUser(event["sender"], roomId, reason).catch(() => {})
+
+                                    }
+
+                                } else if (scamAction == -1) {
+
+                                    if ( await client.userHasPowerLevelForAction(mxid, roomId, "redact") ) {
+
+                                        client.redactEvent(roomId, event["event_id"], reason).catch(() => {})
+
+                                    }
+
+                                } else if (scamAction == 1 ) {
+
+                                    //     userHasPowerLevelFor(userId: string, roomId: string, eventType: string, isState: boolean): Promise<boolean>;
+                                    // setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
+                                    // client.setUserPowerLevel(user, roomId, newlevel)
+                                    
 
 
-                        if ( await client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
+                                    // if ( await client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
 
 
 
-                        }
+                                    // }
 
-                    }
-                
-                })
+                                }
+
+                            })
+                    
+                    })
 
             }
 
         //check uptime
-        }  else if (scannableContent.includes("+uptime")) {
+        }  else if (!(await client.userHasPowerLevelFor(mxid, roomId, "m.room.message", false))) { 
+            
+            return 
+        
+        } else if (scannableContent.includes("+uptime")) {
 
             //let user know that the bot is online even if the matrix room is being laggy and the message event isnt comming across
             client.sendReadReceipt(roomId, event["event_id"])

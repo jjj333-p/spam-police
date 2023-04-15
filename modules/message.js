@@ -83,7 +83,7 @@ class message {
                         // this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
 
                         //send warning message
-                        client.sendText(roomId, this.keywords.scams.response)
+                        client.sendHtmlText(roomId, this.keywords.scams.response)
                         
                             //if warning is sent, associate it with the original scam for later redaction
                             .then(responseID => { this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID}) })

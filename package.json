@@ -1,23 +1,7 @@
 {
-  "name": "spam-police",
-  "description": "A Matrix bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.",
-  "main": "index.js",
-  "version": "0.4.0",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jjj333-p/spam-police.git"
-  },
-  "author": " jjj333_p",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/jjj333-p/spam-police/issues"
-  },
-  "homepage": "https://github.com/jjj333-p/spam-police#readme",
   "dependencies": {
-    "matrix-bot-sdk": "^0.6.3",
-    "yaml": "^2.2.0"
+    "@matrix-org/matrix-sdk-crypto-nodejs": "^0.1.0-beta.3",
+    "matrix-bot-sdk": "^0.6.4",
+    "yaml": "^2.2.1"
   }
 }

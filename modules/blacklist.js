@@ -1,4 +1,4 @@
-const fs = require("fs");
+import { openSync, readdirSync, readFileSync, writeFile } from "fs";
 
 class blacklist {
 
@@ -7,14 +7,14 @@ class blacklist {
         this.filepath = "./db/blacklist.txt"
 
         //make sure file exists
-        if(!fs.readdirSync("./db/").some(d => d == "blacklist.txt")){
+        if(!readdirSync("./db/").some(d => d == "blacklist.txt")){
 
-            fs.closeSync(fs.openSync(this.filepath, 'w'))
+            closeSync(openSync(this.filepath, 'w'))
 
         }
 
         //read file
-        this.blacklistTXT = fs.readFileSync(this.filepath, "utf-8")
+        this.blacklistTXT = readFileSync(this.filepath, "utf-8")
 
         //split into entry lines
         this.blacklistARRAY = this.blacklistTXT.split("\n")
@@ -25,7 +25,7 @@ class blacklist {
     reload() {
 
         //read file
-        this.blacklistTXT = fs.readFileSync(this.filepath, "utf-8")
+        this.blacklistTXT = readFileSync(this.filepath, "utf-8")
 
         //split into entry lines
         this.blacklistARRAY = this.blacklistTXT.split("\n")
@@ -73,7 +73,7 @@ class blacklist {
         let er
 
         //write blacklist text file
-        await fs.writeFile(this.filepath, this.blacklistTXT, null ,err => {
+        await writeFile(this.filepath, this.blacklistTXT, null ,err => {
 
             er = err
 
@@ -94,7 +94,7 @@ class blacklist {
         //join array into text file
         this.blacklistTXT = this.blacklistARRAY.join("\n")
 
-        await fs.writeFile(this.filepath, this.blacklistTXT, null ,err => {
+        await writeFile(this.filepath, this.blacklistTXT, null ,err => {
 
             er = err
 

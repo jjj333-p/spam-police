@@ -106,4 +106,4 @@ class blacklist {
     }
 }
 
-module.exports = {blacklist}
+export { blacklist };

@@ -1,6 +1,8 @@
 //sendjson class
 import { PowerLevelAction } from "matrix-bot-sdk"
 import { Sendjson } from "./sendjson.js"
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 var sendjson = new Sendjson()
 

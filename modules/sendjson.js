@@ -1,4 +1,6 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 class Sendjson {
 

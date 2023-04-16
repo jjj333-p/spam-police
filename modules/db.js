@@ -1,21 +1,21 @@
-const fs = require("fs");
+import { mkdirSync, readdirSync, readFileSync, writeFile } from "fs";
 
 class database {
 
     constructor () {
 
         //check if the config part of the db is there
-        let a = fs.readdirSync("./db")
+        let a = readdirSync("./db")
 
         if(!a.some(b => b == "config")){
 
             //if not, make the folder for it
-            fs.mkdirSync("./db/config")
+            mkdirSync("./db/config")
 
         }
 
         //fetch the stored config files
-        let configfilelist = fs.readdirSync("./db/config")
+        let configfilelist = readdirSync("./db/config")
 
         //set up cache for db so dont have to wait on disk every time
         this.cache = new Map()
@@ -32,7 +32,7 @@ class database {
             let configMap = new Map()
 
             //read the config and parse it to add it to cache
-            let rawconfig = JSON.parse(fs.readFileSync("./db/config/" + fileName))
+            let rawconfig = JSON.parse(readFileSync("./db/config/" + fileName))
 
             //pull the individual configs into a uniform map format
             Object.entries(rawconfig).forEach(([key, value]) => {configMap.set(key, value)})
@@ -72,7 +72,7 @@ class database {
         this.cache.set(roomId, cachedconfig)
 
         //write current config to disk
-        fs.writeFile(("./db/config/" + roomId + ".json"), JSON.stringify(Object.fromEntries(cachedconfig), null, 2), err =>{
+        writeFile(("./db/config/" + roomId + ".json"), JSON.stringify(Object.fromEntries(cachedconfig), null, 2), err =>{
 
             if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
 
@@ -100,7 +100,7 @@ class database {
         this.cache.set(toId, from)
 
         //write current config to disk
-        fs.writeFile(("./db/config/" + toId + ".json"), JSON.stringify(Object.fromEntries(from), null, 2), err =>{
+        writeFile(("./db/config/" + toId + ".json"), JSON.stringify(Object.fromEntries(from), null, 2), err =>{
 
             if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
 
@@ -112,4 +112,4 @@ class database {
 
 }
 
-module.exports = {database}
+export { database };

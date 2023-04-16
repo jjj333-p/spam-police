@@ -2,6 +2,7 @@
   "name": "spam-police",
   "description": "A Matrix bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.",
   "main": "index.js",
+  "type": "module",
   "version": "0.4.0",
   "scripts": {
     "start": "node index.js"

@@ -73,7 +73,7 @@ class blacklist {
         let er
 
         //write blacklist text file
-        await writeFile(this.filepath, this.blacklistTXT, null ,err => {
+        writeFile(this.filepath, this.blacklistTXT, null ,err => {
 
             er = err
 
@@ -94,7 +94,7 @@ class blacklist {
         //join array into text file
         this.blacklistTXT = this.blacklistARRAY.join("\n")
 
-        await writeFile(this.filepath, this.blacklistTXT, null ,err => {
+        writeFile(this.filepath, this.blacklistTXT, null ,err => {
 
             er = err
 

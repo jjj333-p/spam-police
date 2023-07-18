@@ -17,7 +17,7 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 
 You can use my instance: `@anti-spam:matrix.org`, or [self-host](https://github.com/jjj333-p/spam-police#self-hosting) your own!
 
-To invite it, you can run the command below in [`#anti-scam-cmds:matrix.org`](https://matrix.to#anti-scam-cmds:matrix.org).
+To invite it, you can run the command below in [`#spam-police-bot-cmds:matrix.org`](https://matrix.to/#/#spam-police-bot-cmds:matrix.org).
 ```matrix
 +join [Alias/ID to room]
 ```
@@ -46,7 +46,7 @@ Mentioning the bot will bring up a link back to this github, no need to bookmark
 
 > **Note**
 > 
-> The bot is very light during run time and barely uses any resources, however it sees a large resource spike at startup due to initial sync. This can cause it to crash on lower powered systems (like the hetzner cpx11 vps) if you have an old sync token. What I do to fix this is I run the bot on a higher powered system like my dev machine, and then copy that sync token in bot.json into the bot.json on my vps. Please let me know or contribute if you know how to make the initial sync less resource intense.
+> The bot is very light during run time and barely uses any resources, however it sees a large resource spike at startup due to initial sync. This can cause it to crash on lower powered systems (like the hetzner cpx11 vps) if you have an old sync token. What I do to fix this is I run the bot on a higher powered system like my dev machine (tbh anything with 4+ gb of real ram should work, 8+gb ram and quad core should be enough for the spike to be unnoticable), and then copy that sync token in bot.json into the bot.json on my vps. Please let me know or contribute if you know how to make the initial sync less resource intense.
 
 ### Instructions
 

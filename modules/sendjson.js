@@ -1,4 +1,6 @@
-const fs = require("fs");
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 class Sendjson {
 
@@ -46,21 +48,21 @@ class Sendjson {
         }
     
         //check to make sure folders are there
-        if(!fs.readdirSync("./db/").some(dir => dir == "tg-scams")){fs.mkdirSync("./db/tg-scams")}
+        if(!readdirSync("./db/").some(dir => dir == "tg-scams")){mkdirSync("./db/tg-scams")}
         let currentDir = "./db/tg-scams/"
     
         //make folder for each account
-        if(!fs.readdirSync(currentDir).some(dir => dir == event["sender"])){fs.mkdirSync(currentDir  + event["sender"] + "/")}
+        if(!readdirSync(currentDir).some(dir => dir == event["sender"])){mkdirSync(currentDir  + event["sender"] + "/")}
         currentDir = currentDir + event["sender"] + "/"
         
         //filename
         let file = (currentDir  +  roomId+ "@" + Date.now() + ".json")
     
         //save the json of the recieved message
-        fs.writeFileSync(file, JSON.stringify(event, null, 2))
+        writeFileSync(file, JSON.stringify(event, null, 2))
     
         //upload the file to homeserver (outputs mxc:// or whatever)
-        let linktofile = await client.uploadContent(fs.readFileSync(file))
+        let linktofile = await client.uploadContent(readFileSync(file))
 
         //fetch the set alias of the room
         let mainRoomAlias = await client.getPublishedAlias(roomId)
@@ -112,4 +114,4 @@ function includesWord (str, catgs) {
 
 }
 
-module.exports = {Sendjson}
+export { Sendjson };

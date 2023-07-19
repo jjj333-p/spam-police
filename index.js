@@ -1,23 +1,17 @@
 //Import dependencies
-const sdk  = require("matrix-bot-sdk");
-const fs   = require("fs");
-const YAML = require('yaml');
-
-//Some SDK stuff
-const MatrixClient = sdk.MatrixClient;
-const SimpleFsStorageProvider = sdk.SimpleFsStorageProvider;
-const AutojoinRoomsMixin = sdk.AutojoinRoomsMixin;
+import { AutojoinRoomsMixin, MatrixClient, SimpleFsStorageProvider } from "matrix-bot-sdk"; 
+import { readFileSync } from "fs";
+import { parse } from "yaml";
 
 //Import modules
-const { database  } = require("./modules/db");
-const { blacklist } = require("./modules/blacklist");
-const { message   } = require("./modules/message");
-const { redaction } = require("./modules/redaction");
+import { blacklist } from "./modules/blacklist.js";
+import { redaction } from "./modules/redaction.js";
+import { database } from "./modules/db.js";
+import { message } from "./modules/message.js";
 
-//Parse YAML file
-//(not handled in the db because its good practice to keep this as far from the userspace as possible)
-const loginFile   = fs.readFileSync('./db/login.yaml', 'utf8');
-const loginParsed = YAML.parse(loginFile);
+//Parse YAML configuration file
+const loginFile   = readFileSync('./db/login.yaml', 'utf8');
+const loginParsed = parse(loginFile);
 const homeserver      = loginParsed["homeserver-url"];
 const accessToken     = loginParsed["login-token"];
 const logRoom         = loginParsed["log-room"];

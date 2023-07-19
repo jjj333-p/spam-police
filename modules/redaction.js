@@ -24,4 +24,4 @@ class redaction {
 
 }
 
-module.exports = {redaction}
+export { redaction };

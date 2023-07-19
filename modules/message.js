@@ -1,8 +1,10 @@
 //sendjson class
-const { PowerLevelAction } = require("matrix-bot-sdk/lib/models/PowerLevelAction")
-const {Sendjson} = require("./sendjson")
-var sendjson = new Sendjson()
+import { PowerLevelAction } from "matrix-bot-sdk"
+import { Sendjson } from "./sendjson.js"
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
+var sendjson = new Sendjson()
 
 class message {
 
@@ -490,4 +492,4 @@ function includesWord (str, catgs) {
 
 }
 
-module.exports = {message}
+export { message };

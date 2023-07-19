@@ -6,7 +6,7 @@ class redaction {
 
     }
 
-    async run (client, roomId, event){
+    async run ({client, event}){
 
         //fetch the bots response to the scam
         let response = this.eventhandlers.get("m.room.message").tgScamResponses.get(event["redacts"])

@@ -9,6 +9,7 @@ import { Uptime } from "./commands/uptime.js"
 import { Join } from "./commands/join.js"
 import { Leave } from "./commands/leave.js"
 import { Unblacklist } from "./commands/unblacklist.js";
+import { Restart } from "./commands/restart.js";
 
 var sendjson = new Sendjson()
 
@@ -35,6 +36,7 @@ class message {
         this.commands.set("join", new Join())
         this.commands.set("leave", new Leave())
         this.commands.set("unblacklist", new Unblacklist())
+        this.commands.set("restart", new Restart())
         
     }
 
@@ -270,19 +272,6 @@ class message {
 
         /*
  
-        } else if (scannableContent.startsWith("+unblacklist")){
-
-           
-
-        } else if (scannableContent.startsWith("+restart")) {
-
-            //this is only for me, and a temporary cmd to alter later
-            if ( this.authorizedUsers.some(u => u == event["sender"]) ){
-
-                process.exit(0)
-
-            }
-            
         //mute cmd
         } else if (scannableContent.startsWith("+mute")){
             

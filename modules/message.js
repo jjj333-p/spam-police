@@ -1,8 +1,11 @@
 //sendjson class
 import { PowerLevelAction } from "matrix-bot-sdk"
-import { Sendjson } from "./sendjson.js"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+
+import { Sendjson } from "./sendjson.js"
+
+import { Uptime } from "./commands/uptime.js"
 
 var sendjson = new Sendjson()
 
@@ -21,33 +24,41 @@ class message {
 
         //fetch keywords
         this.keywords = require("../keywords.json")
+
+        //create collection of different commands to run
+        this.commands = new Map()
+
+        this.commands.set("uptime", new Uptime)
         
     }
 
-    async run ({client, roomId, event, mxid, displayname, blacklist}){
+    // async run ({client, roomId, event, mxid, displayname, blacklist}){
+    async run (datapoints){
 
         //if no content in message
-        if (! event["content"]) return;
+        if (! datapoints.event["content"]) return;
 
         // Don't handle non-text events
-        if (event["content"]["msgtype"] !== "m.text") return;
+        if (datapoints.event["content"]["msgtype"] !== "m.text") return;
 
         //filter out events sent by the bot itself.
-        if (event["sender"] === await client.getUserId()) return;
+        if (datapoints.event["sender"] === await datapoints.client.getUserId()) return;
 
         //grab the content from the message, and put it to lowercase to prevent using caps to evade
-        let scannableContent = event["content"]["body"].toLowerCase()
+        let scannableContent = datapoints.event["content"]["body"].toLowerCase()
+
+        // this.commands.run(datapoints, scannableContent)
 
         //scan for common scam words
         if (includesWord(scannableContent, [this.keywords.scams.currencies, this.keywords.scams.socials, this.keywords.scams.verbs])) {
         
             //if the scam is posted in the room deticated to posting tg scams
-            if(roomId == this.logRoom){
+            if(datapoints.roomId == this.logRoom){
 
                 //confirm it matches the keywords
                 client.sendEvent(roomId, "m.reaction", ({
                     "m.relates_to": {
-                        "event_id":event["event_id"],
+                        "event_id":datapoints.event["event_id"],
                         "key":"✅",
                         "rel_type": "m.annotation"
                     }
@@ -56,13 +67,13 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(client, roomId, this.logRoom, event, mxid)
+                sendjson.send(datapoints, this.logRoom,)
 
                 //React to the message with a little warning so its obvious what msg im referring to
-                await client.sendEvent(roomId, "m.reaction", ({
+                await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
 
                     "m.relates_to": {
-                        "event_id":event["event_id"],
+                        "event_id":datapoints.event["event_id"],
                         "key":"🚨 scam! 🚨",
                         "rel_type": "m.annotation"
                     }
@@ -76,19 +87,19 @@ class message {
                     .finally(async () => {
 
                         //if the room is in mute mode, dont respond
-                        if (Boolean(this.config.getConfig(roomId, "muted"))) return
+                        if (Boolean(this.config.getConfig(datapoints.roomId, "muted"))) return
 
                         // //send warning message
-                        // let responseID = await client.sendText(roomId, this.keywords.scams.response)
+                        // let responseID = await client.sendText(datapoints.roomId, this.keywords.scams.response)
 
                         // //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
-                        // this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID})
+                        // this.tgScamResponses.set(event["event_id"], {"roomId":datapoints.roomId, "responseID":responseID})
 
                         //send warning message
-                        client.sendHtmlText(roomId, this.keywords.scams.response)
+                        datapoints.client.sendHtmlText(datapoints.roomId, this.keywords.scams.response)
                         
                             //if warning is sent, associate it with the original scam for later redaction
-                            .then(responseID => { this.tgScamResponses.set(event["event_id"], {"roomId":roomId, "responseID":responseID}) })
+                            .then(responseID => { this.tgScamResponses.set(datapoints.event["event_id"], {"roomId":datapoints.roomId, "responseID":responseID}) })
 
                             //catch error without crashing
                             .catch(() => {})
@@ -96,7 +107,7 @@ class message {
                             .finally(async () => {
 
                                 //if the message is replying
-                                let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
+                                let replyRelation = datapoints.event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
                                 if (replyRelation){
 
                                     //pull the id of the event its replying to
@@ -104,7 +115,7 @@ class message {
                                         let replyID = replyRelation["m.in_reply_to"]["event_id"]
 
                                         //fetch the event from that id
-                                        let repliedEvent = await client.getEvent(roomId, replyID)
+                                        let repliedEvent = await datapoints.client.getEvent(datapoints.roomId, replyID)
                                 
                                         //make the content scanable
                                         let scannableContent = repliedEvent["content"]["body"].toLowerCase()
@@ -118,35 +129,35 @@ class message {
 
                                 }
 
-                                let scamAction = this.config.getConfig(roomId, "scamAction")
+                                let scamAction = this.config.getConfig(datapoints.roomId, "scamAction")
 
                                 let reason = "Scam Likely"
 
                                 if (!scamAction) {
 
-                                    if ( await client.userHasPowerLevelForAction(mxid, roomId, "kick") ) {
+                                    if ( await datapoints.client.userHasPowerLevelForAction(datapoints.mxid, datapoints.roomId, "kick") ) {
 
-                                        client.kickUser(event["sender"], roomId, reason).catch(() => {})
+                                        datapoints.client.kickUser(datapoints.event["sender"], datapoints.roomId, reason).catch(() => {})
 
                                     }
 
                                 } else if (scamAction == -1) {
 
-                                    if ( await client.userHasPowerLevelForAction(mxid, roomId, "redact") ) {
+                                    if ( await datapoints.client.userHasPowerLevelForAction(datapoints.mxid, datapoints.roomId, "redact") ) {
 
-                                        client.redactEvent(roomId, event["event_id"], reason).catch(() => {})
+                                        datapoints.client.redactEvent(datapoints.roomId, datapoints.event["event_id"], reason).catch(() => {})
 
                                     }
 
                                 } else if (scamAction == 1 ) {
 
-                                    //     userHasPowerLevelFor(userId: string, roomId: string, eventType: string, isState: boolean): Promise<boolean>;
+                                    //     userHasPowerLevelFor(userId: string, datapoints.roomId: string, eventType: string, isState: boolean): Promise<boolean>;
                                     // setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
-                                    // client.setUserPowerLevel(user, roomId, newlevel)
+                                    // datapoints.client.setUserPowerLevel(user, roomId, newlevel)
                                     
 
 
-                                    // if ( await client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
+                                    // if ( await datapoints.client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
 
 
 
@@ -160,12 +171,82 @@ class message {
 
             }
 
-        //check uptime
-        }  else if (!(await client.userHasPowerLevelFor(mxid, roomId, "m.room.message", false))) { 
+        //check if can respond
+        } else if (!(await datapoints.client.userHasPowerLevelFor(datapoints.mxid, datapoints.roomId, "m.room.message", false))) { 
             
             return 
         
-        } else if (scannableContent.includes("+uptime")) {
+        } else {
+
+            // } else 
+
+            let contentByWords = scannableContent.split(" ")
+
+            //if the user is trying to mention the bot
+            if (scannableContent.includes(datapoints.mxid) || scannableContent.includes(datapoints.displayname)) {
+
+                //if that mention is the start of the message that can be used as the prefix
+                if ((contentByWords[0].includes(datapoints.mxid) || contentByWords[0].includes(datapoints.displayname)) && (contentByWords.length > 1)){
+
+                    //if that is a command, run the command
+                    let handler = this.commands.get(contentByWords[1])
+                    
+                    if (!handler) {
+
+                        await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
+
+                            "m.relates_to": {
+                                "event_id":datapoints.event["event_id"],
+                                "key":"❌ | invalid cmd",
+                                "rel_type": "m.annotation"
+                            }
+        
+                        }))
+
+                        return
+
+                    }   
+
+                    handler.run(datapoints, {scannableContent, contentByWords})
+
+                }
+
+            } else {
+                
+                //update to check config later 
+                let prefix = "+"
+
+                if ( ! scannableContent.startsWith(prefix) ) return 
+
+
+                //if that is a command, run the command
+                let handler = this.commands.get(contentByWords[0].substring(prefix.length))
+
+                if (!handler) {
+
+                    await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
+
+                        "m.relates_to": {
+                            "event_id":datapoints.event["event_id"],
+                            "key":"❌ | invalid cmd",
+                            "rel_type": "m.annotation"
+                        }
+    
+                    }))
+
+                    return
+
+                }   
+
+                handler.run(datapoints, {scannableContent, contentByWords})
+
+            }
+
+        }
+
+        /*
+        
+        if (scannableContent.includes("+uptime")) {
 
             //let user know that the bot is online even if the matrix room is being laggy and the message event isnt comming across
             client.sendReadReceipt(roomId, event["event_id"])
@@ -471,6 +552,7 @@ class message {
             client.sendText(roomId, greeting)
             
         }
+        */
 
     }
 

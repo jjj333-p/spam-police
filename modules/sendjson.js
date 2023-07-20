@@ -15,7 +15,7 @@ class Sendjson {
 
     }
 
-    async send (client, roomId, logchannel, event, mxid){ 
+    async send ({client, roomId, event, mxid}, logchannel){ 
 
         //if the message is replying
         let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]

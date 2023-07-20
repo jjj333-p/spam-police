@@ -65,7 +65,7 @@ client.on("room.event", async (roomId, event) => {
         event:event,
         mxid:mxid,
         displayname:displayname,
-        banlist:banlist
+        blacklist:banlist
     })
 
 })

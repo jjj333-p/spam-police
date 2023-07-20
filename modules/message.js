@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url);
 import { Sendjson } from "./sendjson.js"
 
 import { Uptime } from "./commands/uptime.js"
+import { Join } from "./commands/join.js"
 
 var sendjson = new Sendjson()
 
@@ -28,7 +29,8 @@ class message {
         //create collection of different commands to run
         this.commands = new Map()
 
-        this.commands.set("uptime", new Uptime)
+        this.commands.set("uptime", new Uptime())
+        this.commands.set("join", new Join())
         
     }
 
@@ -207,7 +209,16 @@ class message {
 
                     }   
 
-                    handler.run(datapoints, {scannableContent, contentByWords})
+                    handler.run(datapoints, {
+                        scannableContent:scannableContent,
+                        contentByWords:contentByWords,
+                        keywords:this.keywords,
+                        logRoom:this.logRoom,
+                        commandRoom:this.commandRoom,
+                        config:this.config,
+                        authorizedUsers:this.authorizedUsers,
+                        offset:1
+                    })
 
                 }
 
@@ -238,7 +249,16 @@ class message {
 
                 }   
 
-                handler.run(datapoints, {scannableContent, contentByWords})
+                handler.run(datapoints, {
+                    scannableContent:scannableContent,
+                    contentByWords:contentByWords,
+                    keywords:this.keywords,
+                    logRoom:this.logRoom,
+                    commandRoom:this.commandRoom,
+                    config:this.config,
+                    authorizedUsers:this.authorizedUsers,
+                    offset:0
+                })
 
             }
 
@@ -246,91 +266,7 @@ class message {
 
         /*
         
-        if (scannableContent.includes("+uptime")) {
-
-            //let user know that the bot is online even if the matrix room is being laggy and the message event isnt comming across
-            client.sendReadReceipt(roomId, event["event_id"])
-
-            //maths
-            let seconds = process.uptime()
-
-            let minutes = Math.floor(seconds/60)
-
-            let rSeconds = seconds - (minutes*60)
-
-            let hours = Math.floor(minutes/60)
-
-            let rMinutes = minutes - (hours*60)
-
-            //send the uptime to the room
-            client.sendHtmlText(roomId, ("<blockquote>\n<p>" + seconds + "</p>\n</blockquote>\n<p>" + hours + " hours, " + rMinutes + " minutes, and " + Math.floor(rSeconds) + " seconds.</p>"))
-
-        //join cmd 
-        } else if (scannableContent.startsWith("+join")) {
-
-            if(roomId != this.commandRoom){
-
-                client.sendNotice(roomId, "❌ | you must run +join commands in https://matrix.to/#/" + this.commandRoom + "?via=" + mxid.split(":")[1])
-
-                return
-
-            }
-
-            //grep out the room indicated by the user
-            let joinroom = event["content"]["body"].split(" ")[1]
-
-            //evaluate if its a valid alias
-            client.resolveRoom(joinroom).then(async joinroomid => {
-
-                //check blacklist for a blacklisted reason
-                let blReason = blacklist.match(joinroomid)
-
-                //if there is a reason that means the room was blacklisted
-                if(blReason) {
-
-                    //send error
-                    client.sendHtmlNotice(roomId, "❌ | This room is blacklisted for reason <code>" + blReason + "</code>.")
-
-                    //dont continue trying to join
-                    return
-
-                }
-
-                //try to join
-                client.joinRoom(joinroomid).then(() => {
-
-                    //greeting message
-                    let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). " + 
-                    "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
-                    "For more information please visit https://github.com/jjj333-p/spam-police"
-
-                    //try to send the greeting
-                    client.sendNotice(joinroomid, greeting).then(() => {
-
-                        //confirm joined and can send messages
-                        client.sendNotice(roomId, "✅ | successfully joined room!")
-
-                    }).catch(err => {
-
-                        //confirm could join, but show error that couldn't send messages
-                        client.sendNotice(roomId, "🍃 | I was able to join the provided room however I am unable to send messages, and therefore will only be able to react to messages with my warning.")
-
-                    })
-
-                }).catch(err => {
-
-                    //throw error about joining room
-                    client.sendHtmlNotice(roomId, "❌ | I ran into the following error while trying to join that room:<blockquote>"  + JSON.stringify(err.body, null, 2) + "</blockquote>")
-
-                })
-
-            }).catch(err => {
-
-                //throw error about invalid alias
-                client.sendHtmlNotice(roomId, "❌ | I ran into the following error while trying to resolve that room ID:<blockquote>" + err.message + "</blockquote>")
-
-            })
-
+       
         } else if (scannableContent.startsWith("+leave")){
 
             //verify is sent by an admin

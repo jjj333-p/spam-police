@@ -1,15 +1,17 @@
-//sendjson class
+//misc imports
 import { PowerLevelAction } from "matrix-bot-sdk"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 import { Sendjson } from "./sendjson.js"
 
+// commands
 import { Uptime } from "./commands/uptime.js"
 import { Join } from "./commands/join.js"
 import { Leave } from "./commands/leave.js"
 import { Unblacklist } from "./commands/unblacklist.js";
 import { Restart } from "./commands/restart.js";
+import { Mute } from "./commands/mute.js";
 
 var sendjson = new Sendjson()
 
@@ -37,6 +39,7 @@ class message {
         this.commands.set("leave", new Leave())
         this.commands.set("unblacklist", new Unblacklist())
         this.commands.set("restart", new Restart())
+        this.commands.set("mute", new Mute())
         
     }
 
@@ -275,41 +278,7 @@ class message {
         //mute cmd
         } else if (scannableContent.startsWith("+mute")){
             
-            //im equivicating muting the bot to redacting its messages right after they are sent.
-            if (!await client.userHasPowerLevelForAction(event["sender"], roomId, "redact")){  //"redact")){
-
-                //error msg
-                client.sendNotice(roomId, "🍃 | This command requires you have a powerlevel high enough to redact other users messages.")
-
-                //dont run the cmd
-                return
-
-            }
-
-            //confirm got message, idk if this actually works lmao
-            client.sendReadReceipt(roomId, event["event_id"])
-
-            //grab the opposite of what is in the db
-            let mute = !Boolean(this.config.getConfig(roomId, "muted"))
-
-            if (mute) {
-
-                client.sendNotice(roomId, "Putting the bot into mute mode for this channel...")
-
-            } else {
-
-                client.sendNotice(roomId, "Taking the bot out of mute mode for this channel...")
-                
-            }
-
-            //set the new config
-            this.config.setConfig(roomId, "muted", mute, response => {
-
-                //send confirmation
-                client.sendNotice(roomId, response)
-
-            })
-
+            
         } else if (scannableContent.startsWith("+banlist")){
 
             //parce the room that the cmd is referring to

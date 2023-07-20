@@ -202,6 +202,7 @@ class message {
                     //if that is a command, run the command
                     let handler = this.commands.get(contentByWords[1])
                     
+                    //if no handler its not a valid command
                     if (!handler) {
 
                         await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
@@ -218,6 +219,7 @@ class message {
 
                     }   
 
+                    //run the command
                     handler.run(datapoints, {
                         scannableContent:scannableContent,
                         contentByWords:contentByWords,
@@ -242,6 +244,7 @@ class message {
                 //if that is a command, run the command
                 let handler = this.commands.get(contentByWords[0].substring(prefix.length))
 
+                //if no handler, than its not a valid command
                 if (!handler) {
 
                     await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
@@ -258,6 +261,7 @@ class message {
 
                 }   
 
+                //run the handler
                 handler.run(datapoints, {
                     scannableContent:scannableContent,
                     contentByWords:contentByWords,
@@ -272,44 +276,6 @@ class message {
             }
 
         }
-
-        /*
- 
-        //mute cmd
-        } else if (scannableContent.startsWith("+mute")){
-            
-            
-        } else if (scannableContent.startsWith("+banlist")){
-
-            //parce the room that the cmd is referring to
-            let banlist = event["content"]["body"].split(" ")[1]
-
-            //use here so people dont have to type the room alias on an asinine client
-            if (banlist.toLowerCase() == "here") banlist = roomId
-
-            //resolve alias to an id for easier use
-            client.resolveRoom(banlist).then(banlistid=> {
-
-                //make banlist rule
-                client.sendStateEvent(banlistid, "m.policy.rule.user", ("rule:" + scannableContent.split(" ")[2]), {
-                    "entity": scannableContent.split(" ")[2],
-                    "reason": "impersonation",
-                    "recommendation": "org.matrix.mjolnir.ban"
-                },)
-
-            }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
-
-        } else if (scannableContent.includes(mxid) || scannableContent.includes(displayname)) {
-
-            //greeting message
-            let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 
-            "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
-            "For more information please visit https://github.com/jjj333-p/spam-police"
-
-            client.sendText(roomId, greeting)
-            
-        }
-        */
 
     }
 

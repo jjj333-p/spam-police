@@ -17,6 +17,7 @@ const accessToken     = loginParsed["login-token"];
 const logRoom         = loginParsed["log-room"];
 const commandRoom     = loginParsed["command-room"];
 const authorizedUsers = loginParsed["authorized-users"];
+const name            = loginParsed["name"]
 
 //the bot sync something idk bro it was here in the example so i dont touch it ;-;
 const storage = new SimpleFsStorageProvider("bot.json");
@@ -48,6 +49,66 @@ client.start().then( async () => {
 
     //get mxid
     mxid = await client.getUserId()
+
+    //fetch rooms the bot is in
+    let rooms = await client.getJoinedRooms()
+
+    //slowly loop through rooms to avoid ratelimit
+    let i = setInterval(async () => {
+
+        //if theres no rooms left to work through, stop the loop
+        if(!rooms) {
+            
+            clearInterval(i)
+
+            return
+
+        }
+
+        //work through the next room on the list
+        let currentRoom = rooms.pop()
+
+        //debug
+        console.log("Setting displayname for room " + currentRoom)
+
+        //fetch the room list of members with their profile data
+        let mwp = (await client.getJoinedRoomMembersWithProfiles(currentRoom).catch(() => {console.log("error " + currentRoom)}))
+        
+        //variable to store the current display name of the bot
+        let cdn = ""
+
+        //if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
+        if (mwp) cdn = mwp[mxid]["display_name"]
+
+        //fetch prefix for that room
+        let prefix = config.getConfig(currentRoom, "prefix")
+
+        //default prefix if none set
+        if (!prefix)  prefix = "+"
+
+        //establish desired display name based on the prefix
+        let ddn = prefix + " | " + name
+
+        //if the current display name isnt the desired one
+        if (cdn != ddn) {
+
+            //fetch avatar url so we dont overrite it
+            let avatar_url = (await client.getUserProfile(mxid))["avatar_url"]
+            
+            //send member state with the new displayname
+            client.sendStateEvent(currentRoom, "m.room.member", mxid, {
+                "avatar_url":avatar_url,
+                "displayname":ddn,
+                "membership":"join"
+            })
+                .then(console.log("done " + currentRoom))
+
+        }
+
+    // 3 second delay to avoid ratelimit
+    }, 3000)
+
+
     displayname = (await client.getUserProfile(mxid))["displayname"]
 
 });

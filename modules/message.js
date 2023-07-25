@@ -234,9 +234,12 @@ class message {
                 }
 
             } else {
+
+                //fetch prefix for that room
+                let prefix = this.config.getConfig(datapoints.roomId, "prefix")
                 
-                //update to check config later 
-                let prefix = "+"
+                //default prefix if none set
+                if (!prefix)  prefix = "+"
 
                 if ( ! scannableContent.startsWith(prefix) ) return 
 

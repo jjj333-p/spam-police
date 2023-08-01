@@ -18,8 +18,10 @@ class Banlist {
                 "reason": "impersonation",
                 "recommendation": "org.matrix.mjolnir.ban"
             },)
+                .catch(err => client.sendHtmlNotice(roomId, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
 
-        }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
+
+            }).catch(err => client.sendHtmlNotice(roomId, "<p>🍃 | I unfortunately ran into the following error while trying to resolve that room:\n</p><code>" + err+ "</code>"))
         
     }
 

@@ -41,6 +41,7 @@ class message {
         this.commands.set("unblacklist", new Unblacklist())
         this.commands.set("restart", new Restart())
         this.commands.set("mute", new Mute())
+        this.commands.set("banlist", new Banlist)
         
     }
 

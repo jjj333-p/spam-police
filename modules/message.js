@@ -191,13 +191,22 @@ class message {
 
             // } else 
 
-            let contentByWords = scannableContent.split(" ")
+            let contentByWords = datapoints.event["content"]["body"].split(" ")
+            let displaynameByWords = datapoints.displayname.split(" ")
 
             //if the user is trying to mention the bot
-            if (scannableContent.includes(datapoints.mxid) || scannableContent.includes(datapoints.displayname)) {
+            if (datapoints.event["content"]["body"].includes(datapoints.mxid) || datapoints.event["content"]["body"].includes(datapoints.displayname)) {
 
                 //if that mention is the start of the message that can be used as the prefix
-                if ((contentByWords[0].includes(datapoints.mxid) || contentByWords[0].includes(datapoints.displayname)) && (contentByWords.length > 1)){
+                if (
+                        (
+                            contentByWords[0].includes(datapoints.mxid) 
+                            || 
+                            datapoints.event["content"]["body"].startsWith(datapoints.displayname)
+                        ) 
+                        && 
+                        (contentByWords.length > displaynameByWords.length)
+                    ){
 
                     //if that is a command, run the command
                     let handler = this.commands.get(contentByWords[1])
@@ -228,8 +237,17 @@ class message {
                         commandRoom:this.commandRoom,
                         config:this.config,
                         authorizedUsers:this.authorizedUsers,
-                        offset:1
+                        offset:datapoints.displaynameByWords.length
                     })
+
+                } else {
+
+                    //greeting message
+                    let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 
+                    "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
+                    "For more information please visit https://github.com/jjj333-p/spam-police"
+
+                    datapoints.client.sendText(datapoints.roomId, greeting)
 
                 }
 

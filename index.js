@@ -37,7 +37,7 @@ eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, au
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 
 //preallocate variables so they have a global scope
-let mxid; let displayname;
+let mxid; 
 
 //Start Client
 client.start().then( async () => {
@@ -57,7 +57,7 @@ client.start().then( async () => {
     let i = setInterval(async () => {
 
         //if theres no rooms left to work through, stop the loop
-        if(!rooms) {
+        if(rooms.length < 1) {
             
             clearInterval(i)
 
@@ -109,7 +109,7 @@ client.start().then( async () => {
     }, 3000)
 
 
-    displayname = (await client.getUserProfile(mxid))["displayname"]
+    // displayname = (await client.getUserProfile(mxid))["displayname"]
 
 });
 
@@ -120,14 +120,39 @@ client.on("room.event", async (roomId, event) => {
     let handler = eventhandlers.get(event["type"])
 
     //if there is a handler for that event, run it.
-    if (handler) handler.run({
-        client:client,
-        roomId:roomId,
-        event:event,
-        mxid:mxid,
-        displayname:displayname,
-        blacklist:banlist
-    })
+    if (handler) {
+
+        //fetch the room list of members with their profile data
+        let mwp = (await client.getJoinedRoomMembersWithProfiles(roomId).catch(() => {console.log("error " + roomId)}))
+
+        //variable to store the current display name of the bot
+        let cdn = ""
+
+        //if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
+        if (mwp) cdn = mwp[mxid]["display_name"]  
+        else {
+
+            //fetch prefix for that room
+            let prefix = config.getConfig(roomId, "prefix")
+
+            //default prefix if none set
+            if (!prefix)  prefix = "+"
+
+            //establish desired display name based on the prefix
+            cdn = prefix + " | " + name
+
+        }
+        
+        handler.run({
+            client:client,
+            roomId:roomId,
+            event:event,
+            mxid:mxid,
+            displayname:cdn,
+            blacklist:banlist
+        })
+
+    }
 
 })
 

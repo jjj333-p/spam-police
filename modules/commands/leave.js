@@ -2,13 +2,13 @@ class Leave {
 
     constructor(){}
 
-    async run ({client, roomId, event, blacklist}, {authorizedUsers}){
+    async run ({client, roomId, event, blacklist}, {authorizedUsers,offset}){
 
         //verify is sent by an admin
         if ( authorizedUsers.some(u => u == event["sender"]) ){
 
             //parce out the possible room id
-            let leaveRoom = event["content"]["body"].split(" ")[1]
+            let leaveRoom = event["content"]["body"].split(" ")[1+offset]
 
             //"+leave" as well as a space afterwards
             let substringStart = 7

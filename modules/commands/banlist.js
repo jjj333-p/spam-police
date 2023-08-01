@@ -1,21 +1,26 @@
-} else if (scannableContent.startsWith("+banlist")){
+class Unblacklist {
 
-    //parce the room that the cmd is referring to
-    let banlist = event["content"]["body"].split(" ")[1]
+    constructor(){}
 
-    //use here so people dont have to type the room alias on an asinine client
-    if (banlist.toLowerCase() == "here") banlist = roomId
+    async run ({client, roomId, event, blacklist}, {scannableContent,offset}){
+        //parce the room that the cmd is referring to
+        let banlist = event["content"]["body"].split(" ")[1+offset]
 
-    //resolve alias to an id for easier use
-    client.resolveRoom(banlist).then(banlistid=> {
+        //use here so people dont have to type the room alias on an asinine client
+        if (banlist.toLowerCase() == "here") banlist = roomId
 
-        //make banlist rule
-        client.sendStateEvent(banlistid, "m.policy.rule.user", ("rule:" + scannableContent.split(" ")[2]), {
-            "entity": scannableContent.split(" ")[2],
-            "reason": "impersonation",
-            "recommendation": "org.matrix.mjolnir.ban"
-        },)
+        //resolve alias to an id for easier use
+        client.resolveRoom(banlist).then(banlistid=> {
 
-    }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
+            //make banlist rule
+            client.sendStateEvent(banlistid, "m.policy.rule.user", ("rule:" + scannableContent.split(" ")[2]), {
+                "entity": scannableContent.split(" ")[2],
+                "reason": "impersonation",
+                "recommendation": "org.matrix.mjolnir.ban"
+            },)
+
+        }).catch(err => client.sendNotice(roomId, "🍃 | I unfortunately ran into the following error while trying to run that command\n" + err))
+        
+    }
 
 }

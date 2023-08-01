@@ -12,6 +12,7 @@ import { Leave } from "./commands/leave.js"
 import { Unblacklist } from "./commands/unblacklist.js";
 import { Restart } from "./commands/restart.js";
 import { Mute } from "./commands/mute.js";
+import { Banlist } from "./commands/banlist.js";
 
 var sendjson = new Sendjson()
 

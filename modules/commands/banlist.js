@@ -1,4 +1,4 @@
-class Unblacklist {
+class Banlist {
 
     constructor(){}
 
@@ -24,3 +24,5 @@ class Unblacklist {
     }
 
 }
+
+export {Banlist}

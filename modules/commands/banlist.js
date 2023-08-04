@@ -3,14 +3,26 @@ class Banlist {
     constructor(){}
 
     async run ({client, roomId, event, blacklist}, {scannableContent,offset, contentByWords}){
+
         //parce the room that the cmd is referring to
         let banlist = contentByWords[2+offset]
 
         //use here so people dont have to type the room alias on an asinine client
         if (banlist.toLowerCase() == "here") banlist = roomId
 
+        console.log(banlist)
+
         //resolve alias to an id for easier use
-        client.resolveRoom(banlist).then(banlistid=> {
+        client.resolveRoom(banlist).then(async banlistid=> {
+
+            //make sure the user trying to write to the banlist can write to the banlist
+            if ( ! await client.userHasPowerLevelForAction(event["sender"], banlistid, "ban") ) {
+
+                client.sendNotice(roomId, "❌ | You don't have sufficent permission in the banlist room.")
+                
+                return
+            
+            }
 
             //account for all the chars when spit by spaces
             let reasonStart = offset+3+1

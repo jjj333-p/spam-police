@@ -95,6 +95,7 @@ class Sendjson {
             "url":linktofile,
         })    
 
+        //easy reaction for moderators
         let checkMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
             "m.relates_to": {
                 "event_id":logmsgid,
@@ -103,6 +104,7 @@ class Sendjson {
             }
         }))
 
+        //easy reaction for moderators
         let xMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
             "m.relates_to": {
                 "event_id":logmsgid,
@@ -111,8 +113,10 @@ class Sendjson {
             }
         }))
 
+        //callback to confirm its a scam and write to banlist
         async function confirmScam (){
 
+            //generate reason
             let reason = "telegram scam in " + mainRoomAlias + " (see " + await client.getPublishedAlias(logchannel) + " )"
 
              //make banlist rule
@@ -123,21 +127,23 @@ class Sendjson {
             },)
                 .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
 
-            // client.redactEvent(logchannel)
-
         }
 
+        //callback to mark it as not a scam and delete it
         async function denyScam (userReactionId) {
 
+            //delete events already existing
             client.redactEvent(logchannel, logmsgid, "not a scam")
             client.redactEvent(logchannel, logfileid, "not a scam")
             client.redactEvent(logchannel, userReactionId, "related reaction")
             
+            //didnt await these earler for speed and performance, so need to await the promises now
             client.redactEvent(logchannel, await checkMessagePromise, "related reaction")
             client.redactEvent(logchannel,  await xMessagePromise, "related reaction")
 
         }
 
+        //add the callbacks to the map to be called upon reaction event
         scamBlEntries.set(logmsgid, {
             confirmScam:confirmScam,
             denyScam:denyScam

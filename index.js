@@ -8,6 +8,7 @@ import { blacklist } from "./modules/blacklist.js";
 import { redaction } from "./modules/redaction.js";
 import { database } from "./modules/db.js";
 import { message } from "./modules/message.js";
+import { Reaction } from "./modules/reaction.js";
 
 //Parse YAML configuration file
 const loginFile   = readFileSync('./db/login.yaml', 'utf8');
@@ -35,9 +36,12 @@ const config = new database()   // Database for the config
 const banlist = new blacklist() // Blacklist object
 eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
+eventhandlers.set("m.reaction", new Reaction(logRoom))
 
 //preallocate variables so they have a global scope
 let mxid; 
+
+let scamBlEntries = new Map()
 
 //Start Client
 client.start().then( async () => {
@@ -116,6 +120,8 @@ client.start().then( async () => {
 //when the client recieves an event
 client.on("room.event", async (roomId, event) => {
 
+    if (event["sender"] == mxid) {return}
+
     //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])
 
@@ -149,7 +155,8 @@ client.on("room.event", async (roomId, event) => {
             event:event,
             mxid:mxid,
             displayname:cdn,
-            blacklist:banlist
+            blacklist:banlist,
+            scamBlEntries:scamBlEntries
         })
 
     }

@@ -1,3 +1,4 @@
+
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -15,7 +16,7 @@ class Sendjson {
 
     }
 
-    async send ({client, roomId, event, mxid}, logchannel){ 
+    async send ({client, roomId, event, mxid, scamBlEntries}, logchannel){ 
 
         //if the message is replying
         let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
@@ -80,11 +81,11 @@ class Sendjson {
         let via = mxid.split(":")[1]
     
         //send log message
-        await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] 
+        let logmsgid = await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] 
         + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"] + "?via=" + via))
     
         //send the file that was uploaded
-        await client.sendMessage(logchannel, {
+        let logfileid = await client.sendMessage(logchannel, {
             "body":(roomId+ "@" + Date.now() + ".json"),
             "info": {
                 "mimetype": "text/x-go",
@@ -93,6 +94,54 @@ class Sendjson {
             "msgtype":"m.file",
             "url":linktofile,
         })    
+
+        let checkMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
+            "m.relates_to": {
+                "event_id":logmsgid,
+                "key":"✅",
+                "rel_type": "m.annotation"
+            }
+        }))
+
+        let xMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
+            "m.relates_to": {
+                "event_id":logmsgid,
+                "key":"❌",
+                "rel_type": "m.annotation"
+            }
+        }))
+
+        async function confirmScam (){
+
+            let reason = "telegram scam in " + mainRoomAlias + " (see " + await client.getPublishedAlias(logchannel) + " )"
+
+             //make banlist rule
+            client.sendStateEvent(logchannel, "m.policy.rule.user", ("rule:" + event["sender"]), {
+                "entity": event["sender"],
+                "reason": reason,
+                "recommendation": "org.matrix.mjolnir.ban"
+            },)
+                .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
+
+            // client.redactEvent(logchannel)
+
+        }
+
+        async function denyScam (userReactionId) {
+
+            client.redactEvent(logchannel, logmsgid, "not a scam")
+            client.redactEvent(logchannel, logfileid, "not a scam")
+            client.redactEvent(logchannel, userReactionId, "related reaction")
+            
+            client.redactEvent(logchannel, await checkMessagePromise, "related reaction")
+            client.redactEvent(logchannel,  await xMessagePromise, "related reaction")
+
+        }
+
+        scamBlEntries.set(logmsgid, {
+            confirmScam:confirmScam,
+            denyScam:denyScam
+        })
         
     }
 

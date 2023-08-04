@@ -69,7 +69,7 @@ class message {
             if(datapoints.roomId == this.logRoom){
 
                 //confirm it matches the keywords
-                client.sendEvent(roomId, "m.reaction", ({
+                datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
                     "m.relates_to": {
                         "event_id":datapoints.event["event_id"],
                         "key":"✅",
@@ -80,7 +80,7 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(datapoints, this.logRoom,)
+                sendjson.send(datapoints, this.logRoom, )
 
                 //React to the message with a little warning so its obvious what msg im referring to
                 await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({

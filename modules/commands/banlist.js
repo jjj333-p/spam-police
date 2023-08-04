@@ -10,7 +10,6 @@ class Banlist {
         //use here so people dont have to type the room alias on an asinine client
         if (banlist.toLowerCase() == "here") banlist = roomId
 
-        console.log(banlist)
 
         //resolve alias to an id for easier use
         client.resolveRoom(banlist).then(async banlistid=> {

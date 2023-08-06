@@ -80,7 +80,7 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(datapoints, this.logRoom, )
+                this.sendjson.send(datapoints, this.logRoom, datapoints.banListReader)
 
                 //React to the message with a little warning so its obvious what msg im referring to
                 await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({

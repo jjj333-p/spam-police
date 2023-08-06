@@ -9,6 +9,7 @@ import { redaction } from "./modules/redaction.js";
 import { database } from "./modules/db.js";
 import { message } from "./modules/message.js";
 import { Reaction } from "./modules/reaction.js";
+import { BanlistReader } from "./modules/banlistReader.js";
 
 //Parse YAML configuration file
 const loginFile   = readFileSync('./db/login.yaml', 'utf8');
@@ -33,10 +34,11 @@ const client = new MatrixClient(homeserver, accessToken, storage);
 let eventhandlers = new Map()
 
 const config = new database()   // Database for the config
-const banlist = new blacklist() // Blacklist object
+const nogoList = new blacklist() // Blacklist object
 eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 eventhandlers.set("m.reaction", new Reaction(logRoom))
+eventhandlers.set("m.policy.rule.user", new BanlistReader())
 
 //preallocate variables so they have a global scope
 let mxid; 
@@ -155,8 +157,9 @@ client.on("room.event", async (roomId, event) => {
             event:event,
             mxid:mxid,
             displayname:cdn,
-            blacklist:banlist,
-            scamBlEntries:scamBlEntries
+            blacklist:nogoList,
+            scamBlEntries:scamBlEntries,
+            banListReader:eventhandlers.get("m.policy.rule.user")
         })
 
     }
@@ -165,6 +168,7 @@ client.on("room.event", async (roomId, event) => {
 
 client.on("room.leave", (roomId) => {
 
-    banlist.add(roomId, "kicked")
+    nogoList.add(roomId, "kicked")
 
 })
+

@@ -40,11 +40,13 @@ class Sendjson {
             }
     
         }
+
+        //check if already on banlist
     
         //limit duplicates
-        if (this.tgScams.some(scam => (scam["content"]["body"] == event["content"]["body"]) && (scam["room_id"] == event["room_id"]) && (scam["sender"] == event["sender"]))) { return } else {
+        if (this.tgScams.some(scam => (scam.event["content"]["body"] == event["content"]["body"]) && (scam.roomId == roomId) && (scam.event["sender"] == event["sender"]))) { return } else {
     
-            this.tgScams.push(event)
+            this.tgScams.push({event:event, roomId:roomId})
     
         }
     
@@ -125,6 +127,29 @@ class Sendjson {
                 "reason": reason,
                 "recommendation": "org.matrix.mjolnir.ban"
             },)
+
+                .then(async () => {
+
+                    //delete reactions to limit duplicate responses
+                    //didnt await these earler for speed and performance, so need to await the promises now
+                    client.redactEvent(logchannel, await checkMessagePromise, "related reaction").catch(() => {})
+                    client.redactEvent(logchannel,  await xMessagePromise, "related reaction").catch(() => {})
+                
+                    //confirm ban for clients that cant read banlist events
+                    let checkMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
+                        "m.relates_to": {
+                            "event_id":logmsgid,
+                            "key":"🔨 | banned",
+                            "rel_type": "m.annotation"
+                        }
+                    }))
+                
+                })
+
+                //delete mod response even if it fails to enable trying again
+                .finally(async () => { client.redactEvent(logchannel, userReactionId, "related reaction").catch(() => {}) })
+                
+                //catch errors with sending the state event
                 .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
 
         }

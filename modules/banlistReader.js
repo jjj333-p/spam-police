@@ -1,6 +1,8 @@
 class BanlistReader {
 
-    constructor() {
+    constructor(client) {
+
+        this.client = client
 
         this.rooms = new Map()
 
@@ -8,14 +10,14 @@ class BanlistReader {
 
     async syncRoom(roomId){
 
-        let list = (await client.getRoomState(roomId)).filter(event => event.type == "m.policy.rule.user")
+        let list = (await this.client.getRoomState(roomId)).filter(event => event.type == "m.policy.rule.user")
 
         //organize away that list for later
         this.rooms.set(roomId, list)
 
     }
 
-    async run({client, roomId, event}) {
+    async run({roomId, event}) {
 
         //fetch room's list of banlist events
         let roomEvents = this.rooms.get(roomId);
@@ -30,7 +32,7 @@ class BanlistReader {
         else{ roomEvents.push(event); }
 
         //confirm that the bot updated its list with the new event
-        client.sendReadReceipt(roomId, event["event_id"])
+        this.client.sendReadReceipt(roomId, event["event_id"])
         
     }
 
@@ -45,17 +47,55 @@ class BanlistReader {
         //look through all the state events
         let match = roomEvents.find(se => {
 
+            //if the ban was erased
+            if (!se["content"] ) {return false}
+
             //parce out the mxid from the key
             let potentialMXID = se["state_key"].substring(5)
+
+            //if mismatch, its invalid
+            //mothet sidev
+            if ( (se["content"]["entity"] != potentialMXID) || ( se["content"]["recommendation"] != "org.matrix.mjolnir.ban"))
+            {return false}
 
             //if exact match, it is match
             if( potentialMXID == matchMXID) { return true }
 
+            //if theres no wildcards, and not an exact match, its not a match
             if( ! potentialMXID.includes("*") ) { return false}
 
+            //split around the wildcards
             let p = potentialMXID.split("*")
 
-            if( ! matchMXID.startsWith(p.shift()))
+            //check before first wildcard
+            let firstpart = p.shift()
+            if( ! matchMXID.startsWith( firstpart ) ) {return false}
+
+            //check after last wildcard
+            let lastpart = p.pop()
+            if( ! matchMXID.endsWith( lastpart ) ) {return false}
+
+            //parce off the evaluated start and end
+            matchMXID = matchMXID.substring(firstpart.length, (matchMXID.length - lastpart.length) )
+
+            //loop until a condition to return arises 
+            while (true) {
+
+                //if there is no more parts to match and everything else around wildcards matched
+                //it is match
+                if( p.length < 1 ) { return true }
+
+                //if one of the bits between wildcards doesnt exist, it cant be a match
+                if ( !  ( matchMXID.includes(p[0]) ) ) { return false }
+            
+                //match the remaining parts in order starting with the first one left to match, then removing everything
+                //before it, and going back through the process untill theres nothing left to match
+                //have to use a substring of the original in case there was multiple matches of the next item to match
+                let nexttomatch = p.shift()
+                let r = matchMXID.split( nexttomatch )
+                matchMXID = matchMXID.substring(nexttomatch.length + r[0])
+
+            }
 
         })
 

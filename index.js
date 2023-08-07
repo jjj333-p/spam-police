@@ -38,7 +38,7 @@ const nogoList = new blacklist() // Blacklist object
 eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
 eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
 eventhandlers.set("m.reaction", new Reaction(logRoom))
-eventhandlers.set("m.policy.rule.user", new BanlistReader())
+eventhandlers.set("m.policy.rule.user", new BanlistReader(client))
 
 //preallocate variables so they have a global scope
 let mxid; 
@@ -122,7 +122,11 @@ client.start().then( async () => {
 //when the client recieves an event
 client.on("room.event", async (roomId, event) => {
 
-    if (event["sender"] == mxid) {return}
+    //ignore events sent by self, unless its a banlist policy update
+    if ((event["sender"] == mxid) && !(event["type"] == "m.policy.rule.user")) {return}
+
+    //check banlists
+    bancheck(roomId, event)
 
     //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])
@@ -171,4 +175,48 @@ client.on("room.leave", (roomId) => {
     nogoList.add(roomId, "kicked")
 
 })
+
+async function bancheck (roomId, event){
+
+    //fetch banlists for room
+    let roomBanlists = config.getConfig(roomId, "banlists")
+
+    //if there is no config, create a temporary one with just the room id
+    if( !roomBanlists ){ roomBanlists = [roomId]}
+
+    //if there is a config, set the room up to check its own banlist
+    else { roomBanlists.push(roomId)}
+
+    //variable to store reason
+    let reason = "";
+
+    //look through all banlists
+    for (let i = 0; i < roomBanlists.length; i++) {
+        let rm = roomBanlists[i];
+
+        //find recommendation
+        let recomend = await eventhandlers.get("m.policy.rule.user").match(rm, (event["sender"]));
+
+        //if that room doesn't recommend a ban, go ahead and exit out
+        if (!recomend) { continue; }
+
+        //fetch the set alias of the room
+        let mainRoomAlias = await client.getPublishedAlias(roomId)
+
+        //if there is no alias of the room
+        if(!mainRoomAlias){
+
+            //dig through the state, find room name, and use that in place of the main room alias
+            mainRoomAlias = (await client.getRoomState(roomId)).find(state => state.type == "m.room.name")["content"]["name"]
+
+        }
+        
+        //format together a reason
+        reason = String(reason) + recomend["content"]["reason"] + " (" + mainRoomAlias + ") | ";
+    }
+
+    //if there is a reason to be had, then we can ban
+    if (reason) {client.banUser(event["sender"], roomId, reason).catch(() => {})}
+
+}
 

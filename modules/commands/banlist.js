@@ -50,7 +50,7 @@ class Banlist {
                     "reason": reason,
                     "recommendation": "org.matrix.mjolnir.ban"
                 },)
-                    .then(() => client.sendNotice(roomId, "✅ | Successfully set ban recomendation."))
+                    .then(() => client.sendNotice(roomId, "✅ | Successfully set ban recommendation."))
                     .catch(err => client.sendHtmlNotice(roomId, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
 
             } else if (action == "remove" || action == "delete"){
@@ -59,7 +59,7 @@ class Banlist {
                 client.sendStateEvent(banlistid, "m.policy.rule.user", ("rule:" + bannedUser), {
                     "reason": reason,
                 },)
-                    .then(() => client.sendNotice(roomId, "✅ | Successfully removed ban recomendation."))
+                    .then(() => client.sendNotice(roomId, "✅ | Successfully removed ban recommendation."))
                     .catch(err => client.sendHtmlNotice(roomId, "<p>🍃 | I unfortunately ran into the following error while trying to remove that banlist rule:\n</p><code>" + err+ "</code>"))
 
             } else {

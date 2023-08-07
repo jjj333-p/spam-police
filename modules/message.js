@@ -102,12 +102,6 @@ class message {
                         //if the room is in mute mode, dont respond
                         if (Boolean(this.config.getConfig(datapoints.roomId, "muted"))) return
 
-                        // //send warning message
-                        // let responseID = await client.sendText(datapoints.roomId, this.keywords.scams.response)
-
-                        // //relate the telegram scam to its response in order to delete the response automatially when the scam is removed.
-                        // this.tgScamResponses.set(event["event_id"], {"roomId":datapoints.roomId, "responseID":responseID})
-
                         //send warning message
                         datapoints.client.sendHtmlText(datapoints.roomId, this.keywords.scams.response)
                         

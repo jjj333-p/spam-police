@@ -74,7 +74,7 @@ class database {
         //write current config to disk
         writeFile(("./db/config/" + roomId + ".json"), JSON.stringify(Object.fromEntries(cachedconfig), null, 2), err =>{
 
-            if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333_p_1325:matrix.org in #anti-scam-support:matrix.org\n\n" + err)
+            if(err) callback("🍃 | I ran into the following error trying to write this config to disk. Please report this to @jjj333:pain.agency in #anti-scam-support:matrix.org\n\n" + err)
 
             else callback("✅ | Successfully saved.")
             

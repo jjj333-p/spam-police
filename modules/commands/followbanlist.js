@@ -2,7 +2,7 @@ class FollowBanList {
 
     constructor(){}
 
-    async run ({client, roomId, event, mxid}, {offset, contentByWords}){
+    async run ({client, roomId, event, mxid}, {offset, contentByWords, config}){
 
         //make sure the user has ban permissions before adding banlist
         if ( ! await client.userHasPowerLevelForAction(event["sender"], roomId, "ban") ) {
@@ -22,6 +22,7 @@ class FollowBanList {
         
         }
 
+        //if the user wants a list
         if (contentByWords[offset+1].toLowerCase() == "list") {
 
             client.sendNotice(roomId, "banlist list here")
@@ -29,6 +30,8 @@ class FollowBanList {
             return
 
         }
+
+        
 
     }
 

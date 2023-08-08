@@ -2,10 +2,18 @@ class Banlist {
 
     constructor(){}
 
-    async run ({client, roomId, event, blacklist}, {scannableContent,offset, contentByWords}){
+    async run ({client, roomId, event}, {offset, contentByWords}){
 
         //parce the room that the cmd is referring to
         let banlist = contentByWords[2+offset]
+
+        if (!banlist){
+
+            client.sendNotice(roomId, "❌ | invalid usage.")
+
+            return
+
+        }
 
         //use here so people dont have to type the room alias on an asinine client
         if (banlist.toLowerCase() == "here") banlist = roomId

@@ -13,6 +13,7 @@ import { Unblacklist } from "./commands/unblacklist.js";
 import { Restart } from "./commands/restart.js";
 import { Mute } from "./commands/mute.js";
 import { Banlist } from "./commands/banlist.js";
+import { FollowBanList } from "./commands/followbanlist.js";
 
 var sendjson = new Sendjson()
 
@@ -41,7 +42,8 @@ class message {
         this.commands.set("unblacklist", new Unblacklist())
         this.commands.set("restart", new Restart())
         this.commands.set("mute", new Mute())
-        this.commands.set("banlist", new Banlist)
+        this.commands.set("banlist", new Banlist())
+        this.commands.set("followbanlist", new FollowBanList())
         
     }
 

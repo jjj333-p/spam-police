@@ -34,7 +34,7 @@ class Join {
             }
 
             //try to join
-            client.joinRoom(joinroomid).then(() => {
+            client.joinRoom(joinroomid, ).then(() => {
 
                 //greeting message
                 let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). " + 

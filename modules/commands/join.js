@@ -26,7 +26,7 @@ class Join {
             if(blReason) {
 
                 //send error
-                client.sendHtmlNotice(roomId, "❌ | This room is blacklisted for reason <code>" + blReason + "</code>.")
+                client.sendHtmlNotice(roomId, "❌ | The bot was blacklisted from this room for reason <code>" + blReason + "</code>.")
 
                 //dont continue trying to join
                 return

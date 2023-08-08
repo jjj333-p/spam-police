@@ -33,8 +33,13 @@ class Join {
 
             }
 
+            //deduce possible servers with the required information to join into the room
+            let aliasServer = joinroom.split(":")[1]
+            let senderServer = event["sender"].split(":")[1]
+            let botServer = mxid.split(":")[1]
+
             //try to join
-            client.joinRoom(joinroomid, ).then(() => {
+            client.joinRoom(joinroomid, [aliasServer, senderServer, botServer, "matrix.org"]).then(() => {
 
                 //greeting message
                 let greeting = "Greetings! I am brought here by " + event["sender"] + ", bot by @jjj333:pain.agency (pls dm for questions). " + 

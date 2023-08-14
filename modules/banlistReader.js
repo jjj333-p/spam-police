@@ -22,6 +22,11 @@ class BanlistReader {
         //fetch room's list of banlist events
         let roomEvents = this.rooms.get(roomId);
 
+        //see comment below
+        await this.syncRoom(roomId)
+
+        /* not currently working, not sure it needs to work like this
+
         //if the room was never synced
         if (! Array.isArray(roomEvents)) { await this.syncRoom(roomId) }
 
@@ -30,6 +35,8 @@ class BanlistReader {
 
         //if its a brand new rule, we dont need to resync everything
         else{ roomEvents.push(event); }
+
+        */
 
         //confirm that the bot updated its list with the new event
         this.client.sendReadReceipt(roomId, event["event_id"])

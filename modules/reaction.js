@@ -19,7 +19,7 @@ class Reaction {
             if( senderpl < 10 && senderpl) {return}
 
             //if its a checkmark, run the confirm scam 
-            if(event["content"]["m.relates_to"]["key"].includes("✅")){ scamBlEntries.get(event["content"]["m.relates_to"]["event_id"]).confirmScam() }
+            if(event["content"]["m.relates_to"]["key"].includes("✅")){ scamBlEntries.get(event["content"]["m.relates_to"]["event_id"]).confirmScam(event["event_id"]) }
             
             //if its an x, delete relevant stuff
             else if (event["content"]["m.relates_to"]["key"].includes("❌")){ scamBlEntries.get(event["content"]["m.relates_to"]["event_id"]).denyScam(event["event_id"]) }

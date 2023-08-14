@@ -40,7 +40,40 @@ class Sendjson {
     
         }
 
+        //fetch the set alias of the room
+        let mainRoomAlias = await client.getPublishedAlias(roomId)
+
+        //if there is no alias of the room
+        if(!mainRoomAlias){
+
+            //dig through the state, find room name, and use that in place of the main room alias
+            mainRoomAlias = (await client.getRoomState(roomId)).find(state => state.type == "m.room.name")["content"]["name"]
+
+            //should still be able to go to the link using the https://matrix.to/#/ link
+        }
+
         //check if already on banlist
+        let entry = await banlistReader.match(logchannel, (event["sender"]))
+
+        if (entry) {
+
+            //get the reason its already on the banlist
+            let existingReason = entry["content"]["reason"]
+
+            //if the ban reason already includes that scam was sent in this room, theres nothing to add
+            if (existingReason.includes(mainRoomAlias)) { return }
+
+            //make banlist rule
+            client.sendStateEvent(logchannel, "m.policy.rule.user", ("rule:" + event["sender"]), {
+                "entity": event["sender"],
+                "reason": (existingReason + " " + mainRoomAlias),
+                "recommendation": "org.matrix.mjolnir.ban"
+            })
+
+            //dont send a log if its already been reported
+            return
+
+        }
     
         //limit duplicates
         if (this.tgScams.some(scam => (scam.event["content"]["body"] == event["content"]["body"]) && (scam.roomId == roomId) && (scam.event["sender"] == event["sender"]))) { return } else {
@@ -65,18 +98,6 @@ class Sendjson {
     
         //upload the file to homeserver (outputs mxc:// or whatever)
         let linktofile = await client.uploadContent(readFileSync(file))
-
-        //fetch the set alias of the room
-        let mainRoomAlias = await client.getPublishedAlias(roomId)
-
-        //if there is no alias of the room
-        if(!mainRoomAlias){
-
-            //dig through the state, find room name, and use that in place of the main room alias
-            mainRoomAlias = (await client.getRoomState(roomId)).find(state => state.type == "m.room.name")["content"]["name"]
-
-            //should still be able to go to the link using the https://matrix.to/#/ link
-        }
 
         //if the bot is in the room, that mean it's homeserver can be used for a via
         let via = mxid.split(":")[1]
@@ -115,7 +136,7 @@ class Sendjson {
         }))
 
         //callback to confirm its a scam and write to banlist
-        async function confirmScam (){
+        async function confirmScam (userReactionId){
 
             //generate reason
             let reason = "telegram scam in " + mainRoomAlias + " (see " + await client.getPublishedAlias(logchannel) + " )"

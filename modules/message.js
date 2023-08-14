@@ -83,10 +83,10 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                sendjson.send(datapoints, this.logRoom, datapoints.banListReader)
+                sendjson.send(datapoints, this.logRoom, datapoints.banListReader, this.tgScamReactions, this.tgScamResponses)
 
                 //React to the message with a little warning so its obvious what msg im referring to
-                let reaction = await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
+                datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
 
                     "m.relates_to": {
                         "event_id":datapoints.event["event_id"],

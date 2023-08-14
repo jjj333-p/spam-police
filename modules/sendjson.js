@@ -5,18 +5,17 @@ const require = createRequire(import.meta.url);
 
 class Sendjson {
 
-    constructor (logindata) {
+    constructor () {
 
         //create array to store scams to help limit duplicates (when spammed)  
         this.tgScams = []
-
 
         //fetch keywords
         this.keywords = require("../keywords.json")
 
     }
 
-    async send ({client, roomId, event, mxid, scamBlEntries}, logchannel){ 
+    async send ({client, roomId, event, mxid, scamBlEntries}, logchannel, banlistReader, reactions, responses){ 
 
         //if the message is replying
         let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
@@ -165,6 +164,14 @@ class Sendjson {
             //didnt await these earler for speed and performance, so need to await the promises now
             client.redactEvent(logchannel, await checkMessagePromise, "related reaction")
             client.redactEvent(logchannel,  await xMessagePromise, "related reaction")
+
+            //fetch the bots response to the scam
+            let response = responses.get(event["event_id"])
+            let reaction = reactions.get(event["event_id"])
+
+            //if there is a response to the redacted message then redact the response
+            if (response) {client.redactEvent(response.roomId, response.responseID, "False positive.")}
+            if (reaction) {client.redactEvent(reaction.roomId, reaction.responseID, "False positive.")}
 
         }
 

@@ -139,7 +139,7 @@ class Sendjson {
         async function confirmScam (userReactionId){
 
             //generate reason
-            let reason = "telegram scam in " + mainRoomAlias + " (see " + await client.getPublishedAlias(logchannel) + " )"
+            let reason = "telegram scam in " + mainRoomAlias //+ " (see " + await client.getPublishedAlias(logchannel) + " )"
 
              //make banlist rule
             client.sendStateEvent(logchannel, "m.policy.rule.user", ("rule:" + event["sender"]), {

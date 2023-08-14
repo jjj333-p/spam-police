@@ -23,6 +23,7 @@ class message {
 
         //map to relate scams and their responses (for deletion)
         this.tgScamResponses = new Map()
+        this.tgScamReactions = new Map()
 
         //config thingys
         this.logRoom         = logRoom
@@ -82,10 +83,10 @@ class message {
             } else {
 
                 //custom function to handle the fetching and sending of the json file async as to not impact responsiveness
-                this.sendjson.send(datapoints, this.logRoom, datapoints.banListReader)
+                sendjson.send(datapoints, this.logRoom, datapoints.banListReader)
 
                 //React to the message with a little warning so its obvious what msg im referring to
-                await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
+                let reaction = await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
 
                     "m.relates_to": {
                         "event_id":datapoints.event["event_id"],
@@ -94,6 +95,9 @@ class message {
                     }
 
                 }))
+
+                    //if reaction is sent, associate it with the original scam for later redaction
+                    .then(responseID => { this.tgScamReactions.set(datapoints.event["event_id"], {"roomId":datapoints.roomId, "responseID":responseID}) })
 
                     //catch the error to prevent crashing, however if it cant send theres not much to do
                     .catch(() => {})
@@ -110,7 +114,7 @@ class message {
                             //if warning is sent, associate it with the original scam for later redaction
                             .then(responseID => { this.tgScamResponses.set(datapoints.event["event_id"], {"roomId":datapoints.roomId, "responseID":responseID}) })
 
-                            //catch error without crashing
+                            //catch the error to prevent crashing, however if it cant send theres not much to do
                             .catch(() => {})
 
                             .finally(async () => {

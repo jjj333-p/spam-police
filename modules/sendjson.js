@@ -156,7 +156,7 @@ class Sendjson {
                     client.redactEvent(logchannel,  await xMessagePromise, "related reaction").catch(() => {})
                 
                     //confirm ban for clients that cant read banlist events
-                    let checkMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
+                    client.sendEvent(logchannel, "m.reaction", ({
                         "m.relates_to": {
                             "event_id":logmsgid,
                             "key":"🔨 | banned",

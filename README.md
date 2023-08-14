@@ -4,7 +4,7 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 
 > **Warning**
 >
-> This bot does not support encrypted rooms yet
+> This bot does not support encrypted rooms yet. This has been implemented in the sdk and likely could be added to the bot easy enough, however I don't currently have the proper access to the bot account required to set this up due to not being able to currently set up my desktop workstation.
 
 ## Discussion
 
@@ -31,6 +31,9 @@ Mentioning the bot will bring up a link back to this github, no need to bookmark
 > **Note**
 >
 > My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to/#/#jjj-tg-scams:matrix.org)
+
+## Commands/Usage
+**TODO
 
 ## Self-hosting
 

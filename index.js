@@ -178,6 +178,9 @@ client.on("room.leave", (roomId) => {
 
 async function bancheck (roomId, event){
 
+    //if the bot cant ban users in the room, theres no reason to waste resources and check if it should ban the user
+    if( ! await client.userHasPowerLevelForAction(mxid, roomId, "ban") ) {return}
+
     //fetch banlists for room
     let roomBanlists = config.getConfig(roomId, "banlists")
 

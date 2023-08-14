@@ -185,10 +185,10 @@ async function bancheck (roomId, event){
     let roomBanlists = config.getConfig(roomId, "banlists")
 
     //if there is no config, create a temporary one with just the room id
-    if( !roomBanlists ){ roomBanlists = [roomId]}
+    if( !roomBanlists ){ roomBanlists = [roomId] }
 
     //if there is a config, set the room up to check its own banlist
-    else { roomBanlists.push(roomId)}
+    else { roomBanlists.push(roomId) }
 
     //variable to store reason
     let reason = "";

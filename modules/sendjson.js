@@ -110,8 +110,7 @@ class Sendjson {
         let logfileid = await client.sendMessage(logchannel, {
             "body":(roomId+ "@" + Date.now() + ".json"),
             "info": {
-                "mimetype": "text/x-go",
-                "size": 217
+                "mimetype": "application/json"
             },
             "msgtype":"m.file",
             "url":linktofile,

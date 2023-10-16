@@ -101,9 +101,14 @@ class Sendjson {
 
         //if the bot is in the room, that mean it's homeserver can be used for a via
         let via = mxid.split(":")[1]
-    
+
+        //escape html and '@' to avoid mentions
+        let escapedText = event["content"]["body"].replaceAll("<","&gt;")
+            .replaceAll(">", "&lt;")
+            .replaceAll("@", "&64;")
+        
         //send log message
-        let logmsgid = await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + event["content"]["body"] 
+        let logmsgid = await client.sendHtmlText(logchannel,(event["sender"] +  " in "+ mainRoomAlias + "\n<blockquote>" + escapedText
         + "</blockquote>\nhttps://matrix.to/#/" + roomId + "/" + event["event_id"] + "?via=" + via))
     
         //send the file that was uploaded

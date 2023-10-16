@@ -103,8 +103,8 @@ class Sendjson {
         let via = mxid.split(":")[1]
 
         //escape html and '@' to avoid mentions
-        let escapedText = event["content"]["body"].replaceAll("<","&gt;")
-            .replaceAll(">", "&lt;")
+        let escapedText = event["content"]["body"].replaceAll("<","&lt;")
+            .replaceAll(">", "&gt;")
             .replaceAll("@", "&64;")
         
         //send log message

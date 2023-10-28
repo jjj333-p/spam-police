@@ -139,8 +139,30 @@ class Sendjson {
             }
         }))
 
+        //only allow to run once to prevent race conditions
+        //technically its async so its still possible in the nanosecond that it process
+        //the if statment and whatnot but its really not that deep, not the end of the
+        //world if it crashes over an extremely rare edge case.
+        let confirmed = false
+
         //callback to confirm its a scam and write to banlist
         async function confirmScam (userReactionId){
+
+            //if a user already confirmed
+            if (confirmed) {
+
+                //delete the new reaction that is a duplicate
+                client.redactEvent(logchannel, userReactionId, "duplicate response").catch(() => {})
+
+                //return since we (should've) already ran this process
+                return;
+
+            } else {
+
+                //signify that we have already run this process
+                confirmed = true
+
+            }
 
             //generate reason
             let reason = "telegram scam in " + mainRoomAlias //+ " (see " + await client.getPublishedAlias(logchannel) + " )"

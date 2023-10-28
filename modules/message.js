@@ -230,7 +230,7 @@ class message {
                         commandRoom:this.commandRoom,
                         config:this.config,
                         authorizedUsers:this.authorizedUsers,
-                        offset:datapoints.displaynameByWords.length
+                        offset:displaynameByWords.length
                     })
 
                 //if someone starts the message with the display name
@@ -269,7 +269,7 @@ class message {
                         commandRoom:this.commandRoom,
                         config:this.config,
                         authorizedUsers:this.authorizedUsers,
-                        offset:datapoints.displaynameByWords.length
+                        offset:displaynameByWords.length
                     })
 
                 } else {

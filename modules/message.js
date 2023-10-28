@@ -205,7 +205,7 @@ class message {
                         (
                             datapoints.event["content"]["body"].startsWith(datapoints.displayname)
                             &&
-                            (contentByWords.length = displaynameByWords.length)
+                            (contentByWords.length > displaynameByWords.length)
                         )
                     ){
 

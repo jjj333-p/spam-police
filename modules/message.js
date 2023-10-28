@@ -206,14 +206,14 @@ class message {
                         (
                             datapoints.event["content"]["body"].startsWith(datapoints.displayname)
                             &&
-                            (contentByWords.length > displaynameByWords.length)
+                            (contentByWords.length = displaynameByWords.length)
                         )
-                        ||
-                        (
-                            datapoints.event["content"]["body"].startsWith(datapoints.displayname + ":")
-                            &&
-                            (contentByWords.length > (displaynameByWords.length+2))
-                        )
+                        // ||
+                        // (
+                        //     datapoints.event["content"]["body"].startsWith(datapoints.displayname + ":")
+                        //     &&
+                        //     (contentByWords.length > (displaynameByWords.length+2))
+                        // )
                     ){
 
                     //if that is a command, run the command

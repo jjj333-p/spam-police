@@ -198,20 +198,51 @@ class message {
             //if the user is trying to mention the bot
             if (datapoints.event["content"]["body"].includes(datapoints.mxid) || datapoints.event["content"]["body"].includes(datapoints.displayname)) {
 
-                //if that mention is the start of the message that can be used as the prefix
-                if (
-                        contentByWords[0].includes(datapoints.mxid) 
-                        ||
-                        (
-                            datapoints.event["content"]["body"].startsWith(datapoints.displayname)
-                            &&
-                            (contentByWords.length > displaynameByWords.length)
-                        )
-                    ){
+                //if someone starts the message with the mxid
+                if ( contentByWords[0].includes(datapoints.mxid) ){
 
                     //if that is a command, run the command
                     let handler = this.commands.get(contentByWords[1])
                     
+                    //if no handler its not a valid command
+                    if (!handler) {
+
+                        await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
+
+                            "m.relates_to": {
+                                "event_id":datapoints.event["event_id"],
+                                "key":"❌ | invalid cmd",
+                                "rel_type": "m.annotation"
+                            }
+        
+                        }))
+
+                        return
+
+                    }   
+
+                    //run the command
+                    handler.run(datapoints, {
+                        scannableContent:scannableContent,
+                        contentByWords:contentByWords,
+                        keywords:this.keywords,
+                        logRoom:this.logRoom,
+                        commandRoom:this.commandRoom,
+                        config:this.config,
+                        authorizedUsers:this.authorizedUsers,
+                        offset:datapoints.displaynameByWords.length
+                    })
+
+                //if someone starts the message with the display name
+                } else  if (
+                    datapoints.event["content"]["body"].startsWith(datapoints.displayname)
+                    &&
+                    (contentByWords.length > displaynameByWords.length)
+                ){
+
+                    //if that is a command, run the command
+                    let handler = this.commands.get(contentByWords[displaynameByWords.length])
+
                     //if no handler its not a valid command
                     if (!handler) {
 

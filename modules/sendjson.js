@@ -90,8 +90,8 @@ class Sendjson {
         if(!readdirSync(currentDir).some(dir => dir == event["sender"])){mkdirSync(currentDir  + event["sender"] + "/")}
         currentDir = currentDir + event["sender"] + "/"
         
-        //filename
-        let file = (currentDir  +  roomId+ "@" + Date.now() + ".json")
+        //filename (sanitize : out of filename for windows users)
+        let file = (currentDir  +  roomId.split(":").join("-") + "@" + Date.now() + ".json")
     
         //save the json of the recieved message
         writeFileSync(file, JSON.stringify(event, null, 2))

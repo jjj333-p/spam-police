@@ -201,13 +201,19 @@ class message {
 
                 //if that mention is the start of the message that can be used as the prefix
                 if (
+                        contentByWords[0].includes(datapoints.mxid) 
+                        ||
                         (
-                            contentByWords[0].includes(datapoints.mxid) 
-                            || 
                             datapoints.event["content"]["body"].startsWith(datapoints.displayname)
-                        ) 
-                        && 
-                        (contentByWords.length > displaynameByWords.length)
+                            &&
+                            (contentByWords.length > displaynameByWords.length)
+                        )
+                        ||
+                        (
+                            datapoints.event["content"]["body"].startsWith(datapoints.displayname + ":")
+                            &&
+                            (contentByWords.length > (displaynameByWords.length+2))
+                        )
                     ){
 
                     //if that is a command, run the command

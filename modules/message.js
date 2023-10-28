@@ -191,10 +191,9 @@ class message {
         
         } else {
 
-            // } else 
-
-            let contentByWords = datapoints.event["content"]["body"].split(" ")
-            let displaynameByWords = datapoints.displayname.split(" ")
+            //split into words, and filter out the empty strings because js is an actual meme language
+            let contentByWords = datapoints.event["content"]["body"].split(" ").filter(a=>a)
+            let displaynameByWords = datapoints.displayname.split(" ").filter(a=>a)
 
             //if the user is trying to mention the bot
             if (datapoints.event["content"]["body"].includes(datapoints.mxid) || datapoints.event["content"]["body"].includes(datapoints.displayname)) {
@@ -208,12 +207,6 @@ class message {
                             &&
                             (contentByWords.length = displaynameByWords.length)
                         )
-                        // ||
-                        // (
-                        //     datapoints.event["content"]["body"].startsWith(datapoints.displayname + ":")
-                        //     &&
-                        //     (contentByWords.length > (displaynameByWords.length+2))
-                        // )
                     ){
 
                     //if that is a command, run the command

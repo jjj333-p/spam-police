@@ -91,7 +91,8 @@ class Sendjson {
         currentDir = currentDir + event["sender"] + "/"
         
         //filename (sanitize : out of filename for windows users)
-        let file = (currentDir  +  roomId.split(":").join("-") + "@" + Date.now() + ".json")
+        let filename = roomId.split(":").join("-") + "@" + Date.now() + ".json"
+        let file = (currentDir  +  filename)
     
         //save the json of the recieved message
         writeFileSync(file, JSON.stringify(event, null, 2))
@@ -113,7 +114,7 @@ class Sendjson {
     
         //send the file that was uploaded
         let logfileid = await client.sendMessage(logchannel, {
-            "body":(roomId+ "@" + Date.now() + ".json"),
+            "body":filename,
             "info": {
                 "mimetype": "application/json"
             },

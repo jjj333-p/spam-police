@@ -22,18 +22,42 @@ To invite it, you can run the command below in [`#spam-police-bot-cmds:matrix.or
 +join [Alias/ID to room]
 ```
 
-Mentioning the bot will bring up a link back to this github, no need to bookmark this page. 😉
-
 > **Note**
 >
-> If you have problems inviting the bot, make sure the bot can join it. If you still have problems, join our [support room](https://matrix.to/#/#anti-scam-support:matrix.org).
+> If you have problems inviting the bot, make sure the bot can join it. if the room is invite only, invite the bot account to the room first. If you still have problems, join our [support room](https://matrix.to/#/#anti-scam-support:matrix.org).
 
 > **Note**
 >
 > My instance logs the scams it finds to [`#jjj-tg-scams:matrix.org`](https://matrix.to/#/#jjj-tg-scams:matrix.org)
 
 ## Commands/Usage
-**TODO
+
+> **Command prefix:**
+> 
+> All commands below require the prefix before the command unless specified. The bot prefix can be customized on a per-room basis, in which the bot displayname will be set to `[prefix] | Spam Police`, with a default prefix of `+`.
+>
+> Example usage: `+uptime` to run the `uptime` command with the default prefix of `+`
+
+### Basic commands
+
+- `@anti-scam:matrix.org` (no prefix) - pinging the bot will bring up a short introduction as well as a link back here, no need to bookmark this page!
+- `uptime` - displays the current bot uptime, doubles as a ping command
+
+### Essential Usage Commands
+
+- `join [room ID/alias/matrix.to]` - works only in [`#spam-police-bot-cmds:matrix.org`](https://matrix.to/#/#spam-police-bot-cmds:matrix.org). This command makes the bot join the referenced room. If the room is invite only (unsure why you'd use this bot in an invite only room) you'll need to invite the bot's account to the room and then run this command
+- `mute` - toggles mute mode on and off. In mute mode the bot will only react to detected scam messages, and will not display the warning message.
+
+### Moderation Related Commands
+
+- `followbanlist [room ID/alias/matrix.to]` - subscribes the room to a mjolner banlist, and performs mass moderation actions as mjolner would. Use with caution, my dumbass has yet to add a way to unsubscribe
+- `banlist [add/remove] [here / room ID/alias/matrix.to] [target user mxid] <reason>` - writes or removes a mjolner ban recomendation policy to a "banlist" room with a given reason
+
+### Administration Commands for Selfhosters
+
+- `restart` - runs `Process.exit()`, only restarts if you have it set to run upon exit such as through systemd (this is how I do it on the production system)
+- `leave <room ID/alias/matrix.to>` - makes the bot leave the specified room, if no room is specified it leaves the current room. Also adds the room to a blacklist to prevent it from being re-added to the room (also gets added if a room mod kicks the bot).
+- `unblacklist [room ID/alias/matrix.to]` - remove rooms from the administrator blacklist. 
 
 ## Self-hosting
 
@@ -49,7 +73,7 @@ Mentioning the bot will bring up a link back to this github, no need to bookmark
 
 > **Note**
 > 
-> The bot is very light during run time and barely uses any resources, however it sees a large resource spike at startup due to initial sync. This can cause it to crash on lower powered systems (like the hetzner cpx11 vps) if you have an old sync token. What I do to fix this is I run the bot on a higher powered system like my dev machine (tbh anything with 4+ gb of real ram should work, 8+gb ram and quad core should be enough for the spike to be unnoticable), and then copy that sync token in bot.json into the bot.json on my vps. Please let me know or contribute if you know how to make the initial sync less resource intense.
+> The bot is very light during run time and barely uses any resources, however it sees a large resource spike at startup due to initial sync. This can cause it to crash on lower powered systems (like the hetzner cpx11 vps) if you have an old sync token. What I do to fix this is I run the bot on a higher powered system like my dev machine (tbh anything with 4+ gb of real ram should work, 8+gb ram and quad core should be enough for the spike to be unnoticable), and then copy that sync token in bot.json into the bot.json on my vps. This issue is not faced on the Hetzner cpx21, which I now run. Please let me know or contribute if you know how to make the initial sync less resource intense.
 
 ### Instructions
 

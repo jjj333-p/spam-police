@@ -94,7 +94,7 @@ To invite it, you can run the command below in [`#spam-police-bot-cmds:matrix.or
 cd spam-police && mkdir -p db && cd db
 ```
 
-3. Copy the example configuration file from `examples/login.yaml` to `db` (cp ../examples/login.yaml ./)
+3. Copy the example configuration file from `examples/login.yaml` to `db` (`cp ../examples/login.yaml ./`)
 
 4. Edit the configuration file to your liking
 

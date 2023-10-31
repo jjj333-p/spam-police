@@ -8,7 +8,7 @@ import { Sendjson } from "./sendjson.js"
 // commands
 import { Uptime } from "./commands/uptime.js"
 import { Join } from "./commands/join.js"
-import { Leave } from "./commands/leave.js"
+import { Leave } from "./commands/leave.js" //does blacklisting
 import { Unblacklist } from "./commands/unblacklist.js";
 import { Restart } from "./commands/restart.js";
 import { Mute } from "./commands/mute.js";

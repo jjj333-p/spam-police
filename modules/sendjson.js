@@ -143,7 +143,7 @@ class Sendjson {
         //only allow to run once to prevent race conditions
         //technically its async so its still possible in the nanosecond that it process
         //the if statment and whatnot but its really not that deep, not the end of the
-        //world if it crashes over an extremely rare edge case.
+        //world if it sends the state event twice
         let confirmed = false
 
         //callback to confirm its a scam and write to banlist
@@ -190,6 +190,8 @@ class Sendjson {
                             "rel_type": "m.annotation"
                         }
                     }))
+                    //catch it in case edge case of duplicate actions, this way it wont error
+                    .catch(() => {})
                 
                 })
 

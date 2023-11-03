@@ -5,7 +5,7 @@ class FollowBanList {
     async run ({client, roomId, event, mxid, blacklist}, {offset, contentByWords, config}){
 
         //check if the command even has the required feilds
-        if (contentByWords.length != (2+offset)){
+        if (contentByWords.length != (3+offset)){
 
             client.sendNotice(roomId, "❌ | Malformed command.")
 

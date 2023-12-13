@@ -80,6 +80,9 @@ class BanlistReader {
         //see comment below
         await this.syncRoom(roomId)
 
+        // !!! only for testing !!!
+        return;
+
         /* not currently working, not sure it needs to work like this
 
         //if the room was never synced

@@ -36,9 +36,9 @@ let eventhandlers = new Map()
 const config = new database()   // Database for the config
 const nogoList = new blacklist() // Blacklist object
 eventhandlers.set("m.room.message", new message(logRoom, commandRoom, config, authorizedUsers)) // Event handler for m.room.message
-eventhandlers.set("m.room.redaction", new redaction(eventhandlers))            // Event handler for m.room.redaction
-eventhandlers.set("m.reaction", new Reaction(logRoom))
 eventhandlers.set("m.policy.rule.user", new BanlistReader(client))
+eventhandlers.set("m.reaction", new Reaction(logRoom))
+eventhandlers.set("m.room.redaction", new redaction(eventhandlers)) // Event handler for m.room.redaction
 
 //preallocate variables so they have a global scope
 let mxid; 

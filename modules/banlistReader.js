@@ -80,22 +80,6 @@ class BanlistReader {
         //see comment below
         await this.syncRoom(roomId)
 
-        // !!! only for testing !!!
-        return;
-
-        /* not currently working, not sure it needs to work like this
-
-        //if the room was never synced
-        if (! Array.isArray(roomEvents)) { await this.syncRoom(roomId) }
-
-        //means theres an updated event, im too lazy to figure out how to resolve that conflict
-        else  if(roomEvents.includes(se => se["state_key"] == event["state_key"])){ await this.syncRoom(roomId) }
-
-        //if its a brand new rule, we dont need to resync everything
-        else{ roomEvents.push(event); }
-
-        */
-
         /*
         if the run pipeline was called without an event for whatever reason dont proceed
 

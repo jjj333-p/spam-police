@@ -163,7 +163,8 @@ client.on("room.event", async (roomId, event) => {
             displayname:cdn,
             blacklist:nogoList,
             scamBlEntries:scamBlEntries,
-            banListReader:eventhandlers.get("m.policy.rule.user")
+            banListReader:eventhandlers.get("m.policy.rule.user"),
+            config:config
         })
 
     }
@@ -204,7 +205,7 @@ async function bancheck (roomId, event){
         if (!recomend) { continue; }
 
         //fetch the set alias of the room
-        let mainRoomAlias = await client.getPublishedAlias(roomId)
+        let mainRoomAlias = await client.getPublishedAlias(rm)
 
         //if there is no alias of the room
         if(!mainRoomAlias){
@@ -215,11 +216,10 @@ async function bancheck (roomId, event){
         }
         
         //format together a reason
-        reason = String(reason) + recomend["content"]["reason"] + " (" + mainRoomAlias + ") | ";
+        reason = String(reason) + recomend["content"]["reason"] + " (" + mainRoomAlias + ")";
     }
 
     //if there is a reason to be had, then we can ban
     if (reason) {client.banUser(event["sender"], roomId, reason).catch(() => {})}
 
 }
-

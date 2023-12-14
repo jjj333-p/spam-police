@@ -12,8 +12,8 @@ import { Reaction } from "./modules/reaction.js";
 import { BanlistReader } from "./modules/banlistReader.js";
 
 //Parse YAML configuration file
-const loginFile   = readFileSync('./db/login.yaml', 'utf8');
-const loginParsed = parse(loginFile);
+const loginFile       = readFileSync('./db/login.yaml', 'utf8');
+const loginParsed     = parse(loginFile);
 const homeserver      = loginParsed["homeserver-url"];
 const accessToken     = loginParsed["login-token"];
 const logRoom         = loginParsed["log-room"];

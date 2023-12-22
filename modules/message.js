@@ -57,9 +57,6 @@ class message {
         // Don't handle non-text events
         if (datapoints.event["content"]["msgtype"] !== "m.text") return;
 
-        //filter out events sent by the bot itself.
-        if (datapoints.event["sender"] === await datapoints.mxid) return;
-
         //grab the content from the message, and put it to lowercase to prevent using caps to evade
         let scannableContent = datapoints.event["content"]["body"].toLowerCase()
 

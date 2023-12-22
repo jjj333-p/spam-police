@@ -131,43 +131,41 @@ client.on("room.event", async (roomId, event) => {
     //fetch the handler for that event type
     let handler = eventhandlers.get(event["type"])
 
-    //if there is a handler for that event, run it.
-    if (handler) {
+    //if there is no handler for that event, exit.
+    if (!handler) return;
 
-        //fetch the room list of members with their profile data
-        let mwp = (await client.getJoinedRoomMembersWithProfiles(roomId).catch(() => {console.log("error " + roomId)}))
+    //fetch the room list of members with their profile data
+    let mwp = (await client.getJoinedRoomMembersWithProfiles(roomId).catch(() => {console.log("error " + roomId)}))
 
-        //variable to store the current display name of the bot
-        let cdn = ""
+    //variable to store the current display name of the bot
+    let cdn = ""
 
-        //if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
-        if (mwp) cdn = mwp[mxid]["display_name"]  
-        else {
+    //if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
+    if (mwp) cdn = mwp[mxid]["display_name"]  
+    else {
 
-            //fetch prefix for that room
-            let prefix = config.getConfig(roomId, "prefix")
+        //fetch prefix for that room
+        let prefix = config.getConfig(roomId, "prefix")
 
-            //default prefix if none set
-            if (!prefix)  prefix = "+"
+        //default prefix if none set
+        if (!prefix)  prefix = "+"
 
-            //establish desired display name based on the prefix
-            cdn = prefix + " | " + name
-
-        }
-        
-        handler.run({
-            client:client,
-            roomId:roomId,
-            event:event,
-            mxid:mxid,
-            displayname:cdn,
-            blacklist:nogoList,
-            scamBlEntries:scamBlEntries,
-            banListReader:eventhandlers.get("m.policy.rule.user"),
-            config:config
-        })
+        //establish desired display name based on the prefix
+        cdn = prefix + " | " + name
 
     }
+    
+    handler.run({
+        client:client,
+        roomId:roomId,
+        event:event,
+        mxid:mxid,
+        displayname:cdn,
+        blacklist:nogoList,
+        scamBlEntries:scamBlEntries,
+        banListReader:eventhandlers.get("m.policy.rule.user"),
+        config:config
+    })
 
 })
 

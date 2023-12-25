@@ -128,7 +128,7 @@ class BanlistReader {
             let matched = (await this.client.getJoinedRoomMembers(r)).filter(m => matchBanlistEventToUser(event, m))
 
             //ban found users
-            matched.forEach(async mm => this.client.banUser(mm, r, event["content"]["reason"] + " (" + mainRoomAlias + ")"))
+            matched.forEach(async mm => this.client.banUser(mm, r, event["content"]["reason"] + " (" + mainRoomAlias + ")").catch(() => {}))
 
         })
         

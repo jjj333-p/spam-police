@@ -50,6 +50,7 @@ To invite it, you can run the command below in [`#spam-police-bot-cmds:matrix.or
 
 ### Moderation Related Commands
 
+> Note these commands require  ban permission because that is the powerlevel required to perform these same actions manually (or with a selfbot)
 - `followbanlist [add/remove] [room ID/alias/matrix.to]` - subscribes or unsubscribes the room to a mjolner banlist, and performs mass moderation actions as mjolner would.
 - `banlist [add/remove] [here / room ID/alias/matrix.to] [target user mxid] <reason>` - writes or removes a mjolner ban recomendation policy to a "banlist" room with a given reason
 

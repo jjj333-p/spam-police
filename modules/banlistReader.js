@@ -63,6 +63,7 @@ class BanlistReader {
 
     }
 
+    //synchronize all the state events of the provided room
     async syncRoom(roomId){
 
         let list = (await this.client.getRoomState(roomId)).filter(event => event.type == "m.policy.rule.user")
@@ -72,6 +73,7 @@ class BanlistReader {
 
     }
 
+    //event run loop
     async run({roomId, event, config}) {
 
         //fetch room's list of banlist events
@@ -134,18 +136,25 @@ class BanlistReader {
         
     }
 
-    async match(roomId, matchMXID) {
+    // get all "org.matrix.mjolnir.ban" type state events for a room
+    async getRules(roomId) {
 
         //fetch room's list of banlist events
+        //rooms is a map of just the "org.matrix.mjolnir.ban" events
         let roomEvents = this.rooms.get(roomId);
 
         //if the room was never synced, sync it
         if (! Array.isArray(roomEvents)) { await this.syncRoom(roomId); roomEvents = this.rooms.get(roomId); }
 
-        //look through all the state events
-        let match = roomEvents.find(se => matchBanlistEventToUser(se, matchMXID))
+        return roomEvents
 
-        
+    }
+
+    //find if there is a rule recommending the ban of a provided mxid
+    async match(roomId, matchMXID) {
+
+        //look through all the state events
+        let match = this.getRules(roomId).find(se => matchBanlistEventToUser(se, matchMXID))
 
         return match;
 

@@ -197,7 +197,7 @@ async function bancheck (roomId, event){
         let rm = roomBanlists[i];
 
         //find recommendation
-        let recomend = await eventhandlers.get("m.policy.rule.user").match(rm, (event["sender"]));
+        let recomend = await eventhandlers.get("m.policy.rule.user").match(rm, (event["sender"]))[0];
 
         //if that room doesn't recommend a ban, go ahead and exit out
         if (!recomend) { continue; }

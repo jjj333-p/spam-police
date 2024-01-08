@@ -2,15 +2,7 @@ import fs from "fs"
 
 class Rules {
 
-    constructor(){
-
-        //working directory to write tmp files to
-        this.workingTmpDir = "./db/tmp"
-
-        //make sure there is an appropriate area to write file to
-        if(!fs.existsSync(this.workingTmpDir)) fs.mkdirSync(this.workingTmpDir, { recursive: true })
-
-    }
+    constructor(){}
 
     async run ({client, roomId, event, config, banListReader}, {offset, contentByWords}){
 

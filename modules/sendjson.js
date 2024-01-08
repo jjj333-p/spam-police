@@ -126,7 +126,7 @@ class Sendjson {
         let checkMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
             "m.relates_to": {
                 "event_id":logmsgid,
-                "key":"✅",
+                "key":"✅ confirm",
                 "rel_type": "m.annotation"
             }
         }))
@@ -135,7 +135,7 @@ class Sendjson {
         let xMessagePromise = client.sendEvent(logchannel, "m.reaction", ({
             "m.relates_to": {
                 "event_id":logmsgid,
-                "key":"❌",
+                "key":"❌ falsepos",
                 "rel_type": "m.annotation"
             }
         }))

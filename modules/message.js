@@ -14,6 +14,7 @@ import { Restart } from "./commands/restart.js";
 import { Mute } from "./commands/mute.js";
 import { Banlist } from "./commands/banlist.js";
 import { FollowBanList } from "./commands/followbanlist.js";
+import { Rules } from "./commands/rules.js";
 
 var sendjson = new Sendjson()
 
@@ -45,6 +46,7 @@ class message {
         this.commands.set("mute", new Mute())
         this.commands.set("banlist", new Banlist())
         this.commands.set("followbanlist", new FollowBanList())
+        this.commands.set("rules", new Rules())
         
     }
 

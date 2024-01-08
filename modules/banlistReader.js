@@ -68,6 +68,9 @@ class BanlistReader {
 
         let list = (await this.client.getRoomState(roomId)).filter(event => event.type == "m.policy.rule.user")
 
+        //allow .find to be run
+        if (!list) list = []
+
         //organize away that list for later
         this.rooms.set(roomId, list)
 
@@ -154,7 +157,7 @@ class BanlistReader {
     async match(roomId, matchMXID) {
 
         //look through all the state events
-        let match = this.getRules(roomId).find(se => matchBanlistEventToUser(se, matchMXID))
+        let match = (await this.getRules(roomId)).find(se => matchBanlistEventToUser(se, matchMXID))
 
         return match;
 

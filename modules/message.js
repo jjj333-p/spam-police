@@ -220,6 +220,8 @@ class message {
 
                     }   
 
+                    client.sendReadReceipt(datapoints.roomId, datapoints.event["event_id"])
+
                     //run the command
                     handler.run(datapoints, {
                         scannableContent:scannableContent,
@@ -258,6 +260,8 @@ class message {
                         return
 
                     }   
+
+                    client.sendReadReceipt(datapoints.roomId, datapoints.event["event_id"])
 
                     //run the command
                     handler.run(datapoints, {

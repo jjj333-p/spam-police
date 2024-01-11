@@ -225,6 +225,7 @@ class Sendjson {
 
                 //send to both log room and that room which it is supposed to redact
                 client.sendHtmlNotice(response.roomId, en)
+                    .catch(() => {})
                     .finally(() => {client.sendHtmlNotice(logchannel, en)})
 
             }

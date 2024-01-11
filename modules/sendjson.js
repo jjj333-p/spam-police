@@ -82,23 +82,14 @@ class Sendjson {
     
         }
     
-        //check to make sure folders are there
-        if(!readdirSync("./db/").some(dir => dir == "tg-scams")){mkdirSync("./db/tg-scams")}
-        let currentDir = "./db/tg-scams/"
-    
-        //make folder for each account
-        if(!readdirSync(currentDir).some(dir => dir == event["sender"])){mkdirSync(currentDir  + event["sender"] + "/")}
-        currentDir = currentDir + event["sender"] + "/"
-        
-        //filename (sanitize : out of filename for windows users)
-        let filename = roomId.split(":").join("-") + "@" + Date.now() + ".json"
-        let file = (currentDir  +  filename)
-    
-        //save the json of the recieved message
-        writeFileSync(file, JSON.stringify(event, null, 2))
-    
-        //upload the file to homeserver (outputs mxc:// or whatever)
-        let linktofile = await client.uploadContent(readFileSync(file))
+        //filename
+        let filename = event["sender"] + "_" + roomId + "_@_" + (new Date()).toISOString() + ".json"
+
+        //convert json into binary buffer
+        let file = Buffer.from(JSON.stringify(event, null, 2))
+
+        //upload the file buffer to the matrix homeserver, and grab mxc:// url
+        let linktofile = await client.uploadContent(file, "application/json", filename)        
 
         //if the bot is in the room, that mean it's homeserver can be used for a via
         let via = mxid.split(":")[1]
@@ -116,7 +107,8 @@ class Sendjson {
         let logfileid = await client.sendMessage(logchannel, {
             "body":filename,
             "info": {
-                "mimetype": "application/json"
+                "mimetype": "application/json",
+                "size":file.byteLength
             },
             "msgtype":"m.file",
             "url":linktofile,

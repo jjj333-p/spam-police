@@ -221,7 +221,7 @@ class Sendjson {
             } catch (e) {
 
                 // error to send
-                let en = "🍃 | Error redacting warning\n<pre><code>" + JSON.stringify(e.body, null, 2) + "</code></pre>"
+                let en = "🍃 | Error redacting warning."
 
                 //send to both log room and that room which it is supposed to redact
                 client.sendHtmlNotice(response.roomId, en)

@@ -37,14 +37,18 @@ class Rules {
         //generate filename to write to
         let filename = "UserBanRecommendations_" + roomId + "_" + (new Date()).toISOString() + ".json"
 
+        //convert json into binary buffer
+        let file = Buffer.from(JSON.stringify(rules, null, 2))
+
         //upload the file buffer to the matrix homeserver, and grab mxc:// url
-        let linktofile = await client.uploadContent(Buffer.from(JSON.stringify(rules, null, 2)), "application/json", filename)
+        let linktofile = await client.uploadContent(file, "application/json", filename)
 
         //send file
         client.sendMessage(roomId, {
             "body":filename,
             "info": {
-                "mimetype": "application/json"
+                "mimetype": "application/json",
+                "size":file.byteLength
             },
             "msgtype":"m.file",
             "url":linktofile,

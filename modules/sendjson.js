@@ -212,8 +212,22 @@ class Sendjson {
             let reaction = reactions.get(event["event_id"])
 
             //if there is a response to the redacted message then redact the response
-            if (response) {client.redactEvent(response.roomId, response.responseID, "False positive.")}
-            if (reaction) {client.redactEvent(reaction.roomId, reaction.responseID, "False positive.")}
+            try{
+                if (response) {client.redactEvent(response.roomId, response.responseID, "False positive.")}
+                if (reaction) {client.redactEvent(reaction.roomId, reaction.responseID, "False positive.")}
+
+            //on the rare occasion that the room disables self redactions, or other error, this for some reason crashes the entire process
+            //fuck you nodejs v20
+            } catch (e) {
+
+                // error to send
+                let en = "🍃 | Error redacting warning\n<pre><code>" + e + "</code></pre>"
+
+                //send to both log room and that room which it is supposed to redact
+                client.sendHtmlNotice(response.roomId, en)
+                    .finally(() => {client.sendHtmlNotice(logchannel, en)})
+
+            }
 
         }
 

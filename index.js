@@ -43,7 +43,7 @@ eventhandlers.set("m.room.redaction", new redaction(eventhandlers)) // Event han
 //preallocate variables so they have a global scope
 let mxid; 
 
-let scamBlEntries = new Map()
+let reactionQueue = new Map()
 
 //Start Client
 client.start().then( async () => {
@@ -162,7 +162,7 @@ client.on("room.event", async (roomId, event) => {
         mxid:mxid,
         displayname:cdn,
         blacklist:nogoList,
-        scamBlEntries:scamBlEntries,
+        reactionQueue:reactionQueue,
         banListReader:eventhandlers.get("m.policy.rule.user"),
         config:config
     })

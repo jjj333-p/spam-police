@@ -6,7 +6,7 @@ class Reaction {
 
     }
 
-    async run ({client, roomId, event, mxid, scamBlEntries}) {
+    async run ({client, roomId, event, mxid, reactionQueue}) {
 
         //should never happen but aparently it does
         //https://matrix.pain.agency/_matrix/media/v3/download/pain.agency/51cc6283f64310640f67daa84f284ae8e7a08a969bd2f7f57920a4d30aa83c00
@@ -15,19 +15,13 @@ class Reaction {
 
         if(roomId == this.logRoom){
 
+            //get queued function
+            let qf = reactionQueue.get(event["content"]["m.relates_to"]["event_id"])
+
             //make sure the reaction was to a scam entry
-            if( ! scamBlEntries.get(event["content"]["m.relates_to"]["event_id"])) {return}
+            if( !qf ) {return}
 
-            let senderpl = (await client.getRoomStateEvent(this.logRoom, "m.room.power_levels", null))["users"][event["sender"]]
-
-            if((senderpl === undefined) || (senderpl < 10 )) {return}
-
-            //if its a checkmark, run the confirm scam 
-            if(event["content"]["m.relates_to"]["key"].includes("✅")){ scamBlEntries.get(event["content"]["m.relates_to"]["event_id"]).confirmScam(event["event_id"]) }
-            
-            //if its an x, delete relevant stuff
-            else if (event["content"]["m.relates_to"]["key"].includes("❌")){ scamBlEntries.get(event["content"]["m.relates_to"]["event_id"]).denyScam(event["event_id"]) }
-
+            qf(event)
         }
 
     }

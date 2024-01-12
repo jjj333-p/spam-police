@@ -15,7 +15,7 @@ class Sendjson {
 
     }
 
-    async send ({client, roomId, event, mxid, scamBlEntries}, logchannel, banlistReader, reactions, responses){ 
+    async send ({client, roomId, event, mxid, reactionQueue}, logchannel, banlistReader, reactions, responses){ 
 
         //if the message is replying
         let replyRelation = event["content"]["m.relates_to"]//["m.in_reply_to"]["event_id"]
@@ -132,110 +132,98 @@ class Sendjson {
             }
         }))
 
-        //only allow to run once to prevent race conditions
-        //technically its async so its still possible in the nanosecond that it process
-        //the if statment and whatnot but its really not that deep, not the end of the
-        //world if it sends the state event twice
-        let confirmed = false
+        //add callback to the map to be called upon reaction event
+        reactionQueue.set(logmsgid, async (event) => {
 
-        //callback to confirm its a scam and write to banlist
-        async function confirmScam (userReactionId){
+            let senderpl = (await client.getRoomStateEvent(logchannel, "m.room.power_levels", null))["users"][event["sender"]]
 
-            //if a user already confirmed
-            if (confirmed) {
+            if((senderpl === undefined) || (senderpl < 10 )) {return}
 
-                //delete the new reaction that is a duplicate
-                client.redactEvent(logchannel, userReactionId, "duplicate response").catch(() => {})
+            let userReactionId = event["event_id"]
 
-                //return since we (should've) already ran this process
-                return;
+            if(event["content"]["m.relates_to"]["key"].includes("✅")){
 
-            } else {
+                //only allow to run once
+                reactionQueue.delete(logmsgid)
 
-                //signify that we have already run this process
-                confirmed = true
+                //generate reason
+                let reason = "telegram scam in " + mainRoomAlias //+ " (see " + await client.getPublishedAlias(logchannel) + " )"
+
+                //make banlist rule
+                client.sendStateEvent(logchannel, "m.policy.rule.user", ("rule:" + event["sender"]), {
+                    "entity": event["sender"],
+                    "reason": reason,
+                    "recommendation": "org.matrix.mjolnir.ban"
+                },)
+
+                    .then(async () => {
+
+                        //delete reactions to limit duplicate responses
+                        //didnt await these earler for speed and performance, so need to await the promises now
+                        client.redactEvent(logchannel, await checkMessagePromise, "related reaction").catch(() => {})
+                        client.redactEvent(logchannel,  await xMessagePromise, "related reaction").catch(() => {})
+                    
+                        //confirm ban for clients that cant read banlist events
+                        client.sendEvent(logchannel, "m.reaction", ({
+                            "m.relates_to": {
+                                "event_id":logmsgid,
+                                "key":"🔨 | banned",
+                                "rel_type": "m.annotation"
+                            }
+                        }))
+                            //catch it in case edge case of duplicate actions, this way it wont error
+                            .catch(() => {})
+
+                        //attempt to redact the scam
+                        client.redactEvent(roomId, event["event_id"], "confirmed scam").catch(() => {})
+                    
+                    })
+
+                    //delete mod response even if it fails to enable trying again
+                    .finally(async () => { client.redactEvent(logchannel, userReactionId, "related reaction").catch(() => {}) })
+                    
+                    //catch errors with sending the state event
+                    .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
+
+            } else if (event["content"]["m.relates_to"]["key"].includes("❌")){
+
+                //only allow to run once
+                reactionQueue.delete(logmsgid)
+
+                //delete events already existing
+                client.redactEvent(logchannel, logmsgid, "not a scam")
+                client.redactEvent(logchannel, logfileid, "not a scam")
+                client.redactEvent(logchannel, userReactionId, "related reaction")
+                
+                //didnt await these earler for speed and performance, so need to await the promises now
+                client.redactEvent(logchannel, await checkMessagePromise, "related reaction")
+                client.redactEvent(logchannel,  await xMessagePromise, "related reaction")
+
+                //fetch the bots response to the scam
+                let response = responses.get(event["event_id"])
+                let reaction = reactions.get(event["event_id"])
+
+                //if there is a response to the redacted message then redact the response
+                try{
+                    if (response) {await client.redactEvent(response.roomId, response.responseID, "False positive.")}
+                    if (reaction) {await client.redactEvent(reaction.roomId, reaction.responseID, "False positive.")}
+
+                //on the rare occasion that the room disables self redactions, or other error, this for some reason crashes the entire process
+                //fuck you nodejs v20
+                } catch (e) {
+
+                    // error to send
+                    let en = "🍃 | Error redacting warning."
+
+                    //send to both log room and that room which it is supposed to redact
+                    client.sendHtmlNotice(response.roomId, en)
+                        .catch(() => {})
+                        .finally(() => {client.sendHtmlNotice(logchannel, en)})
+
+                }
 
             }
 
-            //generate reason
-            let reason = "telegram scam in " + mainRoomAlias //+ " (see " + await client.getPublishedAlias(logchannel) + " )"
-
-             //make banlist rule
-            client.sendStateEvent(logchannel, "m.policy.rule.user", ("rule:" + event["sender"]), {
-                "entity": event["sender"],
-                "reason": reason,
-                "recommendation": "org.matrix.mjolnir.ban"
-            },)
-
-                .then(async () => {
-
-                    //delete reactions to limit duplicate responses
-                    //didnt await these earler for speed and performance, so need to await the promises now
-                    client.redactEvent(logchannel, await checkMessagePromise, "related reaction").catch(() => {})
-                    client.redactEvent(logchannel,  await xMessagePromise, "related reaction").catch(() => {})
-                
-                    //confirm ban for clients that cant read banlist events
-                    client.sendEvent(logchannel, "m.reaction", ({
-                        "m.relates_to": {
-                            "event_id":logmsgid,
-                            "key":"🔨 | banned",
-                            "rel_type": "m.annotation"
-                        }
-                    }))
-                    //catch it in case edge case of duplicate actions, this way it wont error
-                    .catch(() => {})
-                
-                })
-
-                //delete mod response even if it fails to enable trying again
-                .finally(async () => { client.redactEvent(logchannel, userReactionId, "related reaction").catch(() => {}) })
-                
-                //catch errors with sending the state event
-                .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
-
-        }
-
-        //callback to mark it as not a scam and delete it
-        async function denyScam (userReactionId) {
-
-            //delete events already existing
-            client.redactEvent(logchannel, logmsgid, "not a scam")
-            client.redactEvent(logchannel, logfileid, "not a scam")
-            client.redactEvent(logchannel, userReactionId, "related reaction")
-            
-            //didnt await these earler for speed and performance, so need to await the promises now
-            client.redactEvent(logchannel, await checkMessagePromise, "related reaction")
-            client.redactEvent(logchannel,  await xMessagePromise, "related reaction")
-
-            //fetch the bots response to the scam
-            let response = responses.get(event["event_id"])
-            let reaction = reactions.get(event["event_id"])
-
-            //if there is a response to the redacted message then redact the response
-            try{
-                if (response) {await client.redactEvent(response.roomId, response.responseID, "False positive.")}
-                if (reaction) {await client.redactEvent(reaction.roomId, reaction.responseID, "False positive.")}
-
-            //on the rare occasion that the room disables self redactions, or other error, this for some reason crashes the entire process
-            //fuck you nodejs v20
-            } catch (e) {
-
-                // error to send
-                let en = "🍃 | Error redacting warning."
-
-                //send to both log room and that room which it is supposed to redact
-                client.sendHtmlNotice(response.roomId, en)
-                    .catch(() => {})
-                    .finally(() => {client.sendHtmlNotice(logchannel, en)})
-
-            }
-
-        }
-
-        //add the callbacks to the map to be called upon reaction event
-        scamBlEntries.set(logmsgid, {
-            confirmScam:confirmScam,
-            denyScam:denyScam
         })
         
     }

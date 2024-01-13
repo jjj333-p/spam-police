@@ -74,7 +74,7 @@ class message {
                 datapoints.client.sendEvent(datapoints.roomId, "m.reaction", ({
                     "m.relates_to": {
                         "event_id":datapoints.event["event_id"],
-                        "key":"✅",
+                        "key":"Detected",
                         "rel_type": "m.annotation"
                     }
                 }))
@@ -190,6 +190,11 @@ class message {
         
         } else {
 
+            //greeting message
+            let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 
+            "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
+            "For more information please visit https://github.com/jjj333-p/spam-police"            
+
             //split into words, and filter out the empty strings because js is an actual meme language
             let contentByWords = datapoints.event["content"]["body"].split(" ").filter(a=>a)
             let displaynameByWords = datapoints.displayname.split(" ").filter(a=>a)
@@ -199,6 +204,12 @@ class message {
 
                 //if someone starts the message with the mxid
                 if ( contentByWords[0].includes(datapoints.mxid) ){
+
+                    //help command
+                    if (!contentByWords[1] || contentByWords[1] == "help") { datapoints.client.sendText(datapoints.roomId, greeting); return }
+
+                    //definitely not a command
+                    if ( contentByWords[1].startsWith("+") || contentByWords[1].startsWith("1") ) return;
 
                     //if that is a command, run the command
                     let handler = this.commands.get(contentByWords[1])
@@ -261,7 +272,7 @@ class message {
 
                     }   
 
-                    client.sendReadReceipt(datapoints.roomId, datapoints.event["event_id"])
+                    datapoints.client.sendReadReceipt(datapoints.roomId, datapoints.event["event_id"])
 
                     //run the command
                     handler.run(datapoints, {
@@ -277,11 +288,6 @@ class message {
 
                 } else {
 
-                    //greeting message
-                    let greeting = "Greetings! I am a bot by @jjj333:pain.agency (pls dm for questions). " + 
-                    "My MO is I warn people about telegram and whatsapp investment scams whenever they are posted in the room. If I am unwanted please just kick me. " + 
-                    "For more information please visit https://github.com/jjj333-p/spam-police"
-
                     datapoints.client.sendText(datapoints.roomId, greeting)
 
                 }
@@ -296,9 +302,17 @@ class message {
 
                 if ( ! scannableContent.startsWith(prefix) ) return 
 
+                //parce out command
+                let command = contentByWords[0].substring(prefix.length)
+
+                //not a command
+                if (!command || command.startsWith("+") || command.startsWith("1") ) return;
+
+                //help
+                if (command == "help") { datapoints.client.sendText(datapoints.roomId, greeting); return }
 
                 //if that is a command, run the command
-                let handler = this.commands.get(contentByWords[0].substring(prefix.length))
+                let handler = this.commands.get(command)
 
                 //if no handler, than its not a valid command
                 if (!handler) {

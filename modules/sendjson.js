@@ -133,15 +133,15 @@ class Sendjson {
         }))
 
         //add callback to the map to be called upon reaction event
-        reactionQueue.set(logmsgid, async (event) => {
+        reactionQueue.set(logmsgid, async (reactionEvent) => {
 
-            let senderpl = (await client.getRoomStateEvent(logchannel, "m.room.power_levels", null))["users"][event["sender"]]
+            let senderpl = (await client.getRoomStateEvent(logchannel, "m.room.power_levels", null))["users"][reactionEvent["sender"]]
 
             if((senderpl === undefined) || (senderpl < 10 )) {return}
 
-            let userReactionId = event["event_id"]
+            let userReactionId = reactionEvent["event_id"]
 
-            if(event["content"]["m.relates_to"]["key"].includes("✅")){
+            if(reactionEvent["content"]["m.relates_to"]["key"].includes("✅")){
 
                 //only allow to run once
                 reactionQueue.delete(logmsgid)
@@ -185,7 +185,7 @@ class Sendjson {
                     //catch errors with sending the state event
                     .catch(err => client.sendHtmlNotice(logchannel, "<p>🍃 | I unfortunately ran into the following error while trying to add that to the banlist:\n</p><code>" + err+ "</code>"))
 
-            } else if (event["content"]["m.relates_to"]["key"].includes("❌")){
+            } else if (reactionEvent["content"]["m.relates_to"]["key"].includes("❌")){
 
                 //only allow to run once
                 reactionQueue.delete(logmsgid)

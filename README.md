@@ -22,6 +22,8 @@ To invite it, you can run the command below in [`#spam-police-bot-cmds:matrix.or
 +join [Alias/ID to room]
 ```
 
+By using my instance you agree to everything applicable within [https://pain.agency/legal/](pain.agency/legal)
+
 > **Note**
 >
 > If you have problems inviting the bot, make sure the bot can join it. if the room is invite only, invite the bot account to the room first. If you still have problems, join our [support room](https://matrix.to/#/#anti-scam-support:matrix.org).

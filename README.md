@@ -53,9 +53,10 @@ By using my instance you agree to everything applicable within [https://pain.age
 ### Moderation Related Commands
 
 - `rules` - generates a json file of all rules that apply to the room, sorted by banlist. Adding a way to filter for a specific user is planned but not currently a thing
-> Note the following commands require  ban permission because that is the powerlevel required to perform these same actions manually (or with a selfbot)
+> Note the following commands require  ban permission unless otherwise noted because that is the powerlevel required to perform these same actions manually (or with a selfbot)
 - `followbanlist [add/remove] [room ID/alias/matrix.to]` - subscribes or unsubscribes the room to a mjolner banlist, and performs mass moderation actions as mjolner would.
 - `banlist [add/remove] [here / room ID/alias/matrix.to] [target user mxid] <reason>` - writes or removes a mjolner ban recomendation policy to a "banlist" room with a given reason
+	- requires ban permission or permission to write m.rule.policy.user state events as that is the permission required to perform the same actions by hand or selfbot.
 
 ### Administration Commands for Selfhosters
 

@@ -23,7 +23,7 @@ class Banlist {
         client.resolveRoom(banlist).then(async banlistid=> {
 
             //make sure the user trying to write to the banlist can write to the banlist
-            if ( ! await client.userHasPowerLevelForAction(event["sender"], banlistid, "ban") ) {
+            if ( ! ( await client.userHasPowerLevelForAction(event["sender"], banlistid, "ban") || await client.userHasPowerLevelFor(event["sender"], banlistid, "m.policy.rule.user", true)) ) {
 
                 client.sendNotice(roomId, "❌ | You don't have sufficent permission in the banlist room.")
                 

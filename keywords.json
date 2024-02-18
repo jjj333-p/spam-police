@@ -9,7 +9,8 @@
             "cashout",
             "get",
             "donat",
-            "rescrib", "contact"
+            "rescrib", "contact",
+            "interest"
         ],
         "currencies":[
             "$", "£", "€",
@@ -22,7 +23,8 @@
             "paypal",
             "bitcoin", "btc",
             "ethereum", " eth",
-            "drug", "ɖrųɠ", "plug"
+            "drug", "ɖrųɠ", "plug",
+            "cannabis", "psychedelic"
         ],
         "socials":[
             "bit.ly/",

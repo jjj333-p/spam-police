@@ -49,6 +49,7 @@ eventhandlers.set("m.room.redaction", new redaction(eventhandlers)); // Event ha
 
 //preallocate variables so they have a global scope
 let mxid;
+let server;
 
 const reactionQueue = new Map();
 
@@ -61,6 +62,7 @@ client.start().then(async () => {
 
 	//get mxid
 	mxid = await client.getUserId();
+	server = mxid.split(":")[1];
 
 	//fetch rooms the bot is in
 	const rooms = await client.getJoinedRooms();
@@ -167,6 +169,7 @@ client.on("room.event", async (roomId, event) => {
 		roomId: roomId,
 		event: event,
 		mxid: mxid,
+		server: server,
 		displayname: cdn,
 		blacklist: nogoList,
 		reactionQueue: reactionQueue,

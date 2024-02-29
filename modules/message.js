@@ -15,6 +15,7 @@ import { Mute } from "./commands/mute.js";
 import { Banlist } from "./commands/banlist.js";
 import { FollowBanList } from "./commands/followbanlist.js";
 import { Rules } from "./commands/rules.js";
+import { CC } from "./commands/create-community.js";
 
 const sendjson = new Sendjson();
 
@@ -45,6 +46,7 @@ class message {
 		this.commands.set("banlist", new Banlist());
 		this.commands.set("followbanlist", new FollowBanList());
 		this.commands.set("rules", new Rules());
+		this.commands.set("create-community", new CC());
 	}
 
 	// async run ({client, roomId, event, mxid, displayname, blacklist}){

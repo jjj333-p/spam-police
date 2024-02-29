@@ -45,17 +45,11 @@ class Sendjson {
 		}
 
 		//fetch the set alias of the room
-		let mainRoomAlias = await client.getPublishedAlias(roomId);
-
-		//if there is no alias of the room
-		if (!mainRoomAlias) {
-			//dig through the state, find room name, and use that in place of the main room alias
-			mainRoomAlias = (await client.getRoomState(roomId)).find(
+		const mainRoomAlias =
+			(await client.getPublishedAlias(roomId)) ??
+			(await client.getRoomState(roomId)).find(
 				(state) => state.type === "m.room.name",
 			).content.name;
-
-			//should still be able to go to the link using the https://matrix.to/#/ link
-		}
 
 		//check if already on banlist
 		const entry = await banlistReader.match(logchannel, event.sender);

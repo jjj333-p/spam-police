@@ -19,7 +19,7 @@ class database {
 		// go ahead and load configs so dont have to wait for disk.
 		// size should be small enough to cache it all without
 		// worrying about ram usage
-		for (const fileName in configfilelist) {
+		for (const fileName of configfilelist) {
 			//filename is derived from the room id (map key)
 			const id = fileName.substring(0, fileName.length - 5);
 

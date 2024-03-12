@@ -73,13 +73,16 @@ class message {
 			//if the scam is posted in the room deticated to posting tg scams
 			if (datapoints.roomId === this.logRoom) {
 				//confirm it matches the keywords
-				datapoints.client.sendEvent(datapoints.roomId, "m.reaction", {
-					"m.relates_to": {
-						event_id: datapoints.event.event_id,
-						key: "Detected",
-						rel_type: "m.annotation",
-					},
-				});
+				datapoints.client
+					.sendEvent(datapoints.roomId, "m.reaction", {
+						"m.relates_to": {
+							event_id: datapoints.event.event_id,
+							key: "Detected",
+							rel_type: "m.annotation",
+						},
+					})
+					// ???
+					.catch(() => {});
 			} else {
 				//custom function to handle the fetching and sending of the json file async as to not impact responsiveness
 				sendjson.send(

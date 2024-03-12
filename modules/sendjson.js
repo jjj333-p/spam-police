@@ -26,7 +26,14 @@ class Sendjson {
 				const replyID = replyRelation["m.in_reply_to"].event_id;
 
 				//fetch the event from that id
-				const repliedEvent = await client.getEvent(roomId, replyID);
+				let repliedEvent;
+
+				try {
+					repliedEvent = await client.getEvent(roomId, replyID);
+				} catch (e) {
+					console.error("Error loading message that was replied to:", e);
+					return;
+				}
 
 				//make the content scanable
 				const scannableContent = repliedEvent.content.body.toLowerCase();
@@ -45,11 +52,20 @@ class Sendjson {
 		}
 
 		//fetch the set alias of the room
-		const mainRoomAlias =
-			(await client.getPublishedAlias(roomId)) ??
-			(await client.getRoomState(roomId)).find(
-				(state) => state.type === "m.room.name",
-			).content.name;
+		let mainRoomAlias;
+		try {
+			mainRoomAlias =
+				(await client.getPublishedAlias(roomId)) ??
+				(await client.getRoomState(roomId)).find(
+					(state) => state.type === "m.room.name",
+				).content.name;
+		} catch (e) {
+			console.error(
+				"Error fetching alias and or room name in scam reporting\n",
+				e,
+			);
+			mainRoomAlias = "<ERROR>";
+		}
 
 		//check if already on banlist
 		const entry = await banlistReader.match(logchannel, event.sender);
@@ -64,16 +80,19 @@ class Sendjson {
 			}
 
 			//make banlist rule
-			client.sendStateEvent(
-				logchannel,
-				"m.policy.rule.user",
-				`rule:${event.sender}`,
-				{
-					entity: event.sender,
-					reason: `${existingReason} ${mainRoomAlias}`,
-					recommendation: "org.matrix.mjolnir.ban",
-				},
-			);
+			client
+				.sendStateEvent(
+					logchannel,
+					"m.policy.rule.user",
+					`rule:${event.sender}`,
+					{
+						entity: event.sender,
+						reason: `${existingReason} ${mainRoomAlias}`,
+						recommendation: "org.matrix.mjolnir.ban",
+					},
+				)
+				//it literally does not matter if this fails
+				.catch(() => {});
 
 			//dont send a log if its already been reported
 			return;
@@ -89,10 +108,9 @@ class Sendjson {
 			)
 		) {
 			return;
-			// biome-ignore lint/style/noUselessElse: <not useless??>
-		} else {
-			this.tgScams.push({ event: event, roomId: roomId });
 		}
+
+		this.tgScams.push({ event: event, roomId: roomId });
 
 		//filename
 		const filename = `${
@@ -103,11 +121,16 @@ class Sendjson {
 		const file = Buffer.from(JSON.stringify(event, null, 2));
 
 		//upload the file buffer to the matrix homeserver, and grab mxc:// url
-		const linktofile = await client.uploadContent(
-			file,
-			"application/json",
-			filename,
-		);
+		let linktofile;
+		try {
+			linktofile = await client.uploadContent(
+				file,
+				"application/json",
+				filename,
+			);
+		} catch (e) {
+			console.error("Unable to upload scam detection json file", e);
+		}
 
 		//if the bot is in the room, that mean it's homeserver can be used for a via
 		const via = mxid.split(":")[1];
@@ -119,21 +142,34 @@ class Sendjson {
 			.replaceAll("@", "&64;");
 
 		//send log message
-		const logmsgid = await client.sendHtmlText(
-			logchannel,
-			`${event.sender} in ${mainRoomAlias}\n<blockquote>${escapedText}</blockquote>\nhttps://matrix.to/#/${roomId}/${event.event_id}?via=${via}`,
-		);
+		try {
+			const logmsgid = await client.sendHtmlText(
+				logchannel,
+				`${event.sender} in ${mainRoomAlias}\n<blockquote>${escapedText}</blockquote>\nhttps://matrix.to/#/${roomId}/${event.event_id}?via=${via}`,
+			);
+		} catch (e) {
+			console.error("Unable to send message to log room:", e);
+			//this is all pointless if we cant send a message
+			return;
+		}
 
 		//send the file that was uploaded
-		const logfileid = await client.sendMessage(logchannel, {
-			body: filename,
-			info: {
-				mimetype: "application/json",
-				size: file.byteLength,
-			},
-			msgtype: "m.file",
-			url: linktofile,
-		});
+		if (linktofile) {
+			try {
+				const logfileid = await client.sendMessage(logchannel, {
+					body: filename,
+					info: {
+						mimetype: "application/json",
+						size: file.byteLength,
+					},
+					msgtype: "m.file",
+					url: linktofile,
+				});
+
+				//makes no sense to happen if the earlier message succeeded
+				//if that somehow does happen, makes no sense to try to do anything
+			} catch (e) {}
+		}
 
 		//easy reaction for moderators
 		const checkMessagePromise = client.sendEvent(logchannel, "m.reaction", {

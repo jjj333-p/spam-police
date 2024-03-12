@@ -18,18 +18,18 @@ class redaction {
 
 			//if there is a response to the redacted message then redact the response
 			if (response) {
-				client.redactEvent(
-					response.roomId,
-					response.responseID,
-					"Investment scam that this message was replying to was deleted.",
-				);
+				client
+					.redactEvent(
+						response.roomId,
+						response.responseID,
+						"The message that this message was replying to was deleted.",
+					)
+					.catch(() => {});
 			}
 			if (reaction) {
-				client.redactEvent(
-					reaction.roomId,
-					reaction.responseID,
-					"Investment scam that this message was replying to was deleted.",
-				);
+				client
+					.redactEvent(reaction.roomId, reaction.responseID)
+					.catch(() => {});
 			}
 
 			//if deleting a banlist event just reprocess banlist

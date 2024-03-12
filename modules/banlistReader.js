@@ -1,5 +1,7 @@
 //see if the State Event `se` is intended to ban the mxid `matchMXID`
-function matchBanlistEventToUser(se, matchMXID) {
+function matchBanlistEventToUser(se, mm) {
+	let matchMXID = mm;
+
 	//if the ban was erased
 	if (!se.content) {
 		return false;

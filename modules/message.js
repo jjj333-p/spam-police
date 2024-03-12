@@ -1,6 +1,6 @@
 //misc imports
 import { PowerLevelAction } from "matrix-bot-sdk";
-import { createRequire } from "module";
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 import { Sendjson } from "./sendjson.js";

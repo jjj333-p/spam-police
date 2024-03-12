@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "fs";
-import { createRequire } from "module";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 class Sendjson {
@@ -301,7 +301,7 @@ function includesWord(str, catgs) {
 	//assume true if you dont have any missing
 	let result = true;
 
-	for (cat in catgs) {
+	for (const cat of catgs) {
 		if (!cat.some((word) => str.includes(word))) result = false;
 	}
 

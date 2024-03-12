@@ -16,7 +16,7 @@ class Join {
 		}
 
 		//grep out the room indicated by the user
-		const joinroom = event.event_id.body.split(" ")[1 + offset];
+		const joinroom = event.content.body.split(" ")[1 + offset];
 
 		//evaluate if its a valid alias
 		client

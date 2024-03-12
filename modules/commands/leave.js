@@ -3,7 +3,7 @@ class Leave {
 		//verify is sent by an admin
 		if (authorizedUsers.some((u) => u === event.sender)) {
 			//parce out the possible room id
-			const leaveRoom = event.event_id.body.split(" ")[1 + offset];
+			const leaveRoom = event.content.body.split(" ")[1 + offset];
 
 			//"+leave" as well as a space afterwards
 			let substringStart = 7;
@@ -22,7 +22,7 @@ class Leave {
 						substringStart = substringStart + leaveRoom.length + 1;
 
 						//parce out the reason
-						let reason = event.event_id.body.substring(substringStart);
+						let reason = event.content.body.substring(substringStart);
 
 						//make sure reason is in the banlist
 						if (!reason) {
@@ -70,7 +70,7 @@ class Leave {
 				//if cant possibly be a room alias, leave *this* room
 			} else {
 				//parce out reason
-				const reason = event.event_id.body.substring(substringStart);
+				const reason = event.content.body.substring(substringStart);
 
 				//add to blacklist
 				blacklist.add(roomId, reason);

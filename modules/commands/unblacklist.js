@@ -3,7 +3,7 @@ class Unblacklist {
 		//verify is sent by an admin
 		if (authorizedUsers.some((u) => u === event.sender)) {
 			//parce out the possible room id
-			const leaveRoom = event.event_id.body.split(" ")[1 + offset];
+			const leaveRoom = event.content.body.split(" ")[1 + offset];
 
 			//if has the characters required for a room id or alias
 			if (

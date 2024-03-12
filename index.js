@@ -4,7 +4,7 @@ import {
 	MatrixClient,
 	SimpleFsStorageProvider,
 } from "matrix-bot-sdk";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 
 //Import modules
@@ -53,12 +53,33 @@ let server;
 
 const reactionQueue = new Map();
 
+const filter = {
+	presence: { senders: [] },
+	room: {
+		ephemeral: { senders: [] },
+		state: {
+			not_types: [
+				"im.vector.modular.widgets",
+				"im.ponies.room_emotes",
+				"m.room.pinned_events",
+			],
+			lazy_load_members: true,
+		},
+		timeline: {
+			limit: 20,
+		},
+	},
+};
+
 //Start Client
-client.start().then(async () => {
+client.start(filter).then(async (filter) => {
 	console.log("Client started!");
 
 	//to remotely monitor how often the bot restarts, to spot issues
-	client.sendText(logRoom, "Started.");
+	client.sendText(logRoom, "Started.").catch((e) => {
+		console.log("Error sending basic test message to log room.");
+		process.exit(1);
+	});
 
 	//get mxid
 	mxid = await client.getUserId();
@@ -66,6 +87,18 @@ client.start().then(async () => {
 
 	//fetch rooms the bot is in
 	const rooms = await client.getJoinedRooms();
+
+	//fetch avatar url so we dont overrite it
+	let avatar_url;
+
+	try {
+		const userProfile = await client.getUserProfile(mxid);
+		avatar_url = userProfile.avatar_url;
+	} catch (error) {
+		console.error("Error fetching user profile:", error);
+		// Handle the error as needed (e.g., provide a default avatar URL)
+		avatar_url = "";
+	}
 
 	//slowly loop through rooms to avoid ratelimit
 	const i = setInterval(async () => {
@@ -106,9 +139,6 @@ client.start().then(async () => {
 
 		//if the current display name isnt the desired one
 		if (cdn !== ddn) {
-			//fetch avatar url so we dont overrite it
-			const avatar_url = (await client.getUserProfile(mxid)).avatar_url;
-
 			//send member state with the new displayname
 			client
 				.sendStateEvent(currentRoom, "m.room.member", mxid, {
@@ -116,7 +146,8 @@ client.start().then(async () => {
 					displayname: ddn,
 					membership: "join",
 				})
-				.then(console.log(`done ${currentRoom}`));
+				.then(console.log(`done ${currentRoom}`))
+				.catch((e) => console.error);
 		}
 
 		// 3 second delay to avoid ratelimit

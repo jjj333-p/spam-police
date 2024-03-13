@@ -54,10 +54,14 @@ let server;
 const reactionQueue = new Map();
 
 const filter = {
+	//dont expect any presence from m.org, but in the case presence shows up its irrelevant to this bot
 	presence: { senders: [] },
 	room: {
+		//ephemeral events are never used in this bot, are mostly inconsequentail and irrelevant
 		ephemeral: { senders: [] },
+		//we fetch state manually later, hopefully with better load balancing
 		state: {
+			senders: [],
 			not_types: [
 				"im.vector.modular.widgets",
 				"im.ponies.room_emotes",
@@ -65,6 +69,8 @@ const filter = {
 			],
 			lazy_load_members: true,
 		},
+		//we will manually fetch events anyways, this is just limiting how much backfill bot gets as to not
+		//respond to events far out of view
 		timeline: {
 			limit: 20,
 		},

@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 
 class Rules {
 	async run(
@@ -40,22 +40,24 @@ class Rules {
 		const file = Buffer.from(JSON.stringify(rules, null, 2));
 
 		//upload the file buffer to the matrix homeserver, and grab mxc:// url
-		const linktofile = await client.uploadContent(
-			file,
-			"application/json",
-			filename,
-		);
+		const linktofile = await client
+			.uploadContent(file, "application/json", filename)
+			.catch(() => {
+				client.sendNotice(roomId, "Error uploading file.").catch(() => {});
+			});
 
 		//send file
-		client.sendMessage(roomId, {
-			body: filename,
-			info: {
-				mimetype: "application/json",
-				size: file.byteLength,
-			},
-			msgtype: "m.file",
-			url: linktofile,
-		});
+		client
+			.sendMessage(roomId, {
+				body: filename,
+				info: {
+					mimetype: "application/json",
+					size: file.byteLength,
+				},
+				msgtype: "m.file",
+				url: linktofile,
+			})
+			.catch(() => {});
 	}
 }
 

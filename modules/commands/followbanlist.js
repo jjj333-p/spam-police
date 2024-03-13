@@ -5,7 +5,7 @@ class FollowBanList {
 	) {
 		//check if the command even has the required feilds
 		if (contentByWords.length !== 3 + offset) {
-			client.sendNotice(roomId, "❌ | Malformed command.");
+			client.sendNotice(roomId, "❌ | Malformed command.").catch(() => {});
 
 			return;
 		}
@@ -14,20 +14,24 @@ class FollowBanList {
 		if (
 			!(await client.userHasPowerLevelForAction(event.sender, roomId, "ban"))
 		) {
-			client.sendNotice(
-				roomId,
-				"❌ | You don't have sufficent permission. (need ban permission)",
-			);
+			client
+				.sendNotice(
+					roomId,
+					"❌ | You don't have sufficent permission. (need ban permission)",
+				)
+				.catch(() => {});
 
 			return;
 		}
 
 		//make sure the bot has ban permissions before adding banlist
 		if (!(await client.userHasPowerLevelForAction(mxid, roomId, "ban"))) {
-			client.sendNotice(
-				roomId,
-				"❌ | I don't have sufficent permission. (need ban permission)",
-			);
+			client
+				.sendNotice(
+					roomId,
+					"❌ | I don't have sufficent permission. (need ban permission)",
+				)
+				.catch(() => {});
 
 			return;
 		}
@@ -42,7 +46,7 @@ class FollowBanList {
 
 		//if the user wants a list
 		if (contentByWords[offset + 1].toLowerCase() === "list") {
-			client.sendNotice(roomId, "banlist list here");
+			client.sendNotice(roomId, "banlist list here").catch(() => {});
 
 			return;
 		}
@@ -57,7 +61,9 @@ class FollowBanList {
 				if (contentByWords[1 + offset] === "add") {
 					//if already following banlist, there is nothing to do
 					if (currentBanlists.includes(joinroomid)) {
-						client.sendNotice(roomId, "♻️ | Already following this banlist.");
+						client
+							.sendNotice(roomId, "♻️ | Already following this banlist.")
+							.catch(() => {});
 
 						return;
 					}
@@ -68,10 +74,12 @@ class FollowBanList {
 					//if there is a reason that means the room was blacklisted
 					if (blReason) {
 						//send error
-						client.sendHtmlNotice(
-							roomId,
-							`❌ | The bot was blacklisted from this room for reason <code>${blReason}</code>.`,
-						);
+						client
+							.sendHtmlNotice(
+								roomId,
+								`❌ | The bot was blacklisted from this room for reason <code>${blReason}</code>.`,
+							)
+							.catch(() => {});
 
 						//dont continue trying to join
 						return;
@@ -84,7 +92,7 @@ class FollowBanList {
 
 						//set the config
 						config.setConfig(roomId, "banlists", currentBanlists, (err) => {
-							client.sendNotice(roomId, err);
+							client.sendNotice(roomId, err).catch(() => {});
 						});
 
 						return;
@@ -120,31 +128,34 @@ class FollowBanList {
 								.sendNotice(joinroomid, greeting)
 								.finally(() => {
 									//confirm joined and can send messages
-									client.sendNotice(
-										roomId,
-										"✅ | successfully joined banlist!",
-									);
+									client
+										.sendNotice(roomId, "✅ | successfully joined banlist!")
+										.catch(() => {});
 								})
 								.catch((err) => {});
 						})
 						.catch((err) => {
 							//throw error about joining room
-							client.sendHtmlNotice(
-								roomId,
-								`❌ | I ran into the following error while trying to join that room:<blockquote>${JSON.stringify(
-									err.body,
-									null,
-									2,
-								)}</blockquote>`,
-							);
+							client
+								.sendHtmlNotice(
+									roomId,
+									`❌ | I ran into the following error while trying to join that room:<blockquote>${JSON.stringify(
+										err.body,
+										null,
+										2,
+									)}</blockquote>`,
+								)
+								.catch(() => {});
 						});
 				} else if (contentByWords[1 + offset] === "remove") {
 					//if not currently subscribed, there is nothing to remove
 					if (!currentBanlists.some((b) => b === joinroomid)) {
-						client.sendHtmlNotice(
-							roomId,
-							`Not currently subscribed to any banlist with the RoomID <blacklist>${joinroomid}</blacklist>.`,
-						);
+						client
+							.sendHtmlNotice(
+								roomId,
+								`Not currently subscribed to any banlist with the RoomID <blacklist>${joinroomid}</blacklist>.`,
+							)
+							.catch(() => {});
 
 						return;
 					}
@@ -158,20 +169,24 @@ class FollowBanList {
 						},
 					);
 				} else {
-					client.sendHtmlNotice(
-						roomId,
-						`❌ | Unknown operation <blockquote>${
-							contentByWords[1 + offset]
-						}</blockquote>, expected <blockquote>add</blockquote> or <blockquote>remove</blackquote>.`,
-					);
+					client
+						.sendHtmlNotice(
+							roomId,
+							`❌ | Unknown operation <blockquote>${
+								contentByWords[1 + offset]
+							}</blockquote>, expected <blockquote>add</blockquote> or <blockquote>remove</blackquote>.`,
+						)
+						.catch(() => {});
 				}
 			})
 			.catch((err) => {
 				//throw error about invalid alias
-				client.sendHtmlNotice(
-					roomId,
-					`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
-				);
+				client
+					.sendHtmlNotice(
+						roomId,
+						`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
+					)
+					.catch(() => {});
 			});
 	}
 }

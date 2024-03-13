@@ -57,10 +57,12 @@ class CC {
 				room_version: "11",
 			})
 			.catch(() =>
-				client.sendHtmlNotice(
-					roomId,
-					"❌ | I encountered an error attempting to create the space",
-				),
+				client
+					.sendHtmlNotice(
+						roomId,
+						"❌ | I encountered an error attempting to create the space",
+					)
+					.catch(() => {}),
 			);
 
 		const newRoomId = await client
@@ -121,16 +123,20 @@ class CC {
 				room_version: "11",
 			})
 			.catch(() =>
-				client.sendHtmlNotice(
-					roomId,
-					"❌ | I encountered an error attempting to create the management room",
-				),
+				client
+					.sendHtmlNotice(
+						roomId,
+						"❌ | I encountered an error attempting to create the management room",
+					)
+					.catch(() => {}),
 			);
 
-		client.sendStateEvent(newSpaceId, "m.space.child", newRoomId, {
-			suggested: false,
-			via: [server],
-		});
+		client
+			.sendStateEvent(newSpaceId, "m.space.child", newRoomId, {
+				suggested: false,
+				via: [server],
+			})
+			.catch(() => {});
 	}
 }
 

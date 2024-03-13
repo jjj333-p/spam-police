@@ -45,26 +45,32 @@ class Leave {
 									.leaveRoom(leaveroomid)
 									.then(() => {
 										//success message
-										client.sendHtmlNotice(
-											roomId,
-											`✅ | left room <code>${leaveroomid}</code> with reason <code>${reason}</code>.`,
-										);
+										client
+											.sendHtmlNotice(
+												roomId,
+												`✅ | left room <code>${leaveroomid}</code> with reason <code>${reason}</code>.`,
+											)
+											.catch(() => {});
 									})
 									.catch((err) => {
 										//error message
-										client.sendHtmlNotice(
-											roomId,
-											`❌ | I ran into the following error leaving the room: <code>${err}</code>`,
-										);
+										client
+											.sendHtmlNotice(
+												roomId,
+												`❌ | I ran into the following error leaving the room: <code>${err}</code>`,
+											)
+											.catch(() => {});
 									});
 							});
 					})
 					.catch((err) => {
 						//throw error about invalid alias
-						client.sendHtmlNotice(
-							roomId,
-							`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
-						);
+						client
+							.sendHtmlNotice(
+								roomId,
+								`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
+							)
+							.catch(() => {});
 					});
 
 				//if cant possibly be a room alias, leave *this* room
@@ -76,13 +82,15 @@ class Leave {
 				blacklist.add(roomId, reason);
 
 				//leave room
-				client.leaveRoom(roomId);
+				client.leaveRoom(roomId).catch(() => {});
 			}
 		} else {
-			client.sendText(
-				roomId,
-				"Sorry, only my owner(s) can do that. If you are a moderator of the room please just kick me from the room, I will not join back unless someone tells me to (and I will disclose who told me to).",
-			);
+			client
+				.sendText(
+					roomId,
+					"Sorry, only my owner(s) can do that. If you are a moderator of the room please just kick me from the room, I will not join back unless someone tells me to (and I will disclose who told me to).",
+				)
+				.catch(() => {});
 		}
 	}
 }

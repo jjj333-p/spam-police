@@ -5,12 +5,14 @@ class Join {
 	) {
 		//if not run in the command room
 		if (roomId !== commandRoom) {
-			client.sendNotice(
-				roomId,
-				`❌ | you must run +join commands in https://matrix.to/#/${commandRoom}?via=${
-					mxid.split(":")[1]
-				}`,
-			);
+			client
+				.sendNotice(
+					roomId,
+					`❌ | you must run +join commands in https://matrix.to/#/${commandRoom}?via=${
+						mxid.split(":")[1]
+					}`,
+				)
+				.catch(() => {});
 
 			return;
 		}
@@ -28,10 +30,12 @@ class Join {
 				//if there is a reason that means the room was blacklisted
 				if (blReason) {
 					//send error
-					client.sendHtmlNotice(
-						roomId,
-						`❌ | The bot was blacklisted from this room for reason <code>${blReason}</code>.`,
-					);
+					client
+						.sendHtmlNotice(
+							roomId,
+							`❌ | The bot was blacklisted from this room for reason <code>${blReason}</code>.`,
+						)
+						.catch(() => {});
 
 					//dont continue trying to join
 					return;
@@ -65,30 +69,36 @@ class Join {
 							})
 							.catch((err) => {
 								//confirm could join, but show error that couldn't send messages
-								client.sendNotice(
-									roomId,
-									"🍃 | I was able to join the provided room however I am unable to send messages, and therefore will only be able to react to messages with my warning.",
-								);
+								client
+									.sendNotice(
+										roomId,
+										"🍃 | I was able to join the provided room however I am unable to send messages, and therefore will only be able to react to messages with my warning.",
+									)
+									.catch(() => {});
 							});
 					})
 					.catch((err) => {
 						//throw error about joining room
-						client.sendHtmlNotice(
-							roomId,
-							`❌ | I ran into the following error while trying to join that room:<blockquote>${JSON.stringify(
-								err.body,
-								null,
-								2,
-							)}</blockquote>`,
-						);
+						client
+							.sendHtmlNotice(
+								roomId,
+								`❌ | I ran into the following error while trying to join that room:<blockquote>${JSON.stringify(
+									err.body,
+									null,
+									2,
+								)}</blockquote>`,
+							)
+							.catch(() => {});
 					});
 			})
 			.catch((err) => {
 				//throw error about invalid alias
-				client.sendHtmlNotice(
-					roomId,
-					`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
-				);
+				client
+					.sendHtmlNotice(
+						roomId,
+						`❌ | I ran into the following error while trying to resolve that room ID:<blockquote>${err.message}</blockquote>`,
+					)
+					.catch(() => {});
 			});
 	}
 }

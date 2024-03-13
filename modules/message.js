@@ -265,18 +265,22 @@ class message {
 
 					//if no handler its not a valid command
 					if (!handler) {
-						await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", {
-							"m.relates_to": {
-								event_id: datapoints.event.event_id,
-								key: "❌ | invalid cmd",
-								rel_type: "m.annotation",
-							},
-						});
+						await datapoints.client
+							.sendEvent(datapoints.roomId, "m.reaction", {
+								"m.relates_to": {
+									event_id: datapoints.event.event_id,
+									key: "❌ | invalid cmd",
+									rel_type: "m.annotation",
+								},
+							})
+							.catch(() => {});
 
 						return;
 					}
 
-					client.sendReadReceipt(datapoints.roomId, datapoints.event.event_id);
+					client
+						.sendReadReceipt(datapoints.roomId, datapoints.event.event_id)
+						.catch(() => {});
 
 					//run the command
 					handler.run(datapoints, {
@@ -359,13 +363,15 @@ class message {
 
 				//if no handler, than its not a valid command
 				if (!handler) {
-					await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", {
-						"m.relates_to": {
-							event_id: datapoints.event.event_id,
-							key: "❌ | invalid cmd",
-							rel_type: "m.annotation",
-						},
-					});
+					await datapoints.client
+						.sendEvent(datapoints.roomId, "m.reaction", {
+							"m.relates_to": {
+								event_id: datapoints.event.event_id,
+								key: "❌ | invalid cmd",
+								rel_type: "m.annotation",
+							},
+						})
+						.catch(() => {});
 
 					return;
 				}

@@ -155,9 +155,10 @@ class Sendjson {
 		}
 
 		//send the file that was uploaded
+		let logfileid;
 		if (linktofile) {
 			try {
-				const logfileid = await client.sendMessage(logchannel, {
+				logfileid = await client.sendMessage(logchannel, {
 					body: filename,
 					info: {
 						mimetype: "application/json",

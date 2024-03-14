@@ -143,10 +143,9 @@ class message {
 										const replyID = replyRelation["m.in_reply_to"].event_id;
 
 										//fetch the event from that id
-										const repliedEvent = await datapoints.client.getEvent(
-											datapoints.roomId,
-											replyID,
-										);
+										const repliedEvent = await datapoints.client
+											.getEvent(datapoints.roomId, replyID)
+											.catch(() => {});
 
 										//make the content scanable
 										const scannableContent =
@@ -172,14 +171,8 @@ class message {
 
 								const reason = "Scam Likely";
 
-								if (!scamAction) {
-									if (
-										await datapoints.client.userHasPowerLevelForAction(
-											datapoints.mxid,
-											datapoints.roomId,
-											"kick",
-										)
-									) {
+								try {
+									if (!scamAction) {
 										datapoints.client
 											.kickUser(
 												datapoints.event.sender,
@@ -187,15 +180,7 @@ class message {
 												reason,
 											)
 											.catch(() => {});
-									}
-								} else if (scamAction === -1) {
-									if (
-										await datapoints.client.userHasPowerLevelForAction(
-											datapoints.mxid,
-											datapoints.roomId,
-											"redact",
-										)
-									) {
+									} else if (scamAction === -1) {
 										datapoints.client
 											.redactEvent(
 												datapoints.roomId,
@@ -203,13 +188,15 @@ class message {
 												reason,
 											)
 											.catch(() => {});
+									} else if (scamAction === 1) {
+										//     userHasPowerLevelFor(userId: string, datapoints.roomId: string, eventType: string, isState: boolean): Promise<boolean>;
+										// setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
+										// datapoints.client.setUserPowerLevel(user, roomId, newlevel)
+										// if ( await datapoints.client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
+										// }
 									}
-								} else if (scamAction === 1) {
-									//     userHasPowerLevelFor(userId: string, datapoints.roomId: string, eventType: string, isState: boolean): Promise<boolean>;
-									// setUserPowerLevel(userId: string, roomId: string, newLevel: number): Promise<any>;
-									// datapoints.client.setUserPowerLevel(user, roomId, newlevel)
-									// if ( await datapoints.client.userHasPowerLevelFor(mxid, roomId, "m.room.power_levels", true) ){
-									// }
+								} catch (e) {
+									/*TODO*/
 								}
 							});
 					});
@@ -217,12 +204,14 @@ class message {
 
 			//check if can respond
 		} else if (
-			!(await datapoints.client.userHasPowerLevelFor(
-				datapoints.mxid,
-				datapoints.roomId,
-				"m.room.message",
-				false,
-			))
+			!(await datapoints.client
+				.userHasPowerLevelFor(
+					datapoints.mxid,
+					datapoints.roomId,
+					"m.room.message",
+					false,
+				)
+				.catch(() => {}))
 		) {
 			return;
 		} else {
@@ -249,7 +238,9 @@ class message {
 				if (contentByWords[0].includes(datapoints.mxid)) {
 					//help command
 					if (!contentByWords[1] || contentByWords[1] === "help") {
-						datapoints.client.sendText(datapoints.roomId, greeting);
+						datapoints.client
+							.sendText(datapoints.roomId, greeting)
+							.catch(() => {});
 						return;
 					}
 
@@ -306,21 +297,22 @@ class message {
 
 					//if no handler its not a valid command
 					if (!handler) {
-						await datapoints.client.sendEvent(datapoints.roomId, "m.reaction", {
-							"m.relates_to": {
-								event_id: datapoints.event.event_id,
-								key: "❌ | invalid cmd",
-								rel_type: "m.annotation",
-							},
-						});
+						await datapoints.client
+							.sendEvent(datapoints.roomId, "m.reaction", {
+								"m.relates_to": {
+									event_id: datapoints.event.event_id,
+									key: "❌ | invalid cmd",
+									rel_type: "m.annotation",
+								},
+							})
+							.catch(() => {});
 
 						return;
 					}
 
-					datapoints.client.sendReadReceipt(
-						datapoints.roomId,
-						datapoints.event.event_id,
-					);
+					datapoints.client
+						.sendReadReceipt(datapoints.roomId, datapoints.event.event_id)
+						.catch(() => {});
 
 					//run the command
 					handler.run(datapoints, {
@@ -334,7 +326,9 @@ class message {
 						offset: displaynameByWords.length,
 					});
 				} else {
-					datapoints.client.sendText(datapoints.roomId, greeting);
+					datapoints.client
+						.sendText(datapoints.roomId, greeting)
+						.catch(() => {});
 				}
 			} else {
 				//fetch prefix for that room
@@ -354,7 +348,9 @@ class message {
 
 				//help
 				if (command === "help") {
-					datapoints.client.sendText(datapoints.roomId, greeting);
+					datapoints.client
+						.sendText(datapoints.roomId, greeting)
+						.catch(() => {});
 					return;
 				}
 

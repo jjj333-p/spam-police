@@ -169,7 +169,9 @@ class Banlist {
 								)
 								.catch(() => {});
 						}
-					} catch (e) {}
+					} catch (e) {
+						client.sendNotice(roomId, e);
+					}
 				})
 				.catch((err) =>
 					client

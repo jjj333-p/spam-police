@@ -142,8 +142,9 @@ class Sendjson {
 			.replaceAll("@", "&64;");
 
 		//send log message
+		let logmsgid;
 		try {
-			const logmsgid = await client.sendHtmlText(
+			logmsgid = await client.sendHtmlText(
 				logchannel,
 				`${event.sender} in ${mainRoomAlias}\n<blockquote>${escapedText}</blockquote>\nhttps://matrix.to/#/${roomId}/${event.event_id}?via=${via}`,
 			);

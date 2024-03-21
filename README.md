@@ -1,3 +1,7 @@
+## This is the abandoned codebase. I may resume work on this, but for now spam-police is loosing its moderation features. This code archive is for if anyone wants to build upon the code containing the moderation features.
+
+====================================================================================
+
 # Spam Police
 
 A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.

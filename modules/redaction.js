@@ -4,7 +4,16 @@ class redaction {
 	}
 
 	async run({ client, roomId, event, config }) {
-		const redactedEvent = await client.getEvent(roomId, event.redacts);
+		let redactedEvent;
+		try {
+			redactedEvent = await client.getEvent(roomId, event.redacts);
+		} catch (e) {
+			console.log(
+				`Attempted to fetch redacted event ${event.redacts}, but it does not exist?`,
+				e,
+			);
+			return; //if there was no event redacted, that means theres inherently nothing to do
+		}		
 
 		//deleting a chat message
 		if (redactedEvent.type === "m.room.message") {

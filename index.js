@@ -6,6 +6,7 @@ import {
 } from "matrix-bot-sdk";
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
+import mps from "@gnuxie/matrix-protection-suite";
 
 //Import modules
 import { blacklist } from "./modules/blacklist.js";

@@ -78,7 +78,7 @@ class Banlist {
 					//parce the reason using the offset
 					let reason = event.content.body.substring(reasonStart);
 
-					if (!anonymous) reason += `(by ${event.sender})`;
+					if (!anonymous) reason += ` (by ${event.sender})`;
 
 					//parce out banned user
 					const bannedUser = contentByWords[3 + offset];

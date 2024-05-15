@@ -1,3 +1,7 @@
+> **IMPORTANT !!**
+>
+> This instance of the bot is currently not being maintained. The project is not abandoned, but the bot is currently being rewritten, and this stable version kinda sucks right now. Proceed with caution and keep an eye on the 2024 rewrite branch. I will release an announcement when its ready.
+
 # Spam Police
 
 A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.

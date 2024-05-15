@@ -5,9 +5,10 @@
   "type": "module",
   "version": "0.4.0",
   "scripts": {
-    "build": "rm -rf dist && yarn tsc --project tsconfig.json",
+    "build": "rm -rf dist && npx tsc --project tsconfig.json",
     "start": "node dist/index.js",
-    "lint": "yarn eslint src -c .eslintrc.js --ext .ts && yarn prettier src --check"
+    "prettier": "npx prettier src --check",
+    "lint": "npx eslint src -c .eslintrc.cjs --ext .ts && npm run prettier"
   },
   "repository": {
     "type": "git",

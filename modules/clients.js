@@ -86,7 +86,8 @@ class Clients {
 		//will do later
 	}
 
-	async makeSDKrequest(request) {
+	//performs `request` with whichever of `acceptableServers` (array) is available first
+	async makeSDKrequest(acceptableServers, request) {
 		//will write load balancing later,
 		//basically here it will decide which client is not currently doing something and returns that,
 		//if all clients are busy it will await here until one is free

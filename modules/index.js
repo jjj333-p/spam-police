@@ -8,12 +8,12 @@ import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 
 //Import modules
-import { blacklist } from "./modules/blacklist.js";
-import { redaction } from "./modules/redaction.js";
-import { database } from "./modules/db.js";
-import { message } from "./modules/message.js";
-import { Reaction } from "./modules/reaction.js";
-import { BanlistReader } from "./modules/banlistReader.js";
+import { blacklist } from "./blacklist.js";
+import { redaction } from "./redaction.js";
+import { database } from "./db.js";
+import { message } from "./message.js";
+import { Reaction } from "./reaction.js";
+import { BanlistReader } from "./banlistReader.js";
 
 //Parse YAML configuration file
 const loginFile = readFileSync("./db/login.yaml", "utf8");

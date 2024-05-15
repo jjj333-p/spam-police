@@ -96,7 +96,7 @@ class Clients {
 		const client = null;
 
 		try {
-			await request();
+			await request(client);
 		} catch (e) {
 			//handle error
 		}

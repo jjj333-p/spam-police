@@ -6,15 +6,15 @@ import {
 } from "matrix-bot-sdk";
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
-import mps from "@gnuxie/matrix-protection-suite";
+// import mps from "@gnuxie/matrix-protection-suite";
 
 //Import modules
-import { blacklist } from "./modules/blacklist.js";
-import { redaction } from "./modules/redaction.js";
-import { database } from "./modules/db.js";
-import { message } from "./modules/message.js";
-import { Reaction } from "./modules/reaction.js";
-import { BanlistReader } from "./modules/banlistReader.js";
+// import { blacklist } from "./modules/blacklist.js";
+// import { redaction } from "./modules/redaction.js";
+// import { database } from "./modules/db.js";
+// import { message } from "./modules/message.js";
+// import { Reaction } from "./modules/reaction.js";
+// import { BanlistReader } from "./modules/banlistReader.js";
 
 //Parse YAML configuration file
 const loginFile = readFileSync("./db/login.yaml", "utf8");
@@ -30,4 +30,4 @@ const name = loginParsed.name;
 const storage = new SimpleFsStorageProvider("bot.json");
 
 //login to client
-const client = new MatrixClient(homeserver, accessToken, storage);
+// const client = new MatrixClient(homeserver, accessToken, storage);

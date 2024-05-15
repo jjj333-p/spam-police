@@ -32,4 +32,4 @@ accounts:
 
   - 'pain.agency':
     token: 'token'
-    vanity-url: 'https://matrix.pain.agency'
+    url: 'https://matrix.pain.agency'

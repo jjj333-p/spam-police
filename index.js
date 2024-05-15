@@ -1,9 +1,5 @@
 //Import dependencies
-import {
-	AutojoinRoomsMixin,
-	MatrixClient,
-	SimpleFsStorageProvider,
-} from "matrix-bot-sdk";
+
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 // import mps from "@gnuxie/matrix-protection-suite";
@@ -19,15 +15,3 @@ import { parse } from "yaml";
 //Parse YAML configuration file
 const loginFile = readFileSync("./db/login.yaml", "utf8");
 const loginParsed = parse(loginFile);
-const homeserver = loginParsed["homeserver-url"];
-const accessToken = loginParsed["login-token"];
-const logRoom = loginParsed["log-room"];
-const commandRoom = loginParsed["command-room"];
-const authorizedUsers = loginParsed["authorized-users"];
-const name = loginParsed.name;
-
-//the bot sync something idk bro it was here in the example so i dont touch it ;-;
-const storage = new SimpleFsStorageProvider("bot.json");
-
-//login to client
-// const client = new MatrixClient(homeserver, accessToken, storage);

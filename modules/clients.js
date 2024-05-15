@@ -86,8 +86,11 @@ class Clients {
 		//will do later
 	}
 
-	//performs `request` with whichever of `acceptableServers` (array) is available first
-	async makeSDKrequest(acceptableServers, request) {
+	/*
+    performs `request` with whichever of `acceptableServers` (array) is available first.
+    If acceptableServers is empty, the request will be be performed on any server not in rejectedServers
+    */
+	async makeSDKrequest(acceptableServers, rejectedServers, request) {
 		//will write load balancing later,
 		//basically here it will decide which client is not currently doing something and returns that,
 		//if all clients are busy it will await here until one is free
@@ -99,7 +102,7 @@ class Clients {
 		try {
 			await request(client);
 		} catch (e) {
-			//handle error
+			console.warn("UNCAUGHT ERROR WHEN MAKING SDK REQUEST");
 		}
 	}
 }

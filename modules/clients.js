@@ -9,7 +9,7 @@ class Clients {
 		this.consoleRoom = login["console-room"];
 
 		this.filter = {
-			//dont expect any presence from m.org, but in the case presence shows up its irrelevant to this bot
+			//in the case presence shows up its irrelevant to this bot
 			presence: { senders: [] },
 			room: {
 				//ephemeral events are never used in this bot, are mostly inconsequentail and irrelevant
@@ -84,5 +84,21 @@ class Clients {
 
 	async internalOnEvent(server, roomID, event) {
 		//will do later
+	}
+
+	async makeSDKrequest(request) {
+		//will write load balancing later,
+		//basically here it will decide which client is not currently doing something and returns that,
+		//if all clients are busy it will await here until one is free
+		//the details to how i do this are not important to mps
+
+		//TODO
+		const client = null;
+
+		try {
+			await request();
+		} catch (e) {
+			//handle error
+		}
 	}
 }

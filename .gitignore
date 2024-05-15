@@ -48,3 +48,6 @@ db
 # ???
 notepad.txt
 bot.json
+
+# build files
+dist/

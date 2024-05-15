@@ -1,0 +1,29 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: matrix-protection-suite
+Upstream-Contact: Gnuxie <Gnuxie@protonmail.com>
+Source: https://github.com/Gnuxie/matrix-protection-suite
+
+# Sample paragraph, commented out:
+#
+# Files: src/*
+# Copyright: $YEAR $NAME <$CONTACT>
+# License: ...
+
+
+# These are files that can't be copyrighted but we need to add information to anyhow
+Files: .husky/pre-commit
+Copyright: Gnuxie <Gnuxie@protonmail.com>
+License: CC0-1.0
+
+Files: tsconfig.json
+Copyright: Gnuxie <Gnuxie@protonmail.com>
+License: CC0-1.0
+
+Files: yarn.lock
+Copyright: Gnuxie <Gnuxie@protonmail.com>
+License: CC0-1.0
+
+Files: package.json
+Copyright: Gnuxie <Gnuxie@protonmail.com>
+License: Apache-2.0
+

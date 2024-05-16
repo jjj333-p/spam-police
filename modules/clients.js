@@ -132,3 +132,5 @@ class Clients {
 		}
 	}
 }
+
+export { Clients };

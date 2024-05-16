@@ -98,7 +98,7 @@ class Clients {
 		//set timestamp cache
 		const m = new Map();
 		m.set(server, ts);
-		this.messageCache.set(server, {
+		this.messageCache.set(event.event_id, {
 			rank: m,
 			first: {
 				time: ts,

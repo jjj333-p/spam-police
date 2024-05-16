@@ -38,6 +38,9 @@ class Clients {
 		//store the client objects
 		this.accounts = new Map();
 
+		//keep track of what messages have been recieved
+		this.messageCache = new Map();
+
 		// biome-ignore lint/complexity/noForEach: <easier to do async function>
 		serverID.forEach(async (server) => {
 			//convenience
@@ -83,7 +86,30 @@ class Clients {
 	}
 
 	async internalOnEvent(server, roomID, event) {
-		//will do later
+		const ts = Date.now();
+
+		//if its already recieved, only compare latency, dont run OnEvent
+		if (this.messageCache.has(event.event_id)) {
+			this.messageCache.get(event.event_id).rank.set(server, ts);
+			console.log(`Recieved ${event.event_id}, on ${server}, at ${ts}`);
+			return;
+		}
+
+		//set timestamp cache
+		const m = new Map();
+		m.set(server, ts);
+		this.messageCache.set(server, {
+			rank: m,
+			first: {
+				time: ts,
+				server: server,
+			},
+			event: event,
+		});
+
+		this.accounts
+			.get(server)
+			.sendText(roomID, `recieved <code>${event.event_id}</code> first.`);
 	}
 
 	/*

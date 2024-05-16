@@ -107,9 +107,14 @@ class Clients {
 			event: event,
 		});
 
-		this.accounts
-			.get(server)
-			.sendText(roomID, `recieved <code>${event.event_id}</code> first.`);
+		//dont respond to self
+		// Using Promise.all() to await all async operations
+		const clientUserIds = await Promise.all(
+			Array.from(this.accounts.values()).map((client) => client.getUserId()),
+		);
+		if (clientUserIds.includes(event.sender)) return;
+
+		this.accounts.get(server).replyNotice(roomID, event, "recieved first.");
 	}
 
 	/*

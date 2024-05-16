@@ -5,7 +5,7 @@ import { parse } from "yaml";
 // import mps from "@gnuxie/matrix-protection-suite";
 
 //Import modules
-import { Clients } from "./modules/clients";
+import { Clients } from "./modules/clients.js";
 // import { blacklist } from "./modules/blacklist.js";
 // import { redaction } from "./modules/redaction.js";
 // import { database } from "./modules/db.js";
@@ -18,3 +18,5 @@ const loginFile = readFileSync("./db/login.yaml", "utf8");
 const loginParsed = parse(loginFile);
 
 const clients = new Clients(loginParsed);
+
+await clients.neverResolve();

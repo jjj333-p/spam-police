@@ -33,7 +33,7 @@ class Clients {
 		};
 
 		//something iteratable array to convert from config to working memory
-		const serverID = Array.from(login.accounts.keys);
+		const serverID = Object.keys(login.accounts);
 
 		//store the client objects
 		this.accounts = new Map();
@@ -130,6 +130,10 @@ class Clients {
 		} catch (e) {
 			console.warn("UNCAUGHT ERROR WHEN MAKING SDK REQUEST");
 		}
+	}
+
+	async neverResolve() {
+		return new Promise(() => {});
 	}
 }
 

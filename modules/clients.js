@@ -189,17 +189,36 @@ class Clients {
 		}
 
 		this.busy.set(server, true);
+		let timedout = false;
 		const client = this.accounts.get(server);
 
 		try {
 			await request(client);
 		} catch (e) {
-			console.warn(
-				`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
-			);
+			if (e?.retryAfterMs) {
+				timedout = true;
+				this.requestQueue.push({
+					request,
+					acceptableServers,
+					rejectedServers,
+					preferredServers,
+					promise: { resolve, reject },
+				});
+				setTimeout(() => {
+					timedout = false;
+				}, e.retryAfterMs);
+				console.log(`Timed out on server ${server} for ${e.retryAfterMs} ms.`);
+			} else {
+				console.warn(
+					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
+				);
+			}
 		}
 
 		const i = setInterval(async () => {
+			//will keep looping until not timed out and can go through this loop until caught up
+			if (timedout) return;
+
 			const qr = this.requestQueue.pop();
 
 			if (!qr) {
@@ -221,10 +240,22 @@ class Clients {
 			try {
 				await qr.request(client, server);
 			} catch (e) {
-				console.warn(
-					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
-				);
-				qr.promise.reject(e);
+				if (e?.retryAfterMs) {
+					timedout = true;
+					this.requestQueue.push(rq);
+					setTimeout(() => {
+						timedout = false;
+					}, e.retryAfterMs);
+					console.log(
+						`Timed out on server ${server} for ${e.retryAfterMs} ms.`,
+					);
+				} else {
+					console.warn(
+						`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
+					);
+					qr.promise.reject(e);
+				}
+				return;
 			}
 			qr.promise.resolve();
 		}, 100);

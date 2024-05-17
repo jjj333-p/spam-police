@@ -119,7 +119,7 @@ class Clients {
 		if (clientUserIds.includes(event.sender)) return;
 
 		this.makeSDKrequest({ preferredServers: [server] }, async (client) => {
-			await client.replyNotice(roomID, event, "recieved first.");
+			await client.replyNotice(roomID, event, `recieved by ${server} first.`);
 		});
 	}
 
@@ -188,12 +188,11 @@ class Clients {
 			return promise;
 		}
 
-		// const server = server.getUserId().split(":")[1];
-
+		this.busy.set(server, true);
 		const client = this.accounts.get(server);
 
 		try {
-			await request(client, server);
+			await request(client);
 		} catch (e) {
 			console.warn(
 				`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
@@ -202,6 +201,12 @@ class Clients {
 
 		const i = setInterval(async () => {
 			const qr = this.requestQueue.pop();
+
+			if (!qr) {
+				clearInterval(i);
+				this.busy.delete(server);
+				return;
+			}
 
 			//if a list of acceptable servers was passed and this is not it, or its in the rejected list
 			//put it back at the end of the queue and keep chugging

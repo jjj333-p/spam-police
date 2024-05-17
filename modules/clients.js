@@ -242,7 +242,7 @@ class Clients {
 			} catch (e) {
 				if (e?.retryAfterMs) {
 					timedout = true;
-					this.requestQueue.push(rq);
+					this.requestQueue.push(qr);
 					setTimeout(() => {
 						timedout = false;
 					}, e.retryAfterMs);

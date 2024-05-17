@@ -188,7 +188,7 @@ class Clients {
 			return promise;
 		}
 
-		const server = server.getUserId().split(":")[1];
+		// const server = server.getUserId().split(":")[1];
 
 		try {
 			await request(client, server);

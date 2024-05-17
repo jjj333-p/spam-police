@@ -197,6 +197,12 @@ class Clients {
 		} catch (e) {
 			if (e?.retryAfterMs) {
 				timedout = true;
+				let resolve;
+				let reject;
+				const promise = new Promise((rslv, rjct) => {
+					resolve = rslv;
+					reject = rjct;
+				});
 				this.requestQueue.push({
 					request,
 					acceptableServers,

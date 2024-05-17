@@ -41,6 +41,10 @@ class Clients {
 		//keep track of what messages have been recieved
 		this.messageCache = new Map();
 
+		//request queueing
+		this.busy = new Map();
+		this.requestQueue = [];
+
 		// biome-ignore lint/complexity/noForEach: <easier to do async function>
 		serverID.forEach(async (server) => {
 			//convenience
@@ -114,27 +118,108 @@ class Clients {
 		);
 		if (clientUserIds.includes(event.sender)) return;
 
-		this.accounts.get(server).replyNotice(roomID, event, "recieved first.");
+		this.makeSDKrequest({ preferredServers: [server] }, async (client) => {
+			await client.replyNotice(roomID, event, "recieved first.");
+		});
 	}
 
 	/*
     performs `request` with whichever of `acceptableServers` (array) is available first.
     If acceptableServers is empty, the request will be be performed on any server not in rejectedServers
+    If one of the servers in preferredServers is available, it will be used
     */
-	async makeSDKrequest(acceptableServers, rejectedServers, request) {
+	async makeSDKrequest(
+		{ acceptableServers, rejectedServers, preferredServers },
+		request,
+	) {
 		//will write load balancing later,
 		//basically here it will decide which client is not currently doing something and returns that,
 		//if all clients are busy it will await here until one is free
 		//the details to how i do this are not important to mps
 
-		//TODO
-		const client = null;
+		//store the client
+		let client;
+
+		//if one of the preferred options exists and is available, use it
+		if (preferredServers)
+			client = preferredServers.find(
+				(s) => !this.busy.get(s) && this.accounts.has(s),
+			);
+
+		// if none of the preferred is found
+		if (!client) {
+			//if a list of acceptable servers are supplied, we will only check within that
+			if (acceptableServers)
+				client = acceptableServers.find(
+					(s) => !this.busy.get(s) && this.accounts.has(s),
+				);
+			else {
+				const servers = Array.from(this.accounts.keys());
+
+				//if there is any servers we cannot use, lets find any that are not that
+				if (rejectedServers)
+					client = servers.find(
+						(s) => !(rejectedServers.includes(s) || this.busy.get(s)),
+					);
+				//if theres no preference on servers, just find one that isnt busy
+				else client = servers.find((s) => !this.busy.get(s));
+			}
+		}
+
+		if (!client) {
+			let resolve;
+			let reject;
+			const promise = new Promise((rslv, rjct) => {
+				resolve = rslv;
+				reject = rjct;
+			});
+
+			this.requestQueue.push({
+				request,
+				acceptableServers,
+				rejectedServers,
+				preferredServers,
+				promise: { resolve, reject },
+			});
+
+			//this wil be resolved when it makes it through the queue
+			//this way it can be successfully awaited
+			return promise;
+		}
+
+		const server = client.getUserId().split(":")[1];
 
 		try {
-			await request(client);
+			await request(client, server);
 		} catch (e) {
-			console.warn("UNCAUGHT ERROR WHEN MAKING SDK REQUEST");
+			console.warn(
+				`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
+			);
 		}
+
+		const i = setInterval(async () => {
+			const qr = this.requestQueue.pop();
+
+			//if a list of acceptable servers was passed and this is not it, or its in the rejected list
+			//put it back at the end of the queue and keep chugging
+			if (
+				(qr.acceptableServers && !qr.acceptableServers.includes(server)) ||
+				qr.rejectedServers?.includes(server)
+			) {
+				this.requestQueue.push(qr);
+				return;
+			}
+
+			try {
+				await qr.request(client, server);
+			} catch (e) {
+				console.warn(
+					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
+				);
+				qr.promise.reject(e);
+			}
+			qr.promise.resolve();
+		}, 100);
 	}
 
 	async neverResolve() {

@@ -138,19 +138,20 @@ class Clients {
 		//the details to how i do this are not important to mps
 
 		//store the client
-		let client;
+		let server;
 
 		//if one of the preferred options exists and is available, use it
-		if (preferredServers)
-			client = preferredServers.find(
+		if (preferredServers) {
+			server = preferredServers.find(
 				(s) => !this.busy.get(s) && this.accounts.has(s),
 			);
+		}
 
 		// if none of the preferred is found
-		if (!client) {
+		if (!server) {
 			//if a list of acceptable servers are supplied, we will only check within that
 			if (acceptableServers)
-				client = acceptableServers.find(
+				server = acceptableServers.find(
 					(s) => !this.busy.get(s) && this.accounts.has(s),
 				);
 			else {
@@ -158,15 +159,15 @@ class Clients {
 
 				//if there is any servers we cannot use, lets find any that are not that
 				if (rejectedServers)
-					client = servers.find(
+					server = servers.find(
 						(s) => !(rejectedServers.includes(s) || this.busy.get(s)),
 					);
 				//if theres no preference on servers, just find one that isnt busy
-				else client = servers.find((s) => !this.busy.get(s));
+				else server = servers.find((s) => !this.busy.get(s));
 			}
 		}
 
-		if (!client) {
+		if (!server) {
 			let resolve;
 			let reject;
 			const promise = new Promise((rslv, rjct) => {
@@ -187,7 +188,7 @@ class Clients {
 			return promise;
 		}
 
-		const server = client.getUserId().split(":")[1];
+		const server = server.getUserId().split(":")[1];
 
 		try {
 			await request(client, server);

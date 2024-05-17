@@ -190,6 +190,8 @@ class Clients {
 
 		// const server = server.getUserId().split(":")[1];
 
+		const client = this.accounts.get(server);
+
 		try {
 			await request(client, server);
 		} catch (e) {

@@ -71,16 +71,35 @@ class Clients {
 
 				//wait 1 second for the other clients to at least attempt to login and settle before queueing events
 				setTimeout(async () => {
+					//for every room this account is in, attempt to join with other accounts
 					for (const roomID of await client.getJoinedRooms()) {
 						for (const s of Array.from(this.accounts.keys())) {
 							//dont need to join the room in our joined list
 							if (s === server) break;
 
-							this.makeSDKrequest({ acceptableServers: s }, async (c) => {
-								try {
-									await c.joinRoom(roomID, server);
-								} catch (e) {}
-							});
+							//queue up join event
+							this.makeSDKrequest(
+								{ acceptableServers: [s] },
+								async (c) => await c.joinRoom(roomID, server),
+								(err) => {
+									console.warn(
+										`Account on ${s} unable to join ${roomID} which ${server} is joined to, with error\n${e}`,
+									);
+
+									//send warning in room (MAY BE REMOVED LATER)
+									this.makeSDKrequest(
+										{ acceptableServers: [server] },
+										async (client) => {
+											await client.sendNotice(
+												roomID,
+												`Unable to join this room with ${await this.accounts
+													.get(s)
+													.getUserId()}.`,
+											);
+										},
+									);
+								},
+							);
 						}
 					}
 				}, 1000);

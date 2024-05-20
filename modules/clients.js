@@ -75,7 +75,7 @@ class Clients {
 					for (const roomID of await client.getJoinedRooms()) {
 						for (const s of Array.from(this.accounts.keys())) {
 							//dont need to join the room in our joined list
-							if (s === server) break;
+							if (s === server) continue;
 
 							//queue up join event
 							this.makeSDKrequest(
@@ -83,7 +83,7 @@ class Clients {
 								async (c) => await c.joinRoom(roomID, server),
 								(err) => {
 									console.warn(
-										`Account on ${s} unable to join ${roomID} which ${server} is joined to, with error\n${e}`,
+										`Account on ${s} unable to join ${roomID} which ${server} is joined to, with error\n${err}`,
 									);
 
 									//send warning in room (MAY BE REMOVED LATER)

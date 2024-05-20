@@ -146,6 +146,7 @@ class Clients {
 	async makeSDKrequest(
 		{ acceptableServers, rejectedServers, preferredServers },
 		request,
+		onError,
 	) {
 		//store the client
 		let server;
@@ -226,6 +227,8 @@ class Clients {
 					timedout = false;
 				}, e.retryAfterMs);
 				console.log(`Timed out on server ${server} for ${e.retryAfterMs} ms.`);
+			} else if (onError) {
+				onError(e);
 			} else {
 				console.warn(
 					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
@@ -267,6 +270,8 @@ class Clients {
 					console.log(
 						`Timed out on server ${server} for ${e.retryAfterMs} ms.`,
 					);
+				} else if (onError) {
+					onError(e);
 				} else {
 					console.warn(
 						`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,

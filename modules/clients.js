@@ -24,8 +24,7 @@ class Clients {
 					],
 					lazy_load_members: true,
 				},
-				//we will manually fetch events anyways, this is just limiting how much backfill bot gets as to not
-				//respond to events far out of view
+				//we will manually fetch events before wakeup anyways, this is an acceptable amount for online sync
 				timeline: {
 					limit: 20,
 				},
@@ -132,13 +131,10 @@ class Clients {
 		{ acceptableServers, rejectedServers, preferredServers },
 		request,
 	) {
-		//will write load balancing later,
-		//basically here it will decide which client is not currently doing something and returns that,
-		//if all clients are busy it will await here until one is free
-		//the details to how i do this are not important to mps
-
 		//store the client
 		let server;
+
+		//promise to return
 
 		//if one of the preferred options exists and is available, use it
 		if (preferredServers) {

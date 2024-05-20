@@ -68,6 +68,22 @@ class Clients {
 				await client.start(this.filter);
 
 				this.accounts.set(server, client);
+
+				//wait 1 second for the other clients to at least attempt to login and settle before queueing events
+				setTimeout(async () => {
+					for (const roomID of await client.getJoinedRooms()) {
+						for (const s of Array.from(this.accounts.keys())) {
+							//dont need to join the room in our joined list
+							if (s === server) break;
+
+							this.makeSDKrequest({ acceptableServers: s }, async (c) => {
+								try {
+									await c.joinRoom(roomID, server);
+								} catch (e) {}
+							});
+						}
+					}
+				}, 1000);
 			} catch (e) {
 				//warn
 				console.warn(`Error connecting client for server ${server}:\n${e}`);

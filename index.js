@@ -132,7 +132,7 @@ client.start(filter).then(async (filter) => {
 		let cdn = "";
 
 		//if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
-		if (mwp) cdn = mwp[mxid].display_name;
+		if (mwp) cdn = mwp[mxid]?.display_name;
 
 		//fetch prefix for that room
 		let prefix = config.getConfig(currentRoom, "prefix");
@@ -144,7 +144,7 @@ client.start(filter).then(async (filter) => {
 		const ddn = `${prefix} | ${name}`;
 
 		//if the current display name isnt the desired one
-		if (cdn !== ddn) {
+		if (!cdn || cdn !== ddn) {
 			//send member state with the new displayname
 			client
 				.sendStateEvent(currentRoom, "m.room.member", mxid, {

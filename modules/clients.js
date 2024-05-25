@@ -124,6 +124,20 @@ class Clients {
 	}
 
 	async internalOnEvent(server, roomID, event) {
+		//if its a state event, divert
+		if (typeof event.state_key !== "undefined") {
+			if (typeof this.onStateEvent === "function") {
+				this.onStateEvent(server, roomID, event);
+			} else if (this.onStateEvent) {
+				console.error(
+					`Tried to call .onStateEvent, but recieved ${typeof this
+						.onStateEvent} instead of a function.`,
+				);
+			} else {
+				console.warn("function .onStateEvent not supplied");
+			}
+		}
+
 		const ts = Date.now();
 
 		//if its already recieved, only compare latency, dont run OnEvent
@@ -145,16 +159,16 @@ class Clients {
 			event: event,
 		});
 
-		//dont respond to self
-		// Using Promise.all() to await all async operations
-		const clientUserIds = await Promise.all(
-			Array.from(this.accounts.values()).map((client) => client.getUserId()),
-		);
-		if (clientUserIds.includes(event.sender)) return;
-
-		this.makeSDKrequest({ preferredServers: [server] }, async (client) => {
-			await client.replyNotice(roomID, event, `recieved by ${server} first.`);
-		});
+		if (typeof this.onTimelineEvent === "function") {
+			this.onTimelineEvent(server, roomID, event);
+		} else if (this.onTimelineEvent) {
+			console.error(
+				`Tried to call .onTimelineEvent, but recieved ${typeof this
+					.onTimelineEvent} instead of a function.`,
+			);
+		} else {
+			console.warn("function .onTimelineEvent not supplied");
+		}
 	}
 
 	/*
@@ -304,6 +318,26 @@ class Clients {
 	}
 
 	async neverResolve() {
+		return new Promise(() => {});
+	}
+
+	/*
+	Set a callback to call when a new timeline event is recieved.
+	This is deduplicated, and callback will be called on first occurance
+	onTimelineEvent(server, roomID, event)
+	*/
+	async setOnTimelineEvent(f) {
+		this.onTimelineEvent = f;
+		return new Promise(() => {});
+	}
+
+	/*
+	Set a callback to call when a new state event is recieved.
+	This is NOT deduplicated, and callback will be called on every reception
+	onStateEvent(server, roomID, event)
+	*/
+	async setOnStateEvent(f) {
+		this.onTimelineEvent = f;
 		return new Promise(() => {});
 	}
 }

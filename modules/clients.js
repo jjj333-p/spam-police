@@ -3,9 +3,12 @@ import {
 	MatrixClient,
 	SimpleFsStorageProvider,
 } from "matrix-bot-sdk";
+import { StateManager } from "./stateManager.";
 
 class Clients {
 	constructor(login) {
+		this.stateManageer = new StateManager(this);
+
 		this.consoleRoom = login["console-room"];
 
 		this.filter = {
@@ -176,10 +179,30 @@ class Clients {
     If acceptableServers is empty, the request will be be performed on any server not in rejectedServers
     If one of the servers in preferredServers is available, it will be used
     */
-	async makeSDKrequest(
+	makeSDKrequest(requestedServers, request, throwError) {
+		//create promise so that it can be stored in the queue and resolved at any time
+		let resolve;
+		let reject;
+		const promise = new Promise((rslv, rjct) => {
+			resolve = rslv;
+			reject = rjct;
+		});
+
+		//actually go and make/queue the request
+		this.internalMakeSDKrequest(requestedServers, request, throwError, {
+			resolve,
+			reject,
+		});
+
+		//return the promise
+		return promise;
+	}
+
+	async internalMakeSDKrequest(
 		{ acceptableServers, rejectedServers, preferredServers },
 		request,
-		onError,
+		throwError,
+		promise,
 	) {
 		//store the client
 		let server;
@@ -214,60 +237,47 @@ class Clients {
 		}
 
 		if (!server) {
-			let resolve;
-			let reject;
-			const promise = new Promise((rslv, rjct) => {
-				resolve = rslv;
-				reject = rjct;
-			});
-
 			this.requestQueue.push({
 				request,
 				acceptableServers,
 				rejectedServers,
 				preferredServers,
-				promise: { resolve, reject },
+				promise,
 			});
-
-			//this wil be resolved when it makes it through the queue
-			//this way it can be successfully awaited
-			return promise;
+			return;
 		}
 
 		this.busy.set(server, true);
 		let timedout = false;
 		const client = this.accounts.get(server);
 
+		let result;
 		try {
-			await request(client);
+			result = await request(client);
 		} catch (e) {
 			if (e?.retryAfterMs) {
 				timedout = true;
-				let resolve;
-				let reject;
-				const promise = new Promise((rslv, rjct) => {
-					resolve = rslv;
-					reject = rjct;
-				});
 				this.requestQueue.push({
 					request,
 					acceptableServers,
 					rejectedServers,
 					preferredServers,
-					promise: { resolve, reject },
+					promise,
 				});
 				setTimeout(() => {
 					timedout = false;
 				}, e.retryAfterMs);
 				console.log(`Timed out on server ${server} for ${e.retryAfterMs} ms.`);
-			} else if (onError) {
-				onError(e);
+			} else if (throwError) {
+				promise.reject(e);
 			} else {
 				console.warn(
 					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
 				);
 			}
 		}
+
+		promise.resolve(result);
 
 		const i = setInterval(async () => {
 			//will keep looping until not timed out and can go through this loop until caught up
@@ -291,8 +301,9 @@ class Clients {
 				return;
 			}
 
+			let result;
 			try {
-				await qr.request(client, server);
+				result = await qr.request(client, server);
 			} catch (e) {
 				if (e?.retryAfterMs) {
 					timedout = true;
@@ -303,17 +314,16 @@ class Clients {
 					console.log(
 						`Timed out on server ${server} for ${e.retryAfterMs} ms.`,
 					);
-				} else if (onError) {
-					onError(e);
+				} else if (throwError) {
+					qr.promise.reject(e);
 				} else {
 					console.warn(
 						`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
 					);
-					qr.promise.reject(e);
 				}
 				return;
 			}
-			qr.promise.resolve();
+			qr.promise.resolve(result);
 		}, 100);
 	}
 

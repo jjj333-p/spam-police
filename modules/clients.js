@@ -81,28 +81,31 @@ class Clients {
 							if (s === server) continue;
 
 							//queue up join event
-							this.makeSDKrequest(
-								{ acceptableServers: [s] },
-								async (c) => await c.joinRoom(roomID, server),
-								(err) => {
-									console.warn(
-										`Account on ${s} unable to join ${roomID} which ${server} is joined to, with error\n${err}`,
-									);
+							try {
+								this.makeSDKrequest(
+									{ acceptableServers: [s] },
+									true,
+									async (c) => await c.joinRoom(roomID, server),
+								);
+							} catch (err) {
+								console.warn(
+									`Account on ${s} unable to join ${roomID} which ${server} is joined to, with error\n${err}`,
+								);
 
-									//send warning in room (MAY BE REMOVED LATER)
-									this.makeSDKrequest(
-										{ acceptableServers: [server] },
-										async (client) => {
-											await client.sendNotice(
-												roomID,
-												`Unable to join this room with ${await this.accounts
-													.get(s)
-													.getUserId()}.`,
-											);
-										},
-									);
-								},
-							);
+								//send warning in room (MAY BE REMOVED LATER)
+								this.makeSDKrequest(
+									{ acceptableServers: [server] },
+									false,
+									async (client) => {
+										await client.sendNotice(
+											roomID,
+											`Unable to join this room with ${await this.accounts
+												.get(s)
+												.getUserId()}.`,
+										);
+									},
+								);
+							}
 						}
 					}
 				}, 1000);
@@ -179,7 +182,7 @@ class Clients {
     If acceptableServers is empty, the request will be be performed on any server not in rejectedServers
     If one of the servers in preferredServers is available, it will be used
     */
-	makeSDKrequest(requestedServers, request, throwError) {
+	makeSDKrequest(requestedServers, throwError, request) {
 		//create promise so that it can be stored in the queue and resolved at any time
 		let resolve;
 		let reject;

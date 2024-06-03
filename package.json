@@ -20,6 +20,6 @@
   "dependencies": {
     "@matrix-org/matrix-sdk-crypto-nodejs": "0.1.0-beta.12",
     "matrix-bot-sdk": "^0.7.1",
-    "yaml": "^2.4.2"
+    "yaml": "^2.4.3"
   }
 }

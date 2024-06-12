@@ -16,7 +16,8 @@
 			"donat",
 			"rescrib",
 			"contact",
-			"interest"
+			"interest",
+			"turn"
 		],
 		"currencies": [
 			"$",

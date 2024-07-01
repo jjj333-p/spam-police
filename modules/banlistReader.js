@@ -8,13 +8,13 @@ function matchBanlistEventToUser(se, mm) {
 	}
 
 	//parce out the mxid from the key
-	const potentialMXID = se.state_key.substring(5);
+	const potentialMXID = se.content?.entity;
 
 	//if mismatch, its invalid
 	//mothet sidev
 	if (
-		se.content.entity !== potentialMXID ||
-		se.content.recommendation !== "org.matrix.mjolnir.ban"
+		se.content.recommendation !== "org.matrix.mjolnir.ban" &&
+		se.content.recommendation !== "m.ban"
 	) {
 		return false;
 	}

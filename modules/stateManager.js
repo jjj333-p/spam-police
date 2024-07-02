@@ -25,7 +25,7 @@ class StateManager {
 			);
 		}
 
-		for (const r in rooms) {
+		for (const r of rooms) {
 			let fetchedState;
 			try {
 				fetchedState = await this.clients.makeSDKrequest(

@@ -3,11 +3,10 @@ import {
 	MatrixClient,
 	SimpleFsStorageProvider,
 } from "matrix-bot-sdk";
-import { StateManager } from "./stateManager.";
-
+import { StateManager } from "./stateManager.js";
 class Clients {
 	constructor(login) {
-		this.stateManageer = new StateManager(this);
+		this.stateManager = new StateManager(this);
 
 		this.consoleRoom = login["console-room"];
 
@@ -82,7 +81,7 @@ class Clients {
 
 							//queue up join event
 							try {
-								this.makeSDKrequest(
+								await this.makeSDKrequest(
 									{ acceptableServers: [s] },
 									true,
 									async (c) => await c.joinRoom(roomID, server),
@@ -126,6 +125,8 @@ class Clients {
 					this.consoleRoom,
 					`Successfully logged in to <code>${server}</code> instance.`,
 				);
+
+			this.stateManager.initPerServer(server);
 		});
 	}
 

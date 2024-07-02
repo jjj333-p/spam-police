@@ -1,4 +1,4 @@
-import { ConfigManager } from "./configManager";
+import { ConfigManager } from "./configManager.js";
 
 class StateManager {
 	constructor(clients) {
@@ -26,14 +26,27 @@ class StateManager {
 		}
 
 		for (const r in rooms) {
-			const fetchedState = await this.clients
-				.makeSDKrequest(
+			let fetchedState;
+			try {
+				fetchedState = await this.clients.makeSDKrequest(
 					{ acceptableServers: [server] },
 					true,
-					async (c) => await c.getRoomState(r),
-				)
+					async (c) => {
+						const res = await c.getRoomState(r);
+						return res;
+					},
+				);
 				//deliberately throw and catch an error to stop progression
-				.catch(() => {});
+			} catch (e) {
+				const err = `${server} was unable to return room state in ${r}\n${e}`;
+				console.error(err);
+				this.clients.makeSDKrequest(
+					{ rejectedServers: server },
+					false,
+					async (c) => c.sendMessage(this.clients.consoleRoom, err),
+				);
+			}
+			let b;
 		}
 	}
 }

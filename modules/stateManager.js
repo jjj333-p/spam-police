@@ -10,9 +10,10 @@ class StateManager {
 		this.stateCache = new Map();
 	}
 
+	//will run on each server as soon as the client is set to be online
 	async initPerServer(server) {
+		//fetch roomlist so we can get the state of each room
 		let rooms;
-
 		try {
 			rooms = await this.clients.makeSDKrequest(
 				{ acceptableServers: [server] },
@@ -29,6 +30,7 @@ class StateManager {
 			);
 		}
 
+		//for each room fetch the state and cache it
 		for (const r of rooms) {
 			let fetchedState;
 			try {
@@ -50,8 +52,69 @@ class StateManager {
 					async (c) => c.sendMessage(this.clients.consoleRoom, err),
 				);
 			}
-			let b;
+
+			//if we have an existing cache we verify against it
+			if (this.stateCache.has(r)) {
+				const existingCache = this.stateCache.get(r);
+
+				//we gotta verify the events one by one, as we only need to verify some bits of the json
+				//the rest is the server dag's problem
+				for (const event of fetchedState) {
+					//find result
+					const foundResult = existingCache.find(
+						(e) => e.type === event.type && e.state_key === event.state_key,
+					);
+
+					//if there isnt already an event in a cache that exists, its missing from somewhere
+					if (!foundResult) {
+						//actions to add later
+						this.missingEvent(r, event, server, "cache");
+
+						//add it to the cache, as it we may have not checked all other servers
+						//and we want to have the most comprehensive room view
+						existingCache.push(event);
+
+						continue;
+					}
+
+					//state diverge
+					if (foundResult.event_id !== event.event_id) {
+						this.disagreeEvent(r, foundResult, "cache", event.event_id, server);
+					}
+				}
+
+				//now make sure every previous event we've found is on this server too
+				for (const event of existingCache) {
+					//find result
+					const foundResult = fetchedState.find(
+						(e) => e.type === event.type && e.state_key === event.state_key,
+					);
+
+					//if there isnt already an event in a cache that exists, its missing from somewhere
+					if (!foundResult) {
+						//actions to add later
+						this.missingEvent(r, event, "cache", server);
+
+						//dont need to add to cache what we pulled from it
+					}
+				}
+			} else {
+				//and if we dont, we just blindly store it for now
+				this.stateCache.set(r, fetchedState);
+			}
 		}
+	}
+
+	async missingEvent(roomID, event, serverWith, serverWithout) {
+		console.warn(
+			`MISSING STATE EVENT: in room ${roomID}, ${serverWithout} is missing event of ID ${event.event_id}, type ${event.type}, and key ${event.state_key}, found on ${serverWith}.`,
+		);
+	}
+
+	async disagreeEvent(roomID, event1, server1, event2, server2) {
+		console.warn(
+			`STATE DIVERGE:  in room ${roomID}, under type ${event1.type} and key ${event1.state_key}, ${server1} sees event ${event1.event_id} and ${server2} sees ${event2.event_id}`,
+		);
 	}
 }
 

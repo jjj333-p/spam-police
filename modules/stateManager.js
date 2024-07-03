@@ -8,6 +8,7 @@ class StateManager {
 
 		//hold the stae somewhere
 		this.stateCache = new Map();
+		this.stateCacheBlame = new Map();
 	}
 
 	//will run on each server as soon as the client is set to be online
@@ -73,13 +74,22 @@ class StateManager {
 						//add it to the cache, as it we may have not checked all other servers
 						//and we want to have the most comprehensive room view
 						existingCache.push(event);
+						this.stateCacheBlame.set(event.event_id, [server]);
 
-						continue;
-					}
+						//state diverge
+					} else if (foundResult.event_id !== event.event_id) {
+						this.disagreeEvent(
+							r,
+							foundResult,
+							JSON.stringify(this.stateCacheBlame.get(foundResult.event_id)),
+							event,
+							server,
+						);
 
-					//state diverge
-					if (foundResult.event_id !== event.event_id) {
-						this.disagreeEvent(r, foundResult, "cache", event, server);
+						//everything matches up
+					} else {
+						//note that youve also gotten that event
+						this.stateCacheBlame.get(event.event_id).push(server);
 					}
 				}
 
@@ -93,7 +103,12 @@ class StateManager {
 					//if there isnt already an event in a cache that exists, its missing from somewhere
 					if (!foundResult) {
 						//actions to add later
-						this.missingEvent(r, event, "cache", server);
+						this.missingEvent(
+							r,
+							event,
+							JSON.stringify(this.stateCacheBlame.get(event.event_id)),
+							server,
+						);
 
 						//dont need to add to cache what we pulled from it
 					}
@@ -101,6 +116,11 @@ class StateManager {
 			} else {
 				//and if we dont, we just blindly store it for now
 				this.stateCache.set(r, fetchedState);
+
+				//assign blame
+				for (const e of fetchedState) {
+					this.stateCacheBlame.set(e.event_id, [server]);
+				}
 			}
 		}
 	}

@@ -148,9 +148,9 @@ class Clients {
 		const ts = Date.now();
 
 		//if its already recieved, only compare latency, dont run OnEvent
+		console.log(`Recieved ${event.event_id}, on ${server}, at ${ts}`);
 		if (this.messageCache.has(event.event_id)) {
 			this.messageCache.get(event.event_id).rank.set(server, ts);
-			console.log(`Recieved ${event.event_id}, on ${server}, at ${ts}`);
 			return;
 		}
 

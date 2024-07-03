@@ -79,7 +79,7 @@ class StateManager {
 
 					//state diverge
 					if (foundResult.event_id !== event.event_id) {
-						this.disagreeEvent(r, foundResult, "cache", event.event_id, server);
+						this.disagreeEvent(r, foundResult, "cache", event, server);
 					}
 				}
 

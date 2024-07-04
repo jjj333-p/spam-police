@@ -136,6 +136,8 @@ class StateManager {
 			`STATE DIVERGE:  in room ${roomID}, under type ${event1.type} and key ${event1.state_key}, ${server1} sees event ${event1.event_id} and ${server2} sees ${event2.event_id}`,
 		);
 	}
+
+	async onStateEvent(roomID, event, server) {}
 }
 
 export { StateManager };

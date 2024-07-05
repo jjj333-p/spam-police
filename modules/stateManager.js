@@ -37,12 +37,12 @@ class StateManager {
 
 		//for each room fetch the state and cache it
 		for (const r of rooms) {
-			this.syncPerRoom(server, r);
+			this.syncPerRoomOnServer(server, r);
 		}
 	}
 
 	//too lazy to rename r in my cut paste, its roomID
-	async syncPerRoom(server, r) {
+	async syncPerRoomOnServer(server, r) {
 		let fetchedState;
 		try {
 			fetchedState = await this.clients.makeSDKrequest(
@@ -136,6 +136,12 @@ class StateManager {
 		}
 	}
 
+	async syncPerRoom(roomID) {
+		for (const server of Array.from(this.clients.accounts.keys())) {
+			this.syncPerRoomOnServer(server, roomID);
+		}
+	}
+
 	async missingEvent(roomID, event, serverWith, serverWithout) {
 		console.warn(
 			`MISSING STATE EVENT: in room ${roomID}, ${serverWithout} is missing event of ID ${event.event_id}, type ${event.type}, and key ${event.state_key}, found on ${serverWith}.`,
@@ -150,18 +156,24 @@ class StateManager {
 
 	async onStateEvent(roomID, event, server) {
 		const cache = this.stateCache.get(roomID);
+
+		if (cache) {
+			//check event id or prev event id here
+		} else {
+			this.syncPerRoom(roomID);
+		}
 	}
 }
 
 export { StateManager };
 
 /*
-- get first to respond to get state
-- next ones, try to find event with same key and type
-- check if same event id, if not report state diverge
-- if cannot find, report state reset
-- run through already cached events and do same against new events 
-	(catch all missing on either side)
+- get first to respond to get state ✅
+- next ones, try to find event with same key and type ✅
+- check if same event id, if not report state diverge ✅
+- if cannot find, report state reset ✅
+- run through already cached events and do same against new events ✅
+	(catch all missing on either side) ✅
 
 
 - on new event, check if its already in cache or previous event is

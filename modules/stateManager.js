@@ -4,6 +4,7 @@ class StateManager {
 	constructor(clients) {
 		//this class sits between the clients and some niche case handlers
 		this.clients = clients;
+		this.clients.onStateEvent = this.onStateEvent;
 		this.config = new ConfigManager(clients);
 
 		//hold the stae somewhere
@@ -13,6 +14,9 @@ class StateManager {
 
 	//will run on each server as soon as the client is set to be online
 	async initPerServer(server) {
+		//THIS IS MILLISECONDS
+		const ts = Date.now();
+
 		//fetch roomlist so we can get the state of each room
 		let rooms;
 		try {
@@ -33,94 +37,101 @@ class StateManager {
 
 		//for each room fetch the state and cache it
 		for (const r of rooms) {
-			let fetchedState;
-			try {
-				fetchedState = await this.clients.makeSDKrequest(
-					{ acceptableServers: [server] },
-					true,
-					async (c) => {
-						const res = await c.getRoomState(r);
-						return res;
-					},
+			this.syncPerRoom(server, r);
+		}
+	}
+
+	//too lazy to rename r in my cut paste, its roomID
+	async syncPerRoom(server, r) {
+		let fetchedState;
+		try {
+			fetchedState = await this.clients.makeSDKrequest(
+				{ acceptableServers: [server] },
+				true,
+				async (c) => {
+					const res = await c.getRoomState(r);
+					return res;
+				},
+			);
+			//deliberately throw and catch an error to stop progression
+		} catch (e) {
+			const err = `${server} was unable to return room state in ${r}\n${e}`;
+			console.error(err);
+			this.clients.makeSDKrequest(
+				{ rejectedServers: server },
+				false,
+				async (c) => c.sendMessage(this.clients.consoleRoom, err),
+			);
+		}
+
+		//if we have an existing cache we verify against it
+		if (this.stateCache.has(r)) {
+			const existingCache = this.stateCache.get(r);
+
+			//we gotta verify the events one by one, as we only need to verify some bits of the json
+			//the rest is the server dag's problem
+			for (const event of fetchedState) {
+				//find result
+				const foundResult = existingCache.find(
+					(e) => e.type === event.type && e.state_key === event.state_key,
 				);
-				//deliberately throw and catch an error to stop progression
-			} catch (e) {
-				const err = `${server} was unable to return room state in ${r}\n${e}`;
-				console.error(err);
-				this.clients.makeSDKrequest(
-					{ rejectedServers: server },
-					false,
-					async (c) => c.sendMessage(this.clients.consoleRoom, err),
-				);
+
+				//if there isnt already an event in a cache that exists, its missing from somewhere
+				if (!foundResult) {
+					//actions to add later
+					this.missingEvent(r, event, server, "cache");
+
+					//add it to the cache, as it we may have not checked all other servers
+					//and we want to have the most comprehensive room view
+					existingCache.push(event);
+					this.stateCacheBlame.set(event.event_id, { servers: [server], ts });
+
+					//state diverge
+				} else if (foundResult.event_id !== event.event_id) {
+					this.disagreeEvent(
+						r,
+						foundResult,
+						JSON.stringify(
+							this.stateCacheBlame.get(foundResult.event_id).servers,
+						),
+						event,
+						server,
+					);
+
+					//everything matches up
+				} else {
+					//note that youve also gotten that event
+					this.stateCacheBlame.get(event.event_id).servers.push(server);
+				}
 			}
 
-			//if we have an existing cache we verify against it
-			if (this.stateCache.has(r)) {
-				const existingCache = this.stateCache.get(r);
+			//now make sure every previous event we've found is on this server too
+			for (const event of existingCache) {
+				//find result
+				const foundResult = fetchedState.find(
+					(e) => e.type === event.type && e.state_key === event.state_key,
+				);
 
-				//we gotta verify the events one by one, as we only need to verify some bits of the json
-				//the rest is the server dag's problem
-				for (const event of fetchedState) {
-					//find result
-					const foundResult = existingCache.find(
-						(e) => e.type === event.type && e.state_key === event.state_key,
+				//if there isnt already an event in a cache that exists, its missing from somewhere
+				if (!foundResult) {
+					//actions to add later
+					this.missingEvent(
+						r,
+						event,
+						JSON.stringify(this.stateCacheBlame.get(event.event_id).servers),
+						server,
 					);
 
-					//if there isnt already an event in a cache that exists, its missing from somewhere
-					if (!foundResult) {
-						//actions to add later
-						this.missingEvent(r, event, server, "cache");
-
-						//add it to the cache, as it we may have not checked all other servers
-						//and we want to have the most comprehensive room view
-						existingCache.push(event);
-						this.stateCacheBlame.set(event.event_id, [server]);
-
-						//state diverge
-					} else if (foundResult.event_id !== event.event_id) {
-						this.disagreeEvent(
-							r,
-							foundResult,
-							JSON.stringify(this.stateCacheBlame.get(foundResult.event_id)),
-							event,
-							server,
-						);
-
-						//everything matches up
-					} else {
-						//note that youve also gotten that event
-						this.stateCacheBlame.get(event.event_id).push(server);
-					}
+					//dont need to add to cache what we pulled from it
 				}
+			}
+		} else {
+			//and if we dont, we just blindly store it for now
+			this.stateCache.set(r, fetchedState);
 
-				//now make sure every previous event we've found is on this server too
-				for (const event of existingCache) {
-					//find result
-					const foundResult = fetchedState.find(
-						(e) => e.type === event.type && e.state_key === event.state_key,
-					);
-
-					//if there isnt already an event in a cache that exists, its missing from somewhere
-					if (!foundResult) {
-						//actions to add later
-						this.missingEvent(
-							r,
-							event,
-							JSON.stringify(this.stateCacheBlame.get(event.event_id)),
-							server,
-						);
-
-						//dont need to add to cache what we pulled from it
-					}
-				}
-			} else {
-				//and if we dont, we just blindly store it for now
-				this.stateCache.set(r, fetchedState);
-
-				//assign blame
-				for (const e of fetchedState) {
-					this.stateCacheBlame.set(e.event_id, [server]);
-				}
+			//assign blame
+			for (const e of fetchedState) {
+				this.stateCacheBlame.set(e.event_id, { servers: [server], ts });
 			}
 		}
 	}
@@ -137,7 +148,9 @@ class StateManager {
 		);
 	}
 
-	async onStateEvent(roomID, event, server) {}
+	async onStateEvent(roomID, event, server) {
+		const cache = this.stateCache.get(roomID);
+	}
 }
 
 export { StateManager };

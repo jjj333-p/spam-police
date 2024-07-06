@@ -14,9 +14,6 @@ class StateManager {
 
 	//will run on each server as soon as the client is set to be online
 	async initPerServer(server) {
-		//THIS IS MILLISECONDS
-		const ts = Date.now();
-
 		//fetch roomlist so we can get the state of each room
 		let rooms;
 		try {
@@ -43,6 +40,9 @@ class StateManager {
 
 	//too lazy to rename r in my cut paste, its roomID
 	async syncPerRoomOnServer(server, r) {
+		//THIS IS MILLISECONDS
+		const ts = Date.now();
+
 		let fetchedState;
 		try {
 			fetchedState = await this.clients.makeSDKrequest(

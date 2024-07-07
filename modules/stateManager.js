@@ -4,7 +4,6 @@ class StateManager {
 	constructor(clients) {
 		//this class sits between the clients and some niche case handlers
 		this.clients = clients;
-		this.clients.onStateEvent = this.onStateEvent;
 		this.config = new ConfigManager(clients);
 
 		//hold the stae somewhere
@@ -160,7 +159,7 @@ class StateManager {
 		if (cache) {
 			//check event id or prev event id here
 		} else {
-			this.syncPerRoom(roomID);
+			// this.syncPerRoom(roomID);
 		}
 	}
 }

@@ -133,9 +133,9 @@ class Clients {
 	async internalOnEvent(server, roomID, event) {
 		//if its a state event, divert
 		if (typeof event.state_key !== "undefined") {
-			if (typeof this.onStateEvent === "function") {
-				this.onStateEvent(server, roomID, event);
-			} else if (this.onStateEvent) {
+			if (typeof this.stateManager.onStateEvent === "function") {
+				this.stateManager.onStateEvent(server, roomID, event);
+			} else if (this.stateManager.onStateEvent) {
 				console.error(
 					`Tried to call .onStateEvent, but recieved ${typeof this
 						.onStateEvent} instead of a function.`,

@@ -154,12 +154,27 @@ class StateManager {
 	}
 
 	async onStateEvent(roomID, event, server) {
+		//THIS IS MILLISECONDS
+		const ts = Date.now();
+
 		const cache = this.stateCache.get(roomID);
 
 		if (cache) {
-			//check event id or prev event id here
+			// check event id or prev event id here
+			const matchFromCache = cache.find(
+				(e) => e.type === event.type && e.state_key === event.state_key,
+			);
+
+			if (matchFromCache.event_id === event.unsigned.replaces_state) {
+				//TODO: remove all events matching type and key from cache and add this one
+			} else if (matchFromCache.event_id !== event.event_id) {
+				return;
+				//handle duplicate catching in normal timeline syncing
+			} else {
+				//TODO: error
+			}
 		} else {
-			// this.syncPerRoom(roomID);
+			this.syncPerRoom(roomID);
 		}
 	}
 }

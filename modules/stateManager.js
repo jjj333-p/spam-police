@@ -183,11 +183,12 @@ class StateManager {
 				);
 
 				hold.push(event);
+				this.stateCacheBlame.set(event.event_id, { servers: [server], ts });
 
 				this.stateCache.set(roomID, hold);
 
 				//this will be very interesting if v8 doesnt have a really good garbage collector
-			} else if (matchFromCache.event_id !== event.event_id) {
+			} else if (matchFromCache.event_id === event.event_id) {
 				return;
 				//handle duplicate catching in normal timeline syncing
 			} else {

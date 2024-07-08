@@ -178,13 +178,16 @@ class StateManager {
 			);
 
 			if (matchFromCache.event_id === event.unsigned.replaces_state) {
+				//all events not with that relational id
 				const hold = cache.filter(
 					(e) => e.type !== event.type || e.state_key !== event.state_key,
 				);
 
+				//add our new event to that filter, and push it
 				hold.push(event);
 				this.stateCacheBlame.set(event.event_id, { servers: [server], ts });
 
+				//now write that to the cache
 				this.stateCache.set(roomID, hold);
 
 				//this will be very interesting if v8 doesnt have a really good garbage collector
@@ -204,6 +207,7 @@ class StateManager {
 				);
 			}
 		} else {
+			//if not cached, need to init sync
 			this.syncPerRoom(roomID);
 		}
 	}

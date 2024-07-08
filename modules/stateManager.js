@@ -180,6 +180,15 @@ class StateManager {
 				//handle duplicate catching in normal timeline syncing
 			} else {
 				//TODO: error
+				this.disagreeEvent(
+					roomID,
+					matchFromCache,
+					JSON.stringify(
+						this.stateCacheBlame.get(matchFromCache.event_id).servers,
+					),
+					event,
+					server,
+				);
 			}
 		} else {
 			this.syncPerRoom(roomID);

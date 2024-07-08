@@ -166,7 +166,15 @@ class StateManager {
 			);
 
 			if (matchFromCache.event_id === event.unsigned.replaces_state) {
-				//TODO: remove all events matching type and key from cache and add this one
+				const hold = cache.filter(
+					(e) => e.type !== event.type || e.state_key !== event.state_key,
+				);
+
+				hold.push(event);
+
+				this.stateCache.set(roomID, hold);
+
+				//this will be very interesting if v8 doesnt have a really good garbage collector
 			} else if (matchFromCache.event_id !== event.event_id) {
 				return;
 				//handle duplicate catching in normal timeline syncing

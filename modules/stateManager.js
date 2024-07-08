@@ -63,6 +63,18 @@ class StateManager {
 			);
 		}
 
+		if (!Array.isArray(fetchedState)) {
+			const err = `${server} returned empty state in ${r}\n`;
+			console.error(err);
+			this.clients.makeSDKrequest(
+				{ rejectedServers: server },
+				false,
+				async (c) => c.sendMessage(this.clients.consoleRoom, err),
+			);
+
+			return; //not much we can do here
+		}
+
 		//if we have an existing cache we verify against it
 		if (this.stateCache.has(r)) {
 			const existingCache = this.stateCache.get(r);
@@ -153,7 +165,7 @@ class StateManager {
 		);
 	}
 
-	async onStateEvent(roomID, event, server) {
+	async onStateEvent(server, roomID, event) {
 		//THIS IS MILLISECONDS
 		const ts = Date.now();
 

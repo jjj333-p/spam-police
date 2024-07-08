@@ -224,10 +224,10 @@ export { StateManager };
 	(catch all missing on either side) ✅
 
 
-- on new event, check if its already in cache or previous event is
-	- need event.unsigned.replaces_state
-- if new event, wait and timeout on other servers recieving it.
-- update cache
+- on new event, check if its already in cache or previous event is ✅
+	- need event.unsigned.replaces_state ✅
+- if new event, wait and timeout on other servers recieving it. ✅
+- update cache ✅
 
 - runnof classes for config and banlist reading
 */

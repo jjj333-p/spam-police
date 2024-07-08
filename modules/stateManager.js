@@ -192,7 +192,7 @@ class StateManager {
 
 				//this will be very interesting if v8 doesnt have a really good garbage collector
 			} else if (matchFromCache.event_id === event.event_id) {
-				return;
+				this.stateCacheBlame.get(event.event_id).servers.push(server);
 				//handle duplicate catching in normal timeline syncing
 			} else {
 				//TODO: error

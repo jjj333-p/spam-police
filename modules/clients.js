@@ -360,6 +360,7 @@ class Clients {
 			try {
 				result = await qr.request(client, server);
 			} catch (e) {
+				//matrix ratelimit spec
 				if (e?.retryAfterMs) {
 					timedout = true;
 					this.requestQueue.push(qr);
@@ -369,6 +370,25 @@ class Clients {
 					console.log(
 						`Timed out on server ${server} for ${e.retryAfterMs} ms.`,
 					);
+				} else if (
+					//m.org shitting up the connection
+					e?.code === "ESOCKETTIMEDOUT" ||
+					e?.code === "ETIMEDOUT" ||
+					e?.code === "ECONNRESET"
+				) {
+					timedout = true;
+					const retryAfterMs = 60_000;
+					this.requestQueue.push({
+						request,
+						acceptableServers,
+						rejectedServers,
+						preferredServers,
+						promise,
+					});
+					setTimeout(() => {
+						timedout = false;
+					}, retryAfterMs);
+					console.log(`Timed out on server ${server} for ${retryAfterMs} ms.`);
 				} else if (throwError) {
 					qr.promise.reject(e);
 				} else {

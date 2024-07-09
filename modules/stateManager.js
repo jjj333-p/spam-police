@@ -36,9 +36,6 @@ class StateManager {
 
 	//too lazy to rename r in my cut paste, its roomID
 	async initPerRoomOnServer(server, r) {
-		//THIS IS MILLISECONDS
-		const ts = Date.now();
-
 		let fetchedState;
 		try {
 			fetchedState = await this.clients.makeSDKrequest(
@@ -92,16 +89,14 @@ class StateManager {
 					//add it to the cache, as it we may have not checked all other servers
 					//and we want to have the most comprehensive room view
 					existingCache.push(event);
-					this.stateCacheBlame.set(event.event_id, { servers: [server], ts });
+					this.stateCacheBlame.set(event.event_id, [server]);
 
 					//state diverge
 				} else if (foundResult.event_id !== event.event_id) {
 					this.disagreeEvent(
 						r,
 						foundResult,
-						JSON.stringify(
-							this.stateCacheBlame.get(foundResult.event_id).servers,
-						),
+						JSON.stringify(this.stateCacheBlame.get(foundResult.event_id)),
 						event,
 						server,
 					);
@@ -109,7 +104,7 @@ class StateManager {
 					//everything matches up
 				} else {
 					//note that youve also gotten that event
-					this.stateCacheBlame.get(event.event_id).servers.push(server);
+					this.stateCacheBlame.get(event.event_id).push(server);
 				}
 			}
 
@@ -126,7 +121,7 @@ class StateManager {
 					this.missingEvent(
 						r,
 						event,
-						JSON.stringify(this.stateCacheBlame.get(event.event_id).servers),
+						JSON.stringify(this.stateCacheBlame.get(event.event_id)),
 						server,
 					);
 
@@ -139,7 +134,7 @@ class StateManager {
 
 			//assign blame
 			for (const e of fetchedState) {
-				this.stateCacheBlame.set(e.event_id, { servers: [server], ts });
+				this.stateCacheBlame.set(e.event_id, [server]);
 			}
 		}
 	}
@@ -163,9 +158,6 @@ class StateManager {
 	}
 
 	async onStateEvent(server, roomID, event) {
-		//THIS IS MILLISECONDS
-		const ts = Date.now();
-
 		const cache = this.stateCache.get(roomID);
 
 		if (cache) {
@@ -182,23 +174,21 @@ class StateManager {
 
 				//add our new event to that filter, and push it
 				hold.push(event);
-				this.stateCacheBlame.set(event.event_id, { servers: [server], ts });
+				this.stateCacheBlame.set(event.event_id, [server]);
 
 				//now write that to the cache
 				this.stateCache.set(roomID, hold);
 
 				//this will be very interesting if v8 doesnt have a really good garbage collector
 			} else if (matchFromCache.event_id === event.event_id) {
-				this.stateCacheBlame.get(event.event_id).servers.push(server);
+				this.stateCacheBlame.get(event.event_id).push(server);
 				//handle duplicate catching in normal timeline syncing
 			} else {
 				//TODO: error
 				this.disagreeEvent(
 					roomID,
 					matchFromCache,
-					JSON.stringify(
-						this.stateCacheBlame.get(matchFromCache.event_id).servers,
-					),
+					JSON.stringify(this.stateCacheBlame.get(matchFromCache.event_id)),
 					event,
 					server,
 				);

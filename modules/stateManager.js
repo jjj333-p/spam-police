@@ -1,5 +1,3 @@
-import { ConfigManager } from "./configManager.js";
-
 class StateManager {
 	constructor(clients) {
 		//this class sits bethind clients

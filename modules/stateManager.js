@@ -2,9 +2,8 @@ import { ConfigManager } from "./configManager.js";
 
 class StateManager {
 	constructor(clients) {
-		//this class sits between the clients and some niche case handlers
+		//this class sits bethind clients
 		this.clients = clients;
-		this.config = new ConfigManager(clients);
 
 		//hold the stae somewhere
 		this.stateCache = new Map();
@@ -33,12 +32,12 @@ class StateManager {
 
 		//for each room fetch the state and cache it
 		for (const r of rooms) {
-			this.syncPerRoomOnServer(server, r);
+			this.initPerRoomOnServer(server, r);
 		}
 	}
 
 	//too lazy to rename r in my cut paste, its roomID
-	async syncPerRoomOnServer(server, r) {
+	async initPerRoomOnServer(server, r) {
 		//THIS IS MILLISECONDS
 		const ts = Date.now();
 
@@ -147,9 +146,9 @@ class StateManager {
 		}
 	}
 
-	async syncPerRoom(roomID) {
+	async initPerRoom(roomID) {
 		for (const server of Array.from(this.clients.accounts.keys())) {
-			this.syncPerRoomOnServer(server, roomID);
+			this.initPerRoomOnServer(server, roomID);
 		}
 	}
 
@@ -208,8 +207,25 @@ class StateManager {
 			}
 		} else {
 			//if not cached, need to init sync
-			this.syncPerRoom(roomID);
+			this.initPerRoom(roomID);
 		}
+	}
+
+	getState(roomID, conditional) {
+		const state = this.stateCache.get(roomID);
+
+		//there should be something but if there isnt go ahead and fetch in the background for next time
+		if (!state) this.initPerRoom(roomID);
+
+		//return as filtered
+		return state?.filter(conditional);
+	}
+
+	getConfig(roomID) {
+		return this.getState(
+			roomID,
+			(e) => e.type === "agency.pain.anti-scam.config" && !e.state_key,
+		)?.content;
 	}
 }
 

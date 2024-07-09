@@ -238,20 +238,3 @@ class StateManager {
 }
 
 export { StateManager };
-
-/*
-- get first to respond to get state ✅
-- next ones, try to find event with same key and type ✅
-- check if same event id, if not report state diverge ✅
-- if cannot find, report state reset ✅
-- run through already cached events and do same against new events ✅
-	(catch all missing on either side) ✅
-
-
-- on new event, check if its already in cache or previous event is ✅
-	- need event.unsigned.replaces_state ✅
-- if new event, wait and timeout on other servers recieving it. ✅
-- update cache ✅
-
-- runnof classes for config and banlist reading
-*/

@@ -224,7 +224,7 @@ class StateManager {
 	getConfig(roomID) {
 		return this.getState(
 			roomID,
-			(e) => e.type === "agency.pain.anti-scam.config" && !e.state_key,
+			(e) => e.type === "agency.pain.anti-scam.config" && e.state_key === "",
 		)?.content;
 	}
 }

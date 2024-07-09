@@ -6,6 +6,9 @@ class StateManager {
 		//hold the stae somewhere
 		this.stateCache = new Map();
 		this.stateCacheBlame = new Map();
+
+		//dont need to fetch ♾️ times
+		this.processing = new Map();
 	}
 
 	//will run on each server as soon as the client is set to be online
@@ -16,15 +19,13 @@ class StateManager {
 			rooms = await this.clients.makeSDKrequest(
 				{ acceptableServers: [server] },
 				true,
-				async (c) => await c.getJoinedRooms(),
+				(c) => c.getJoinedRooms(),
 			);
 		} catch (e) {
 			const err = `${server} was unable to return a joined rooms list, client is likely not syncing\n${e}`;
 			console.error(err);
-			this.clients.makeSDKrequest(
-				{ rejectedServers: server },
-				false,
-				async (c) => c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
+				c.sendMessage(this.clients.consoleRoom, err),
 			);
 		}
 
@@ -36,35 +37,37 @@ class StateManager {
 
 	//too lazy to rename r in my cut paste, its roomID
 	async initPerRoomOnServer(server, r) {
+		//no need to duplicate process
+		if (this.processing.get(server + r)) return;
+
+		//indicate busy
+		this.processing.set(server + r, true);
+
 		let fetchedState;
 		try {
 			fetchedState = await this.clients.makeSDKrequest(
 				{ acceptableServers: [server] },
 				true,
-				async (c) => {
-					const res = await c.getRoomState(r);
-					return res;
-				},
+				(c) => c.getRoomState(r),
 			);
 			//deliberately throw and catch an error to stop progression
 		} catch (e) {
 			const err = `${server} was unable to return room state in ${r}\n${e}`;
 			console.error(err);
-			this.clients.makeSDKrequest(
-				{ rejectedServers: server },
-				false,
-				async (c) => c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
+				c.sendMessage(this.clients.consoleRoom, err),
 			);
 		}
 
 		if (!Array.isArray(fetchedState)) {
 			const err = `${server} returned empty state in ${r}\n`;
 			console.error(err);
-			this.clients.makeSDKrequest(
-				{ rejectedServers: server },
-				false,
-				async (c) => c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
+				c.sendMessage(this.clients.consoleRoom, err),
 			);
+
+			//no longer processing
+			this.processing.delete(server + r);
 
 			return; //not much we can do here
 		}
@@ -137,6 +140,9 @@ class StateManager {
 				this.stateCacheBlame.set(e.event_id, [server]);
 			}
 		}
+
+		//no longer processing
+		this.processing.delete(server + r);
 	}
 
 	async initPerRoom(roomID) {

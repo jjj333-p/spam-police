@@ -169,7 +169,7 @@ class Clients {
 		//warn if other servers not getting events
 		const fedDelayAllowed =
 			this.stateManager.getRawConfig(roomID)?.fedDelayAllowed;
-		if (fedDelayAllowed) {
+		if (fedDelayAllowed && event.type !== "m.reaction") {
 			//delay and see if its been added
 			setTimeout(() => {
 				//for every account that could recieve events
@@ -181,6 +181,7 @@ class Clients {
 							{ preferredServers: [server] },
 							false,
 							async (c) => {
+								//TODO: stop from reacting to self
 								await c.sendEvent(roomID, "m.reaction", {
 									"m.relates_to": {
 										event_id: event.event_id,

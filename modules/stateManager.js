@@ -178,6 +178,14 @@ class StateManager {
 				(e) => e.type === event.type && e.state_key === event.state_key,
 			);
 
+			if (!matchFromCache) {
+				//new state
+				cache.push(event);
+				this.stateCacheBlame.set(event.event_id, [server]);
+
+				//now write that to the cache
+				this.stateCache.set(roomID, hold);
+			}
 			if (matchFromCache.event_id === event.unsigned.replaces_state) {
 				//all events not with that relational id
 				const hold = cache.filter(

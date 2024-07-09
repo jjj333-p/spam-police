@@ -344,16 +344,6 @@ class Clients {
 		this.onTimelineEvent = f;
 		return new Promise(() => {});
 	}
-
-	/*
-	Set a callback to call when a new state event is recieved.
-	This is NOT deduplicated, and callback will be called on every reception
-	onStateEvent(server, roomID, event)
-	*/
-	async setOnStateEvent(f) {
-		this.onTimelineEvent = f;
-		return new Promise(() => {});
-	}
 }
 
 export { Clients };

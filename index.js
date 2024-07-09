@@ -72,7 +72,7 @@ const filter = {
 		//we will manually fetch events anyways, this is just limiting how much backfill bot gets as to not
 		//respond to events far out of view
 		timeline: {
-			limit: 20,
+			limit: 10,
 		},
 	},
 };

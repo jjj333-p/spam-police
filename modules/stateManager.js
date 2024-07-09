@@ -209,7 +209,7 @@ class StateManager {
 		return state?.filter(conditional);
 	}
 
-	getConfig(roomID) {
+	getRawConfig(roomID) {
 		return this.getState(
 			roomID,
 			(e) => e.type === "agency.pain.anti-scam.config" && e.state_key === "",

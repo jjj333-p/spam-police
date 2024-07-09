@@ -166,6 +166,32 @@ class Clients {
 			event: event,
 		});
 
+		//warn if other servers not getting events
+		const fedDelayAllowed =
+			this.stateManager.getRawConfig(roomID)?.warnOnFederationDelay;
+		if (fedDelayAllowed) {
+			//delay and see if its been added
+			setTimeout(() => {
+				//for every account that could recieve events
+				for (const s of Array.from(this.accounts.keys())) {
+					//if it has a rank it was recieved within the timeout
+					if (!this.messageCache.get(event.event_id).rank.has(s)) {
+						//react on the ones that dont
+						this.makeSDKrequest({ preferredServers: [server] }, false, (c) => {
+							c.sendEvent(roomID, "m.reaction", {
+								"m.relates_to": {
+									event_id: event.event_id,
+									key: `❌ | ${s}`,
+									rel_type: "m.annotation",
+								},
+							});
+						});
+					}
+				}
+			}, fedDelayAllowed * 1000);
+		}
+		//this is a mess to read but idk how to do it better, and biomejs wont let me space it more
+
 		if (typeof this.onTimelineEvent === "function") {
 			this.onTimelineEvent(server, roomID, event);
 		} else if (this.onTimelineEvent) {

@@ -184,7 +184,7 @@ class StateManager {
 				this.stateCacheBlame.set(event.event_id, [server]);
 
 				//now write that to the cache
-				this.stateCache.set(roomID, hold);
+				this.stateCache.set(roomID, event);
 			}
 			if (matchFromCache.event_id === event.unsigned.replaces_state) {
 				//all events not with that relational id

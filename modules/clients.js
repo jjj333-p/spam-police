@@ -168,7 +168,7 @@ class Clients {
 
 		//warn if other servers not getting events
 		const fedDelayAllowed =
-			this.stateManager.getRawConfig(roomID)?.warnOnFederationDelay;
+			this.stateManager.getRawConfig(roomID)?.fedDelayAllowed;
 		if (fedDelayAllowed) {
 			//delay and see if its been added
 			setTimeout(() => {
@@ -177,15 +177,19 @@ class Clients {
 					//if it has a rank it was recieved within the timeout
 					if (!this.messageCache.get(event.event_id).rank.has(s)) {
 						//react on the ones that dont
-						this.makeSDKrequest({ preferredServers: [server] }, false, (c) => {
-							c.sendEvent(roomID, "m.reaction", {
-								"m.relates_to": {
-									event_id: event.event_id,
-									key: `❌ | ${s}`,
-									rel_type: "m.annotation",
-								},
-							});
-						});
+						this.makeSDKrequest(
+							{ preferredServers: [server] },
+							false,
+							async (c) => {
+								await c.sendEvent(roomID, "m.reaction", {
+									"m.relates_to": {
+										event_id: event.event_id,
+										key: `❌ | ${s}`,
+										rel_type: "m.annotation",
+									},
+								});
+							},
+						);
 					}
 				}
 			}, fedDelayAllowed * 1000);

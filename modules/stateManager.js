@@ -19,13 +19,15 @@ class StateManager {
 			rooms = await this.clients.makeSDKrequest(
 				{ acceptableServers: [server] },
 				true,
-				(c) => c.getJoinedRooms(),
+				async (c) => await c.getJoinedRooms(),
 			);
 		} catch (e) {
 			const err = `${server} was unable to return a joined rooms list, client is likely not syncing\n${e}`;
 			console.error(err);
-			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
-				c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest(
+				{ rejectedServers: server },
+				false,
+				async (c) => await c.sendMessage(this.clients.consoleRoom, err),
 			);
 		}
 
@@ -48,22 +50,26 @@ class StateManager {
 			fetchedState = await this.clients.makeSDKrequest(
 				{ acceptableServers: [server] },
 				true,
-				(c) => c.getRoomState(r),
+				async (c) => await c.getRoomState(r),
 			);
 			//deliberately throw and catch an error to stop progression
 		} catch (e) {
 			const err = `${server} was unable to return room state in ${r}\n${e}`;
 			console.error(err);
-			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
-				c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest(
+				{ rejectedServers: server },
+				false,
+				async (c) => await c.sendMessage(this.clients.consoleRoom, err),
 			);
 		}
 
 		if (!Array.isArray(fetchedState)) {
 			const err = `${server} returned empty state in ${r}\n`;
 			console.error(err);
-			this.clients.makeSDKrequest({ rejectedServers: server }, false, (c) =>
-				c.sendMessage(this.clients.consoleRoom, err),
+			this.clients.makeSDKrequest(
+				{ rejectedServers: server },
+				false,
+				async (c) => await c.sendMessage(this.clients.consoleRoom, err),
 			);
 
 			//no longer processing
@@ -219,7 +225,7 @@ class StateManager {
 		return this.getState(
 			roomID,
 			(e) => e.type === "agency.pain.anti-scam.config" && e.state_key === "",
-		)?.content;
+		)?.[0]?.content;
 	}
 }
 

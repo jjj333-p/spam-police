@@ -235,6 +235,70 @@ class StateManager {
 			(e) => e.type === "agency.pain.anti-scam.config" && e.state_key === "",
 		)?.[0]?.content;
 	}
+
+	//verifies the room's parents and spits it out
+	getParent(roomID) {
+		const parent = this.getRawConfig(roomID)?.parent;
+
+		//if no parent it adopts itself (for code convenience)
+		if (!parent) {
+			return roomID;
+		}
+
+		const children = this.getRawConfig(parent)?.children;
+
+		if (Object.values(children).includes(roomID)) return parent;
+
+		/*else*/ return roomID;
+	}
+
+	//config that actually applies to the room
+	getConfig(roomID) {
+		return this.getRawConfig(this.getParent(roomID));
+	}
+
+	//verifies the room's children and spits it out
+	getChildren(roomID) {
+		const res = {
+			map: new Map(),
+			ids: [],
+			shortCodes: [],
+		};
+
+		//get from config
+		const claimedChildrenObj = this.getRawConfig(roomID)?.children;
+
+		//if no children in config, no children
+		if (!claimedChildrenObj) return res;
+
+		//pull shortcodes for easy commands
+		const childShortCodes = Object.keys(this.getRawConfig(roomID)?.children);
+
+		//check each one for validity
+		for (const shortCode of childShortCodes) {
+			//resolve
+			const id = claimedChildrenObj[shortCode];
+
+			//verify
+			if (this.getParent(id) !== roomID) continue;
+
+			//add to res
+			res.map.set(shortCode, id);
+			res.shortCodes.push(shortCode);
+			res.ids.push(id);
+		}
+
+		return res;
+	}
+
+	//combines parent and children
+	getFamily(roomID) {
+		const parent = this.getParent(roomID);
+		const res = this.getChildren(parent);
+		res.map.set("parent", parent);
+		res.shortCodes.push("parent");
+		res.ids.push(parent);
+	}
 }
 
 export { StateManager };

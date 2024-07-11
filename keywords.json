@@ -17,7 +17,8 @@
 			"rescrib",
 			"contact",
 			"interest",
-			"turn"
+			"turn",
+			"reward"
 		],
 		"currencies": [
 			"$",
@@ -31,7 +32,7 @@
 			"euros",
 			"crypto",
 			"paypal",
-			"bitcoin",
+			"coin",
 			"btc",
 			"ethereum",
 			" eth",

@@ -91,73 +91,73 @@ client.start(filter).then(async (filter) => {
 	mxid = await client.getUserId();
 	server = mxid.split(":")[1];
 
-	//fetch rooms the bot is in
-	const rooms = await client.getJoinedRooms();
+	// //fetch rooms the bot is in
+	// const rooms = await client.getJoinedRooms();
 
-	//fetch avatar url so we dont overrite it
-	let avatar_url;
+	// //fetch avatar url so we dont overrite it
+	// let avatar_url;
 
-	try {
-		const userProfile = await client.getUserProfile(mxid);
-		avatar_url = userProfile.avatar_url;
-	} catch (error) {
-		console.error("Error fetching user profile:", error);
-		// Handle the error as needed (e.g., provide a default avatar URL)
-		avatar_url = "";
-	}
+	// try {
+	// 	const userProfile = await client.getUserProfile(mxid);
+	// 	avatar_url = userProfile.avatar_url;
+	// } catch (error) {
+	// 	console.error("Error fetching user profile:", error);
+	// 	// Handle the error as needed (e.g., provide a default avatar URL)
+	// 	avatar_url = "";
+	// }
 
-	//slowly loop through rooms to avoid ratelimit
-	const i = setInterval(async () => {
-		//if theres no rooms left to work through, stop the loop
-		if (rooms.length < 1) {
-			clearInterval(i);
+	// //slowly loop through rooms to avoid ratelimit
+	// const i = setInterval(async () => {
+	// 	//if theres no rooms left to work through, stop the loop
+	// 	if (rooms.length < 1) {
+	// 		clearInterval(i);
 
-			return;
-		}
+	// 		return;
+	// 	}
 
-		//work through the next room on the list
-		const currentRoom = rooms.pop();
+	// 	//work through the next room on the list
+	// 	const currentRoom = rooms.pop();
 
-		//debug
-		console.log(`Setting displayname for room ${currentRoom}`);
+	// 	//debug
+	// 	console.log(`Setting displayname for room ${currentRoom}`);
 
-		//fetch the room list of members with their profile data
-		const mwp = await client
-			.getJoinedRoomMembersWithProfiles(currentRoom)
-			.catch(() => {
-				console.log(`error ${currentRoom}`);
-			});
+	// 	//fetch the room list of members with their profile data
+	// 	const mwp = await client
+	// 		.getJoinedRoomMembersWithProfiles(currentRoom)
+	// 		.catch(() => {
+	// 			console.log(`error ${currentRoom}`);
+	// 		});
 
-		//variable to store the current display name of the bot
-		let cdn = "";
+	// 	//variable to store the current display name of the bot
+	// 	let cdn = "";
 
-		//if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
-		if (mwp) cdn = mwp[mxid]?.display_name;
+	// 	//if was able to fetch member profiles (sometimes fails for certain rooms) then fetch the current display name
+	// 	if (mwp) cdn = mwp[mxid]?.display_name;
 
-		//fetch prefix for that room
-		let prefix = config.getConfig(currentRoom, "prefix");
+	// 	//fetch prefix for that room
+	// 	let prefix = config.getConfig(currentRoom, "prefix");
 
-		//default prefix if none set
-		if (!prefix) prefix = "+";
+	// 	//default prefix if none set
+	// 	if (!prefix) prefix = "+";
 
-		//establish desired display name based on the prefix
-		const ddn = `${prefix} | ${name}`;
+	// 	//establish desired display name based on the prefix
+	// 	const ddn = `${prefix} | ${name}`;
 
-		//if the current display name isnt the desired one
-		if (!cdn || cdn !== ddn) {
-			//send member state with the new displayname
-			client
-				.sendStateEvent(currentRoom, "m.room.member", mxid, {
-					avatar_url: avatar_url,
-					displayname: ddn,
-					membership: "join",
-				})
-				.then(console.log(`done ${currentRoom}`))
-				.catch((e) => console.error);
-		}
+	// 	//if the current display name isnt the desired one
+	// 	if (!cdn || cdn !== ddn) {
+	// 		//send member state with the new displayname
+	// 		client
+	// 			.sendStateEvent(currentRoom, "m.room.member", mxid, {
+	// 				avatar_url: avatar_url,
+	// 				displayname: ddn,
+	// 				membership: "join",
+	// 			})
+	// 			.then(console.log(`done ${currentRoom}`))
+	// 			.catch((e) => console.error);
+	// 	}
 
-		// 3 second delay to avoid ratelimit
-	}, 3000);
+	// 	// 3 second delay to avoid ratelimit
+	// }, 3000);
 
 	// displayname = (await client.getUserProfile(mxid))["displayname"]
 });

@@ -166,9 +166,26 @@ class Clients {
 			event: event,
 		});
 
-		//warn if other servers not getting events
+		//system logging for my knowledge
+		setTimeout(() => {
+			//for every account that could recieve events
+			for (const s of Array.from(this.accounts.keys())) {
+				//if it has a rank it was recieved within the timeout
+				if (!this.messageCache.get(event.event_id).rank.has(s)) {
+					const msg = `<code>${server}</code> <b>has not recieved event<b> <code>${event.event_id}</code> of type <code>${event.type}</code> in <code>${roomID}</code> <b>within 30 seconds</b> of other servers.`;
+
+					console.log(msg);
+
+					this.makeSDKrequest({}, false, async (c) => {
+						await c.sendHtmlNotice(this.consoleRoom, msg);
+					});
+				}
+			}
+		}, 30_000);
+
+		//configurable warning about servers not getting events
 		const fedDelayAllowed =
-			this.stateManager.getRawConfig(roomID)?.fedDelayAllowed;
+			this.stateManager.getConfig(roomID)?.fedDelayAllowed;
 		if (fedDelayAllowed && event.type !== "m.reaction") {
 			//delay and see if its been added
 			setTimeout(() => {
@@ -181,7 +198,6 @@ class Clients {
 							{ preferredServers: [server] },
 							false,
 							async (c) => {
-								//TODO: stop from reacting to self
 								await c.sendEvent(roomID, "m.reaction", {
 									"m.relates_to": {
 										event_id: event.event_id,

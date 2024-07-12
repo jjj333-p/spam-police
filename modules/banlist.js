@@ -87,22 +87,22 @@ class BanlistReader {
 			}
 		});
 	}
-	getRulesForUser(mxid) {
+	getRulesForUser(mxid, roomID) {
 		//get banlists config and return if there is none
 		const config = this.clients.stateManager.getConfig(roomID);
 		const banlists = config?.banlists;
 		if (!banlists) return;
 
 		//store results
-		results = [];
+		const results = [];
 
 		//for each followed banlist
 		for (const shortCode in banlists) {
 			//get rules, and on each of them
-			for (const event of this.getRulesForUserOnRoom(
-				mxid,
-				banlists[shortCode],
-			)) {
+
+			const r = this.getRulesForUserOnRoom(mxid, banlists[shortCode]);
+
+			for (const event of r) {
 				//add them to results
 				results.push({
 					shortCode,
@@ -115,3 +115,5 @@ class BanlistReader {
 		return results;
 	}
 }
+
+export { BanlistReader };

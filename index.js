@@ -16,6 +16,8 @@ import { parse } from "yaml";
 //Import modules
 import { Clients } from "./modules/clients.js";
 import { EventCatcher } from "./modules/eventCatcher.js";
+import { BanlistReader } from "./modules/banlist.js";
+
 // import { blacklist } from "./modules/blacklist.js";
 // import { redaction } from "./modules/redaction.js";
 // import { database } from "./modules/db.js";
@@ -29,8 +31,18 @@ const loginParsed = parse(loginFile);
 
 const clients = new Clients(loginParsed);
 const eventCatcher = new EventCatcher();
+const banlist = new BanlistReader(clients, eventCatcher);
 
 await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally
 	if (eventCatcher.check(event, roomID)) return;
+
+	const rules = banlist.getRulesForUser(event.sender, roomID);
+
+	clients.makeSDKrequest(
+		null,
+		false,
+		async (c) =>
+			await c.sendNotice(roomID, `a${JSON.stringify(rules, null, 2)}`),
+	);
 });

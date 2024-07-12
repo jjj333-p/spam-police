@@ -259,12 +259,17 @@ class Clients {
 		return promise;
 	}
 
-	async internalMakeSDKrequest(
-		{ acceptableServers, rejectedServers, preferredServers },
-		request,
-		throwError,
-		promise,
-	) {
+	async internalMakeSDKrequest(preference, request, throwError, promise) {
+		let acceptableServers;
+		let rejectedServers;
+		let preferredServers;
+
+		if (preference) {
+			acceptableServers = preference.acceptableServers;
+			rejectedServers = preference.rejectedServers;
+			preferredServers = preference.preferredServers;
+		}
+
 		//store the client
 		let server;
 

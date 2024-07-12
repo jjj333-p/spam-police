@@ -1,5 +1,14 @@
-//Import dependencies
+/*
+This code is provided on an as-is warranty-free basis by Joseph Winkie <jjj333.p.1325@gmail.com>
 
+This code is licensed under the A-GPL license found both in the "LICENSE" file of the root of this repository
+as well as https://www.gnu.org/licenses/agpl-3.0.en.html. Read it to know your rights.
+
+A complete copy of this codebase as well as runtime instructions can be found at 
+https://github.com/jjj333-p/spam-police/
+*/
+
+//Import dependencies
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 // import mps from "@gnuxie/matrix-protection-suite";

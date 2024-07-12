@@ -6,6 +6,7 @@ import { parse } from "yaml";
 
 //Import modules
 import { Clients } from "./modules/clients.js";
+import { EventCatcher } from "./modules/eventCatcher.js";
 // import { blacklist } from "./modules/blacklist.js";
 // import { redaction } from "./modules/redaction.js";
 // import { database } from "./modules/db.js";
@@ -18,5 +19,9 @@ const loginFile = readFileSync("./db/login.yaml", "utf8");
 const loginParsed = parse(loginFile);
 
 const clients = new Clients(loginParsed);
+const eventCatcher = new EventCatcher();
 
-await clients.neverResolve();
+await clients.setOnTimelineEvent(async (server, roomID, event) => {
+	//if there was a hold on that event we wont handle it externally
+	if (eventCatcher.check(event, roomID)) return;
+});

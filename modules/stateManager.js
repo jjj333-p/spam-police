@@ -55,6 +55,15 @@ class StateManager {
 		//indicate busy
 		this.processing.set(server + r, true);
 
+		//queue up join event
+
+		await this.clients.makeSDKrequest(
+			{ acceptableServers: [server] },
+			false, //the rest will return an error, no need duplicate code
+			async (c) =>
+				await c.joinRoom(r, Array.from(this.clients.accounts.keys())),
+		);
+
 		let fetchedState;
 		try {
 			fetchedState = await this.clients.makeSDKrequest(
@@ -69,7 +78,7 @@ class StateManager {
 			this.clients.makeSDKrequest(
 				{ rejectedServers: server },
 				false,
-				async (c) => await c.sendMessage(this.clients.consoleRoom, err),
+				async (c) => await c.sendNotice(this.clients.consoleRoom, err),
 			);
 		}
 
@@ -79,7 +88,7 @@ class StateManager {
 			this.clients.makeSDKrequest(
 				{ rejectedServers: server },
 				false,
-				async (c) => await c.sendMessage(this.clients.consoleRoom, err),
+				async (c) => await c.sendNotice(this.clients.consoleRoom, err),
 			);
 
 			//no longer processing
@@ -192,11 +201,7 @@ class StateManager {
 				//new state
 				cache.push(event);
 				this.stateCacheBlame.set(event.event_id, [server]);
-
-				//now write that to the cache
-				this.stateCache.set(roomID, event);
-			}
-			if (matchFromCache.event_id === event.unsigned.replaces_state) {
+			} else if (matchFromCache.event_id === event.unsigned.replaces_state) {
 				//all events not with that relational id
 				const hold = cache.filter(
 					(e) => e.type !== event.type || e.state_key !== event.state_key,
@@ -230,13 +235,21 @@ class StateManager {
 	}
 
 	getState(roomID, conditional) {
+		// if (roomID === "!odwJFwanVTgIblSUtg:matrix.org") {
+		// 	let a;
+		// }
+
 		const state = this.stateCache.get(roomID);
 
 		//there should be something but if there isnt go ahead and fetch in the background for next time
 		if (!state) this.initPerRoom(roomID);
 
+		if (state && !Array.isArray(state)) {
+			console.error(`State is not an array for roomID ${roomID}:`, state);
+		}
+
 		//return as filtered
-		return state?.filter(conditional);
+		return Array.isArray(state) ? state.filter(conditional) : undefined;
 	}
 
 	getRawConfig(roomID) {

@@ -18,18 +18,18 @@ class BanlistReader {
 			let matchMXID = mxid;
 
 			//if the ban was erased
-			if (!econtent) {
+			if (!e.content) {
 				return false;
 			}
 
 			//parce out the mxid from the key
-			const potentialMXID = econtent?.entity;
+			const potentialMXID = e.content?.entity;
 
 			//if mismatch, its invalid
 			//mothet sidev
 			if (
-				econtent.recommendation !== "org.matrix.mjolnir.ban" &&
-				econtent.recommendation !== "m.ban"
+				e.content.recommendation !== "org.matrix.mjolnir.ban" &&
+				e.content.recommendation !== "m.ban"
 			) {
 				return false;
 			}
@@ -101,6 +101,8 @@ class BanlistReader {
 			//get rules, and on each of them
 
 			const r = this.getRulesForUserOnRoom(mxid, banlists[shortCode]);
+
+			if (!r) continue;
 
 			for (const event of r) {
 				//add them to results

@@ -39,10 +39,5 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 	const rules = banlist.getRulesForUser(event.sender, roomID);
 
-	clients.makeSDKrequest(
-		null,
-		false,
-		async (c) =>
-			await c.sendNotice(roomID, `a${JSON.stringify(rules, null, 2)}`),
-	);
+	console.log(rules);
 });

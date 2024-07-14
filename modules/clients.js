@@ -141,7 +141,7 @@ class Clients {
 		//system logging for my knowledge
 		setTimeout(() => {
 			//for every account that could recieve events
-			for (const s in this.accounts.keys()) {
+			for (const s in this.accounts) {
 				//if it has a rank it was recieved within the timeout
 				if (!this.messageCache.get(event.event_id).rank.has(s)) {
 					const msg = `<code>${server}</code> <b>has not recieved event<b> <code>${event.event_id}</code> of type <code>${event.type}</code> in <code>${roomID}</code> <b>within 30 seconds</b> of other servers.`;
@@ -162,7 +162,7 @@ class Clients {
 			//delay and see if its been added
 			setTimeout(() => {
 				//for every account that could recieve events
-				for (const s in this.accounts.keys()) {
+				for (const s in this.accounts) {
 					//if it has a rank it was recieved within the timeout
 					if (!this.messageCache.get(event.event_id).rank.has(s)) {
 						//react on the ones that dont

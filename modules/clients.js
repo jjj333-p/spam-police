@@ -225,17 +225,29 @@ class Clients {
 		let acceptableServers;
 		let rejectedServers;
 		let preferredServers;
+		let roomID;
 
 		if (preference) {
 			acceptableServers = preference.acceptableServers;
 			rejectedServers = preference.rejectedServers;
 			preferredServers = preference.preferredServers;
+			roomID = preference.roomID;
 		}
 
 		//store the client
 		let server;
 
-		//promise to return
+		if (roomID) {
+			for (const s in this.accounts) {
+				if (!(await this.accounts.get(s).getJoinedRooms())?.includes(roomID)) {
+					if (rejectedServers) {
+						rejectedServers.push(s);
+					} else {
+						rejectedServers = [s];
+					}
+				}
+			}
+		}
 
 		//if one of the preferred options exists and is available, use it
 		if (preferredServers) {

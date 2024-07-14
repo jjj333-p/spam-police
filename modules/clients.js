@@ -93,10 +93,7 @@ class Clients {
 
 			this.accounts
 				.get(server)
-				.sendText(
-					this.consoleRoom,
-					`Successfully logged in to <code>${server}</code> instance.`,
-				);
+				.sendText(this.consoleRoom, `Successfully logged in to ${server}`);
 
 			this.stateManager.initPerServer(server);
 		});

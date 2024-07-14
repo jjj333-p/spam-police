@@ -167,7 +167,7 @@ class Clients {
 					if (!this.messageCache.get(event.event_id).rank.has(s)) {
 						//react on the ones that dont
 						this.makeSDKrequest(
-							{ preferredServers: [server] },
+							{ preferredServers: [server], roomID },
 							false,
 							async (c) => {
 								await c.sendEvent(roomID, "m.reaction", {

@@ -171,7 +171,7 @@ class StateManager {
 	}
 
 	async initPerRoom(roomID) {
-		for (const server of Array.from(this.clients.accounts.keys())) {
+		for (const server in this.clients.accounts) {
 			this.initPerRoomOnServer(server, roomID);
 		}
 	}

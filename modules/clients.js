@@ -185,6 +185,11 @@ class Clients {
 		}
 		//this is a mess to read but idk how to do it better, and biomejs wont let me space it more
 
+		//redaction for state events
+		if (event.type === "m.room.redaction")
+			this.stateManager.redactStateEvent(roomID, event.redacts);
+
+		//run actual event loop
 		if (typeof this.onTimelineEvent === "function") {
 			this.onTimelineEvent(server, roomID, event);
 		} else if (this.onTimelineEvent) {

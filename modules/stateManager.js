@@ -201,7 +201,7 @@ class StateManager {
 				//new state
 				cache.push(event);
 				this.stateCacheBlame.set(event.event_id, [server]);
-			} else if (matchFromCache.event_id === event.unsigned.replaces_state) {
+			} else if (matchFromCache.event_id === event.unsigned?.replaces_state) {
 				//all events not with that relational id
 				const hold = cache.filter(
 					(e) => e.type !== event.type || e.state_key !== event.state_key,
@@ -250,6 +250,14 @@ class StateManager {
 
 		//return as filtered
 		return Array.isArray(state) ? state.filter(conditional) : undefined;
+	}
+
+	async redactStateEvent(roomID, event_id) {
+		const event = this.getState(roomID, (e) => e.event_id === event_id)?.[0];
+
+		if (event) event.content = {};
+
+		return;
 	}
 
 	getRawConfig(roomID) {

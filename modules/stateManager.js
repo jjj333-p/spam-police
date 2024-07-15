@@ -41,9 +41,13 @@ class StateManager {
 			);
 		}
 
-		//for each room fetch the state and cache it
-		for (const r of rooms) {
-			this.initPerRoomOnServer(server, r);
+		try {
+			//for each room fetch the state and cache it
+			for (const r of rooms) {
+				this.initPerRoomOnServer(server, r);
+			}
+		} catch (e) {
+			console.error(`Room list returned by ${server} not iterable\n${e}`);
 		}
 	}
 

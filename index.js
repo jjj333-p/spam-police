@@ -39,7 +39,7 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 	//this will be the end of the timeline event loop. it comes after everything
 	const rules = banlist.getRulesForUser(event.sender, roomID);
-	if (!rules) return;
+	if (!(rules?.length > 0)) return;
 
 	//generate reason
 	let reason = "";
@@ -50,7 +50,7 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	const s = event.sender.split(":")[1];
 
 	try {
-		clients.makeSDKrequest(
+		await clients.makeSDKrequest(
 			{ preferredServers: [s], roomID },
 			true,
 			async (c) => await c.banUser(event.sender, roomID, reason),

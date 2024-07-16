@@ -312,7 +312,6 @@ class Clients {
 		} catch (e) {
 			//matrix ratelimit spec
 			if (e?.retryAfterMs) {
-				timedout = true;
 				this.internalMakeSDKrequest(args);
 				setTimeout(async () => {
 					//no longer timed out
@@ -326,7 +325,6 @@ class Clients {
 				e?.code === "ETIMEDOUT" ||
 				e?.code === "ECONNRESET"
 			) {
-				timedout = true;
 				const retryAfterMs = 60_000;
 				this.internalMakeSDKrequest(args);
 				setTimeout(async () => {

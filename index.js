@@ -37,6 +37,10 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally
 	if (eventCatcher.check(event, roomID)) return;
 
+	await clients.makeSDKrequest(null, false, async (c) =>
+		c.sendText(roomID, "a"),
+	);
+
 	//this will be the end of the timeline event loop. it comes after everything
 	const rules = banlist.getRulesForUser(event.sender, roomID);
 	if (!(rules?.length > 0)) return;

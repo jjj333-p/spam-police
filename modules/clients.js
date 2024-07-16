@@ -204,7 +204,7 @@ class Clients {
     If acceptableServers is empty, the request will be be performed on any server not in rejectedServers
     If one of the servers in preferredServers is available, it will be used
     */
-	makeSDKrequest(requestedServers, throwError, request) {
+	makeSDKrequest(preference, throwError, request) {
 		//create promise so that it can be stored in the queue and resolved at any time
 		let resolve;
 		let reject;
@@ -214,31 +214,51 @@ class Clients {
 		});
 
 		//actually go and make/queue the request
-		this.internalMakeSDKrequest(requestedServers, request, throwError, {
-			resolve,
-			reject,
+		this.internalMakeSDKrequest({
+			requestedServers: preference,
+			request,
+			throwError,
+			promise: {
+				resolve,
+				reject,
+			},
 		});
 
 		//return the promise
 		return promise;
 	}
 
-	async internalMakeSDKrequest(preference, request, throwError, promise) {
+	//assist the horrible function below
+	async nextRequest() {
+		const args = this.requestQueue.shift();
+
+		if (args) this.internalMakeSDKrequest(args);
+	}
+
+	//i am so sorry for the recursive horrors emitting from this function
+	async internalMakeSDKrequest(args) {
+		if (!args) throw "Why the fuck is there no args supplied??";
+
+		const request = args.request;
+		const throwError = args.throwError;
+		const promise = args.promise;
+
 		let acceptableServers;
 		let rejectedServers;
 		let preferredServers;
 		let roomID;
 
-		if (preference) {
-			acceptableServers = preference.acceptableServers;
-			rejectedServers = preference.rejectedServers;
-			preferredServers = preference.preferredServers;
-			roomID = preference.roomID;
+		if (args.preference) {
+			acceptableServers = args.preference.acceptableServers;
+			rejectedServers = args.preference.rejectedServers;
+			preferredServers = args.preference.preferredServers;
+			roomID = args.preference.roomID;
 		}
 
 		//store the client
 		let server;
 
+		//😭
 		if (roomID) {
 			for (const s in this.accounts) {
 				if (!(await this.accounts.get(s).getJoinedRooms())?.includes(roomID)) {
@@ -279,18 +299,11 @@ class Clients {
 		}
 
 		if (!server) {
-			this.requestQueue.push({
-				request,
-				acceptableServers,
-				rejectedServers,
-				preferredServers,
-				promise,
-			});
+			this.requestQueue.push(args);
 			return;
 		}
 
 		this.busy.set(server, true);
-		let timedout = false;
 		const client = this.accounts.get(server);
 
 		let result;
@@ -300,15 +313,11 @@ class Clients {
 			//matrix ratelimit spec
 			if (e?.retryAfterMs) {
 				timedout = true;
-				this.requestQueue.push({
-					request,
-					acceptableServers,
-					rejectedServers,
-					preferredServers,
-					promise,
-				});
-				setTimeout(() => {
-					timedout = false;
+				this.internalMakeSDKrequest(args);
+				setTimeout(async () => {
+					//no longer timed out
+					this.busy.delete(server);
+					this.nextRequest();
 				}, e.retryAfterMs);
 				console.log(`Timed out on server ${server} for ${e.retryAfterMs} ms.`);
 			} else if (
@@ -319,94 +328,37 @@ class Clients {
 			) {
 				timedout = true;
 				const retryAfterMs = 60_000;
-				this.requestQueue.push({
-					request,
-					acceptableServers,
-					rejectedServers,
-					preferredServers,
-					promise,
-				});
-				setTimeout(() => {
-					timedout = false;
+				this.internalMakeSDKrequest(args);
+				setTimeout(async () => {
+					//no longer timed out
+					this.busy.delete(server);
+					this.nextRequest();
 				}, retryAfterMs);
 				console.log(`Timed out on server ${server} for ${retryAfterMs} ms.`);
 			} else if (throwError) {
+				//throw the error, then no need to shit up the queue
 				promise.reject(e);
+				this.busy.delete(server);
+				this.nextRequest();
 			} else {
+				//log error and return nothing
 				console.warn(
 					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
 				);
+				promise.resolve();
+
+				//onto the next
+				this.busy.delete(server);
+				this.nextRequest();
 			}
 		}
 
+		//return whatever we got
 		promise.resolve(result);
 
-		const i = setInterval(async () => {
-			//will keep looping until not timed out and can go through this loop until caught up
-			if (timedout) return;
-
-			const qr = this.requestQueue.pop();
-
-			if (!qr) {
-				clearInterval(i);
-				this.busy.delete(server);
-				return;
-			}
-
-			//if a list of acceptable servers was passed and this is not it, or its in the rejected list
-			//put it back at the end of the queue and keep chugging
-			if (
-				(qr.acceptableServers && !qr.acceptableServers.includes(server)) ||
-				qr.rejectedServers?.includes(server)
-			) {
-				this.requestQueue.push(qr);
-				return;
-			}
-
-			let result;
-			try {
-				result = await qr.request(client, server);
-			} catch (e) {
-				//matrix ratelimit spec
-				if (e?.retryAfterMs) {
-					timedout = true;
-					this.requestQueue.push(qr);
-					setTimeout(() => {
-						timedout = false;
-					}, e.retryAfterMs);
-					console.log(
-						`Timed out on server ${server} for ${e.retryAfterMs} ms.`,
-					);
-				} else if (
-					//m.org shitting up the connection
-					e?.code === "ESOCKETTIMEDOUT" ||
-					e?.code === "ETIMEDOUT" ||
-					e?.code === "ECONNRESET"
-				) {
-					timedout = true;
-					const retryAfterMs = 60_000;
-					this.requestQueue.push({
-						request,
-						acceptableServers,
-						rejectedServers,
-						preferredServers,
-						promise,
-					});
-					setTimeout(() => {
-						timedout = false;
-					}, retryAfterMs);
-					console.log(`Timed out on server ${server} for ${retryAfterMs} ms.`);
-				} else if (throwError) {
-					qr.promise.reject(e);
-				} else {
-					console.warn(
-						`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
-					);
-				}
-				return;
-			}
-			qr.promise.resolve(result);
-		}, 100);
+		//onto the next
+		this.busy.delete(server);
+		this.nextRequest();
 	}
 
 	async neverResolve() {

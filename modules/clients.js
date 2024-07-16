@@ -323,7 +323,8 @@ class Clients {
 				//m.org shitting up the connection
 				e?.code === "ESOCKETTIMEDOUT" ||
 				e?.code === "ETIMEDOUT" ||
-				e?.code === "ECONNRESET"
+				e?.code === "ECONNRESET" ||
+				e?.error === "Server is unavailable"
 			) {
 				const retryAfterMs = 60_000;
 				this.internalMakeSDKrequest(args);

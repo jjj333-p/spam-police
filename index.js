@@ -68,7 +68,7 @@ async function banCheck(server, roomID, event) {
 		console.error(errMessage);
 
 		clients.makeSDKrequest({ roomID }, false, async (c) =>
-			c.sendHtmlNotice(roomID, errMessage),
+			c.sendHtmlNotice(parent, errMessage),
 		);
 	}
 }

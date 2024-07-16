@@ -37,6 +37,11 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally
 	if (eventCatcher.check(event, roomID)) return;
 
+	//check for ban async
+	banCheck(server, roomID, event);
+});
+
+async function banCheck(server, roomID, event) {
 	//this will be the end of the timeline event loop. it comes after everything
 	const rules = banlist.getRulesForUser(event.sender, roomID);
 	if (!(rules?.length > 0)) return;
@@ -56,7 +61,14 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 			async (c) => await c.banUser(event.sender, roomID, reason),
 		);
 	} catch (e) {
-		//temporary
-		console.error("meow");
+		const parent = clients.stateManager.getParent(roomID);
+
+		const errMessage = `Attempted to ban ${event.sender} for reason ${reason}, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+
+		console.error(errMessage);
+
+		clients.makeSDKrequest({ roomID }, false, async (c) =>
+			c.sendHtmlNotice(roomID, errMessage),
+		);
 	}
-});
+}

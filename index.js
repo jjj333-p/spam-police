@@ -63,12 +63,26 @@ async function banCheck(server, roomID, event) {
 	} catch (e) {
 		const parent = clients.stateManager.getParent(roomID);
 
-		const errMessage = `Attempted to ban ${event.sender} for reason ${reason}, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+		const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
 
 		console.error(errMessage);
 
-		clients.makeSDKrequest({ roomID }, false, async (c) =>
-			c.sendHtmlNotice(parent, errMessage),
+		//notify cant ban
+		clients.makeSDKrequest(
+			{ roomID },
+			false,
+			async (c) => await c.sendHtmlNotice(parent, errMessage),
 		);
 	}
+
+	//notify of ban
+	clients.makeSDKrequest(
+		{ roomID },
+		false,
+		async (c) =>
+			await c.sendHtmlNotice(
+				parent,
+				`Banned ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>.`,
+			),
+	);
 }

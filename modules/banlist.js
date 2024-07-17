@@ -13,79 +13,82 @@ class BanlistReader {
 		this.clients = clients;
 		this.eventCatcher = eventCatcher;
 	}
-	getRulesForUserOnRoom(mxid, roomID) {
-		return this.clients.stateManager.getState(roomID, (e) => {
-			let matchMXID = mxid;
+	ruleMatchesUser(mxid, e) {
+		let matchMXID = mxid;
 
-			//if the ban was erased
-			if (!e.content) {
-				return false;
-			}
+		//if the ban was erased
+		if (!e.content) {
+			return false;
+		}
 
-			//parce out the mxid from the key
-			const potentialMXID = e.content?.entity;
+		//parce out the mxid from the key
+		const potentialMXID = e.content?.entity;
 
-			//if mismatch, its invalid
-			//mothet sidev
-			if (
-				e.content.recommendation !== "org.matrix.mjolnir.ban" &&
-				e.content.recommendation !== "m.ban"
-			) {
-				return false;
-			}
+		//if mismatch, its invalid
+		//mothet sidev
+		if (
+			e.content.recommendation !== "org.matrix.mjolnir.ban" &&
+			e.content.recommendation !== "m.ban"
+		) {
+			return false;
+		}
 
-			//if exact match, it is match
-			if (potentialMXID === matchMXID) {
+		//if exact match, it is match
+		if (potentialMXID === matchMXID) {
+			return true;
+		}
+
+		//if theres no wildcards, and not an exact match, its not a match
+		if (!potentialMXID.includes("*")) {
+			return false;
+		}
+
+		//split around the wildcards
+		const p = potentialMXID.split("*");
+
+		//check before first wildcard
+		const firstpart = p.shift();
+		if (!matchMXID.startsWith(firstpart)) {
+			return false;
+		}
+
+		//check after last wildcard
+		const lastpart = p.pop();
+		if (!matchMXID.endsWith(lastpart)) {
+			return false;
+		}
+
+		//parce off the evaluated start and end
+		matchMXID = matchMXID.substring(
+			firstpart.length,
+			matchMXID.length - lastpart.length,
+		);
+
+		//loop until a condition to return arises
+		while (true) {
+			//if there is no more parts to match and everything else around wildcards matched
+			//it is match
+			if (p.length < 1) {
 				return true;
 			}
 
-			//if theres no wildcards, and not an exact match, its not a match
-			if (!potentialMXID.includes("*")) {
+			//if one of the bits between wildcards doesnt exist, it cant be a match
+			if (!matchMXID.includes(p[0])) {
 				return false;
 			}
 
-			//split around the wildcards
-			const p = potentialMXID.split("*");
-
-			//check before first wildcard
-			const firstpart = p.shift();
-			if (!matchMXID.startsWith(firstpart)) {
-				return false;
-			}
-
-			//check after last wildcard
-			const lastpart = p.pop();
-			if (!matchMXID.endsWith(lastpart)) {
-				return false;
-			}
-
-			//parce off the evaluated start and end
-			matchMXID = matchMXID.substring(
-				firstpart.length,
-				matchMXID.length - lastpart.length,
-			);
-
-			//loop until a condition to return arises
-			while (true) {
-				//if there is no more parts to match and everything else around wildcards matched
-				//it is match
-				if (p.length < 1) {
-					return true;
-				}
-
-				//if one of the bits between wildcards doesnt exist, it cant be a match
-				if (!matchMXID.includes(p[0])) {
-					return false;
-				}
-
-				//match the remaining parts in order starting with the first one left to match, then removing everything
-				//before it, and going back through the process untill theres nothing left to match
-				//have to use a substring of the original in case there was multiple matches of the next item to match
-				const nexttomatch = p.shift();
-				const r = matchMXID.split(nexttomatch);
-				matchMXID = matchMXID.substring(nexttomatch.length + r[0]);
-			}
-		});
+			//match the remaining parts in order starting with the first one left to match, then removing everything
+			//before it, and going back through the process untill theres nothing left to match
+			//have to use a substring of the original in case there was multiple matches of the next item to match
+			const nexttomatch = p.shift();
+			const r = matchMXID.split(nexttomatch);
+			matchMXID = matchMXID.substring(nexttomatch.length + r[0]);
+		}
+	}
+	getRulesForUserOnRoom(mxid, roomID) {
+		return this.clients.stateManager.getState(roomID, (e) =>
+			this.ruleMatchesUser(mxid, e),
+		);
 	}
 	getRulesForUser(mxid, roomID) {
 		//get banlists config and return if there is none

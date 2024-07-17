@@ -90,7 +90,7 @@ class Clients {
 
 				//push any rooms its in, into the rooms array
 				client.getJoinedRooms().then((rooms) => {
-					for (const r in rooms) {
+					for (const r of rooms) {
 						if (!this.joinedRooms.includes(r)) this.joinedRooms.push(r);
 					}
 				});

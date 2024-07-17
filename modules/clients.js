@@ -56,6 +56,9 @@ class Clients {
 		this.busy = new Map();
 		this.requestQueue = [];
 
+		//joined rooms array
+		this.joinedRooms = [];
+
 		// biome-ignore lint/complexity/noForEach: <easier to do async function>
 		serverID.forEach(async (server) => {
 			//convenience
@@ -77,7 +80,20 @@ class Clients {
 					this.internalOnEvent(server, roomID, event);
 				});
 
+				//push on join
+				//leave is irrelevant as it can silently error, too much room for error
+				client.on("room.join", (r) => {
+					if (!this.joinedRooms.includes(r)) this.joinedRooms.push(r);
+				});
+
 				await client.start(this.filter);
+
+				//push any rooms its in, into the rooms array
+				client.getJoinedRooms().then((rooms) => {
+					for (const r in rooms) {
+						if (!this.joinedRooms.includes(r)) this.joinedRooms.push(r);
+					}
+				});
 
 				this.accounts.set(server, client);
 			} catch (e) {

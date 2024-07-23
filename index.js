@@ -81,11 +81,11 @@ const filter = {
 client.start(filter).then(async (filter) => {
 	console.log("Client started!");
 
-	//to remotely monitor how often the bot restarts, to spot issues
-	client.sendText(logRoom, "Started.").catch((e) => {
-		console.log("Error sending basic test message to log room.");
-		process.exit(1);
-	});
+	// //to remotely monitor how often the bot restarts, to spot issues
+	// client.sendText(logRoom, "Started.").catch((e) => {
+	// 	console.log("Error sending basic test message to log room.");
+	// 	process.exit(1);
+	// });
 
 	//get mxid
 	mxid = await client.getUserId();

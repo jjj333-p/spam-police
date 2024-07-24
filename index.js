@@ -72,43 +72,55 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 			for (const r of clients.joinedRooms) {
 				//get banlists config and return if there is none
-				const config = this.clients.stateManager.getConfig(roomID);
+				const config = clients.stateManager.getConfig(r);
 				const banlists = config?.banlists;
-				if (typeof banlists !== "object") break;
+				if (typeof banlists !== "object") continue;
+
+				const parent = clients.stateManager.getParent(r);
 
 				//lazy
 				for (const shortCode in banlists) {
+
+					const reason = `${shortCode} (${event.content?.reason})`
+
 					if (banlists[shortCode] !== roomID) continue;
 
+					
+
+					const s = event.content.entity?.split(":")[1];
 					try {
 						await clients.makeSDKrequest(
-							{ preferredServers: [s], roomID },
+							{ preferredServers: [s], roomID:parent },
 							true,
-							async (c) => await c.banUser(event.sender, roomID, reason),
+							async (c) => await c.banUser(event.sender, r, reason),
 						);
 					} catch (e) {
-						const parent = clients.stateManager.getParent(roomID);
 
-						const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+						const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
 
 						console.error(errMessage);
 
 						//notify cant ban
 						clients.makeSDKrequest(
-							{ roomID },
+							{ r },
 							false,
 							async (c) => await c.sendHtmlNotice(parent, errMessage),
 						);
+
+						//only one of the for loop should succeed
+						//save a tiny bit of cpu
+						break;
+
 					}
 
 					//notify of ban
 					clients.makeSDKrequest(
-						{ roomID },
+						{ parent },
 						false,
 						async (c) =>
 							await c.sendHtmlNotice(
 								parent,
-								`Banned ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>.`,
+								`Banned ${event.sender} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>.`,
 							),
 					);
 				}
@@ -131,6 +143,8 @@ async function banCheck(server, roomID, event) {
 
 	const s = event.sender.split(":")[1];
 
+	const parent = clients.stateManager.getParent(roomID);
+
 	try {
 		await clients.makeSDKrequest(
 			{ preferredServers: [s], roomID },
@@ -138,8 +152,6 @@ async function banCheck(server, roomID, event) {
 			async (c) => await c.banUser(event.sender, roomID, reason),
 		);
 	} catch (e) {
-		const parent = clients.stateManager.getParent(roomID);
-
 		const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
 
 		console.error(errMessage);

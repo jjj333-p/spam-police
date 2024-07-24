@@ -51,24 +51,26 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 			//TODO: indicate receipt
 
 			//async as this can happen at the same time or after
-			clients.makeSDKrequest(
-				{roomID}, 
-				true, //if we lack perms to react
-				async c => await c.sendMessage(roomID, {
-						"m.relates_to": {
-							"event_id": "$Q1r6Kp010eKhqzNV4J67Ga-SUmWmjcUi9aVUFz9Jfs0",
-							"key": "✅",
-							"rel_type": "m.annotation"
-						}
-					}
+			clients
+				.makeSDKrequest(
+					{ roomID },
+					true, //if we lack perms to react
+					async (c) =>
+						await c.sendMessage(roomID, {
+							"m.relates_to": {
+								event_id: "$Q1r6Kp010eKhqzNV4J67Ga-SUmWmjcUi9aVUFz9Jfs0",
+								key: "✅",
+								rel_type: "m.annotation",
+							},
+						}),
 				)
-			).catch(() => 
-				clients.makeSDKrequest(
-					{roomID}, 
-					false, //if we cant send a read receipt how did we get the event??
-					async c => await c.sendReadReceipt(roomID, event.event_id)
-				)
-			)
+				.catch(() =>
+					clients.makeSDKrequest(
+						{ roomID },
+						false, //if we cant send a read receipt how did we get the event??
+						async (c) => await c.sendReadReceipt(roomID, event.event_id),
+					),
+				);
 
 			for (const r of clients.joinedRooms) {
 				//get banlists config and return if there is none
@@ -80,22 +82,18 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 				//lazy
 				for (const shortCode in banlists) {
-
-					const reason = `${shortCode} (${event.content?.reason})`
+					const reason = `${shortCode} (${event.content?.reason})`;
 
 					if (banlists[shortCode] !== roomID) continue;
-
-					
 
 					const s = event.content.entity?.split(":")[1];
 					try {
 						await clients.makeSDKrequest(
-							{ preferredServers: [s], roomID:parent },
+							{ preferredServers: [s], roomID: parent },
 							true,
 							async (c) => await c.banUser(event.sender, r, reason),
 						);
 					} catch (e) {
-
 						const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
 
 						console.error(errMessage);
@@ -110,7 +108,6 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 						//only one of the for loop should succeed
 						//save a tiny bit of cpu
 						break;
-
 					}
 
 					//notify of ban

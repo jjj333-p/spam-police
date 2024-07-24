@@ -39,6 +39,83 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 	//check for ban async
 	banCheck(server, roomID, event);
+
+	switch (event.type) {
+		case "m.policy.rule.user":
+			if (
+				event.content?.recommendation !== "org.matrix.mjolnir.ban" &&
+				event.content?.recommendation !== "m.ban"
+			)
+				break;
+
+			//TODO: indicate receipt
+
+			//async as this can happen at the same time or after
+			clients.makeSDKrequest(
+				{roomID}, 
+				true, //if we lack perms to react
+				async c => await c.sendMessage(roomID, {
+						"m.relates_to": {
+							"event_id": "$Q1r6Kp010eKhqzNV4J67Ga-SUmWmjcUi9aVUFz9Jfs0",
+							"key": "✅",
+							"rel_type": "m.annotation"
+						}
+					}
+				)
+			).catch(() => 
+				clients.makeSDKrequest(
+					{roomID}, 
+					false, //if we cant send a read receipt how did we get the event??
+					async c => await c.sendReadReceipt(roomID, event.event_id)
+				)
+			)
+
+			for (const r of clients.joinedRooms) {
+				//get banlists config and return if there is none
+				const config = this.clients.stateManager.getConfig(roomID);
+				const banlists = config?.banlists;
+				if (typeof banlists !== "object") break;
+
+				//lazy
+				for (const shortCode in banlists) {
+					if (banlists[shortCode] !== roomID) continue;
+
+					try {
+						await clients.makeSDKrequest(
+							{ preferredServers: [s], roomID },
+							true,
+							async (c) => await c.banUser(event.sender, roomID, reason),
+						);
+					} catch (e) {
+						const parent = clients.stateManager.getParent(roomID);
+
+						const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+
+						console.error(errMessage);
+
+						//notify cant ban
+						clients.makeSDKrequest(
+							{ roomID },
+							false,
+							async (c) => await c.sendHtmlNotice(parent, errMessage),
+						);
+					}
+
+					//notify of ban
+					clients.makeSDKrequest(
+						{ roomID },
+						false,
+						async (c) =>
+							await c.sendHtmlNotice(
+								parent,
+								`Banned ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>.`,
+							),
+					);
+				}
+			}
+
+			break;
+	}
 });
 
 async function banCheck(server, roomID, event) {

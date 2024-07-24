@@ -94,7 +94,7 @@ class BanlistReader {
 		//get banlists config and return if there is none
 		const config = this.clients.stateManager.getConfig(roomID);
 		const banlists = config?.banlists;
-		if (!banlists) return;
+		if (typeof banlists !== "object") return;
 
 		//store results
 		const results = [];

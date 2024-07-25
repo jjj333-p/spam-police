@@ -175,6 +175,8 @@ async function banCheck(server, roomID, event) {
 			false,
 			async (c) => await c.sendHtmlNotice(parent, errMessage),
 		);
+
+		return;
 	}
 
 	//notify of ban

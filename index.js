@@ -41,6 +41,7 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	banCheck(server, roomID, event);
 
 	switch (event.type) {
+		//this many nested for loops could get out of hand very quick
 		case "m.policy.rule.user":
 			if (
 				event.content?.recommendation !== "org.matrix.mjolnir.ban" &&
@@ -86,40 +87,55 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 					if (banlists[shortCode] !== roomID) continue;
 
-					const s = event.content.entity?.split(":")[1];
-					try {
-						await clients.makeSDKrequest(
-							{ preferredServers: [s], roomID: parent },
-							true,
-							async (c) => await c.banUser(event.sender, r, reason),
-						);
-					} catch (e) {
-						const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
-
-						console.error(errMessage);
-
-						//notify cant ban
-						clients.makeSDKrequest(
-							{ r },
-							false,
-							async (c) => await c.sendHtmlNotice(parent, errMessage),
-						);
-
-						//only one of the for loop should succeed
-						//save a tiny bit of cpu
-						break;
-					}
-
-					//notify of ban
-					clients.makeSDKrequest(
-						{ parent },
-						false,
-						async (c) =>
-							await c.sendHtmlNotice(
-								parent,
-								`Banned ${event.sender} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>.`,
-							),
+					//all users in room matching policy
+					const banworthyUsers = clients.stateManager.getState(
+						r,
+						(e) =>
+							e.type === "m.room.member" &&
+							(e.content.membership === "join" ||
+								e.content.membership === "invite") &&
+							banlist.ruleMatchesUser(e.state_key, event),
 					);
+
+					//for each ^
+					for (const user of banworthyUsers) {
+						//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
+						const s = event.content.entity?.split(":")[1];
+
+						try {
+							await clients.makeSDKrequest(
+								{ preferredServers: [s], roomID: parent },
+								true,
+								async (c) => await c.banUser(user, r, reason),
+							);
+						} catch (e) {
+							const errMessage = `Attempted to ban ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+
+							console.error(errMessage);
+
+							//notify cant ban
+							clients.makeSDKrequest(
+								{ r },
+								false,
+								async (c) => await c.sendHtmlNotice(parent, errMessage),
+							);
+
+							//only one of the for loop should succeed
+							//save a tiny bit of cpu
+							break;
+						}
+
+						//notify of ban
+						clients.makeSDKrequest(
+							{ parent },
+							false,
+							async (c) =>
+								await c.sendHtmlNotice(
+									parent,
+									`Banned ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>.`,
+								),
+						);
+					}
 				}
 			}
 

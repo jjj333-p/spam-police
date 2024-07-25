@@ -104,9 +104,14 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 
 						try {
 							await clients.makeSDKrequest(
-								{ preferredServers: [s], roomID: parent },
+								{ preferredServers: [s], roomID: r },
 								true,
-								async (c) => await c.banUser(user, r, reason),
+								async (c) =>
+									await c.sendStateEvent(r, "m.room.member", user, {
+										membership: "ban",
+										reason,
+										policy: [event],
+									}),
 							);
 						} catch (e) {
 							const errMessage = `Attempted to ban ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
@@ -162,7 +167,12 @@ async function banCheck(server, roomID, event) {
 		await clients.makeSDKrequest(
 			{ preferredServers: [s], roomID },
 			true,
-			async (c) => await c.banUser(event.sender, roomID, reason),
+			async (c) =>
+				await c.sendStateEvent(roomID, "m.room.member", event.sender, {
+					membership: "ban",
+					reason,
+					policy: rules,
+				}),
 		);
 	} catch (e) {
 		const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;

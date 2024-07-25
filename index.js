@@ -98,7 +98,7 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 					);
 
 					//for each ^
-					for (const user of banworthyUsers) {
+					for (const { state_key: user } of banworthyUsers) {
 						//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
 						const s = event.content.entity?.split(":")[1];
 

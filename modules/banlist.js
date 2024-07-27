@@ -131,13 +131,58 @@ class BanlistReader {
 			reason += `${rule.shortCode} (${rule.event.content?.reason}) `;
 		}
 
-		const s = event.sender.split(":")[1];
+		const powerLevels = this.clients.getPowerLevels(roomID);
+
+		//technically possible, but only really happens on dendrite and means we cant do anything anyways
+		//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+		if (typeof powerLevels !== "object" || Object.keys(powerLevels).length < 1)
+			return;
+
+		const plToBan = powerLevels.ban;
+
+		// biome-ignore lint/suspicious/noGlobalIsNan: powerlevels can be string types but they must be a number string (matrix is so good)
+		if (isNaN(plToBan)) return; //should never happen, but i dont trust
 
 		const parent = this.clients.stateManager.getParent(roomID);
 
+		const s = event.sender.split(":")[1];
+		const acceptableServers = [s];
+
+		//get pl of user we want to ban
+		const plOfUser =
+			powerLevels.users?.[event.sender] || powerLevels.users_default || 0;
+
+		for (const bs of Array.from(this.clients.accounts.keys())) {
+			//get pl of this account
+			const pl =
+				powerLevels.users?.[await this.clients.accounts.get(bs).getUserId()] ||
+				powerLevels.users_default ||
+				0;
+
+			//too low pl to ban
+			if (pl < plToBan) continue;
+
+			//pl must be higher than user we want to ban
+			if (pl > plOfUser) acceptableServers.push(bs);
+		}
+
+		if (acceptableServers.length < 1) {
+			this.clients.makeSDKrequest(
+				{ roomID: parent },
+				false,
+				async (c) =>
+					await c.sendHtmlNotice(
+						parent,
+						`Not banning ${user} because I have no account with a high enough powerlevel. Ban reason <code>${reason}</code>`,
+					),
+			);
+
+			return;
+		}
+
 		try {
 			await this.clients.makeSDKrequest(
-				{ preferredServers: [s], roomID },
+				{ preferredServers: acceptableServers, roomID },
 				true,
 				async (c) =>
 					await c.sendStateEvent(roomID, "m.room.member", event.sender, {
@@ -208,6 +253,21 @@ class BanlistReader {
 			const banlists = config?.banlists;
 			if (typeof banlists !== "object") continue;
 
+			const powerLevels = this.clients.getPowerLevels(r);
+
+			//technically possible, but only really happens on dendrite and means we cant do anything anyways
+			//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+			if (
+				typeof powerLevels !== "object" ||
+				Object.keys(powerLevels).length < 1
+			)
+				continue;
+
+			const plToBan = powerLevels.ban;
+
+			// biome-ignore lint/suspicious/noGlobalIsNan: powerlevels can be string types but they must be a number string (matrix is so good)
+			if (isNaN(plToBan)) continue; //should never happen, but i dont trust
+
 			const parent = this.clients.stateManager.getParent(r);
 
 			//lazy
@@ -231,9 +291,45 @@ class BanlistReader {
 					//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
 					const s = event.content.entity?.split(":")[1];
 
+					const acceptableServers = [s];
+
+					//get pl of user we want to ban
+					const plOfUser =
+						powerLevels.users?.[user] || powerLevels.users_default || 0;
+
+					for (const bs of Array.from(this.clients.accounts.keys())) {
+						//get pl of this account
+						const pl =
+							powerLevels.users?.[
+								await this.clients.accounts.get(bs).getUserId()
+							] ||
+							powerLevels.users_default ||
+							0;
+
+						//too low pl to ban
+						if (pl < plToBan) continue;
+
+						//pl must be higher than user we want to ban
+						if (pl > plOfUser) acceptableServers.push(bs);
+					}
+
+					if (acceptableServers.length < 1) {
+						this.clients.makeSDKrequest(
+							{ roomID: parent },
+							false,
+							async (c) =>
+								await c.sendHtmlNotice(
+									parent,
+									`Not banning ${user} because I have no account with a high enough powerlevel. Ban reason <code>${reason}</code>`,
+								),
+						);
+
+						continue;
+					}
+
 					try {
 						await this.clients.makeSDKrequest(
-							{ preferredServers: [s], roomID: r },
+							{ preferredServers: acceptableServers, roomID: r },
 							true,
 							async (c) =>
 								await c.sendStateEvent(r, "m.room.member", user, {
@@ -249,14 +345,12 @@ class BanlistReader {
 
 						//notify cant ban
 						this.clients.makeSDKrequest(
-							{ r },
+							{ roomID: r },
 							false,
 							async (c) => await c.sendHtmlNotice(parent, errMessage),
 						);
 
-						//only one of the for loop should succeed
-						//save a tiny bit of cpu
-						break;
+						continue;
 					}
 
 					//notify of ban

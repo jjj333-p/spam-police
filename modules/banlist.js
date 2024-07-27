@@ -119,6 +119,160 @@ class BanlistReader {
 
 		return results;
 	}
+
+	async banCheck(server, roomID, event) {
+		//this will be the end of the timeline event loop. it comes after everything
+		const rules = this.getRulesForUser(event.sender, roomID);
+		if (!(rules?.length > 0)) return;
+
+		//generate reason
+		let reason = "";
+		for (const rule of rules) {
+			reason += `${rule.shortCode} (${rule.event.content?.reason}) `;
+		}
+
+		const s = event.sender.split(":")[1];
+
+		const parent = this.clients.stateManager.getParent(roomID);
+
+		try {
+			await this.clients.makeSDKrequest(
+				{ preferredServers: [s], roomID },
+				true,
+				async (c) =>
+					await c.sendStateEvent(roomID, "m.room.member", event.sender, {
+						membership: "ban",
+						reason,
+						policy: rules,
+					}),
+			);
+		} catch (e) {
+			const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+
+			console.error(errMessage);
+
+			//notify cant ban
+			this.clients.makeSDKrequest(
+				{ roomID },
+				false,
+				async (c) => await c.sendHtmlNotice(parent, errMessage),
+			);
+
+			return;
+		}
+
+		//notify of ban
+		this.clients.makeSDKrequest(
+			{ roomID },
+			false,
+			async (c) =>
+				await c.sendHtmlNotice(
+					parent,
+					`Banned ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>.`,
+				),
+		);
+	}
+
+	async newUserRule(server, roomID, event) {
+		if (
+			event.content?.recommendation !== "org.matrix.mjolnir.ban" &&
+			event.content?.recommendation !== "m.ban"
+		)
+			return;
+
+		//async as this can happen at the same time or after
+		this.clients
+			.makeSDKrequest(
+				{ roomID },
+				true, //if we lack perms to react
+				async (c) =>
+					await c.sendMessage(roomID, {
+						"m.relates_to": {
+							event_id: "$Q1r6Kp010eKhqzNV4J67Ga-SUmWmjcUi9aVUFz9Jfs0",
+							key: "✅",
+							rel_type: "m.annotation",
+						},
+					}),
+			)
+			.catch(() =>
+				this.clients.makeSDKrequest(
+					{ roomID },
+					false, //if we cant send a read receipt how did we get the event??
+					async (c) => await c.sendReadReceipt(roomID, event.event_id),
+				),
+			);
+
+		for (const r of this.clients.joinedRooms) {
+			//get banlists config and return if there is none
+			const config = this.clients.stateManager.getConfig(r);
+			const banlists = config?.banlists;
+			if (typeof banlists !== "object") continue;
+
+			const parent = this.clients.stateManager.getParent(r);
+
+			//lazy
+			for (const shortCode in banlists) {
+				if (banlists[shortCode] !== roomID) continue;
+
+				const reason = `${shortCode} (${event.content?.reason})`;
+
+				//all users in room matching policy
+				const banworthyUsers = this.clients.stateManager.getState(
+					r,
+					(e) =>
+						e.type === "m.room.member" &&
+						(e.content.membership === "join" ||
+							e.content.membership === "invite") &&
+						this.banlist.ruleMatchesUser(e.state_key, event),
+				);
+
+				//for each ^
+				for (const { state_key: user } of banworthyUsers) {
+					//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
+					const s = event.content.entity?.split(":")[1];
+
+					try {
+						await this.clients.makeSDKrequest(
+							{ preferredServers: [s], roomID: r },
+							true,
+							async (c) =>
+								await c.sendStateEvent(r, "m.room.member", user, {
+									membership: "ban",
+									reason,
+									policy: [event],
+								}),
+						);
+					} catch (e) {
+						const errMessage = `Attempted to ban ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
+
+						console.error(errMessage);
+
+						//notify cant ban
+						this.clients.makeSDKrequest(
+							{ r },
+							false,
+							async (c) => await c.sendHtmlNotice(parent, errMessage),
+						);
+
+						//only one of the for loop should succeed
+						//save a tiny bit of cpu
+						break;
+					}
+
+					//notify of ban
+					this.clients.makeSDKrequest(
+						{ parent },
+						false,
+						async (c) =>
+							await c.sendHtmlNotice(
+								parent,
+								`Banned ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>.`,
+							),
+					);
+				}
+			}
+		}
+	}
 }
 
 export { BanlistReader };

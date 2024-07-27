@@ -8,6 +8,8 @@ A complete copy of this codebase as well as runtime instructions can be found at
 https://github.com/jjj333-p/spam-police/
 */
 
+//this file is mostly just orchestrating the different componets together
+
 //Import dependencies
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
@@ -33,170 +35,19 @@ const clients = new Clients(loginParsed);
 const eventCatcher = new EventCatcher();
 const banlist = new BanlistReader(clients, eventCatcher);
 
+//organize events
+const eventHandlerMap = new Map();
+eventHandlerMap.set("m.policy.rule.user", (...args) =>
+	banlist.newUserRule(...args),
+);
+
 await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally
 	if (eventCatcher.check(event, roomID)) return;
 
 	//check for ban async
-	banCheck(server, roomID, event);
+	banlist.banCheck(server, roomID, event);
 
-	switch (event.type) {
-		//this many nested for loops could get out of hand very quick
-		case "m.policy.rule.user":
-			if (
-				event.content?.recommendation !== "org.matrix.mjolnir.ban" &&
-				event.content?.recommendation !== "m.ban"
-			)
-				break;
-
-			//TODO: indicate receipt
-
-			//async as this can happen at the same time or after
-			clients
-				.makeSDKrequest(
-					{ roomID },
-					true, //if we lack perms to react
-					async (c) =>
-						await c.sendMessage(roomID, {
-							"m.relates_to": {
-								event_id: "$Q1r6Kp010eKhqzNV4J67Ga-SUmWmjcUi9aVUFz9Jfs0",
-								key: "✅",
-								rel_type: "m.annotation",
-							},
-						}),
-				)
-				.catch(() =>
-					clients.makeSDKrequest(
-						{ roomID },
-						false, //if we cant send a read receipt how did we get the event??
-						async (c) => await c.sendReadReceipt(roomID, event.event_id),
-					),
-				);
-
-			for (const r of clients.joinedRooms) {
-				//get banlists config and return if there is none
-				const config = clients.stateManager.getConfig(r);
-				const banlists = config?.banlists;
-				if (typeof banlists !== "object") continue;
-
-				const parent = clients.stateManager.getParent(r);
-
-				//lazy
-				for (const shortCode in banlists) {
-					const reason = `${shortCode} (${event.content?.reason})`;
-
-					if (banlists[shortCode] !== roomID) continue;
-
-					//all users in room matching policy
-					const banworthyUsers = clients.stateManager.getState(
-						r,
-						(e) =>
-							e.type === "m.room.member" &&
-							(e.content.membership === "join" ||
-								e.content.membership === "invite") &&
-							banlist.ruleMatchesUser(e.state_key, event),
-					);
-
-					//for each ^
-					for (const { state_key: user } of banworthyUsers) {
-						//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
-						const s = event.content.entity?.split(":")[1];
-
-						try {
-							await clients.makeSDKrequest(
-								{ preferredServers: [s], roomID: r },
-								true,
-								async (c) =>
-									await c.sendStateEvent(r, "m.room.member", user, {
-										membership: "ban",
-										reason,
-										policy: [event],
-									}),
-							);
-						} catch (e) {
-							const errMessage = `Attempted to ban ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
-
-							console.error(errMessage);
-
-							//notify cant ban
-							clients.makeSDKrequest(
-								{ r },
-								false,
-								async (c) => await c.sendHtmlNotice(parent, errMessage),
-							);
-
-							//only one of the for loop should succeed
-							//save a tiny bit of cpu
-							break;
-						}
-
-						//notify of ban
-						clients.makeSDKrequest(
-							{ parent },
-							false,
-							async (c) =>
-								await c.sendHtmlNotice(
-									parent,
-									`Banned ${user} in <a href=\"https://matrix.to/#/${r}\">${r}</a> for reason <code>${reason}</code>.`,
-								),
-						);
-					}
-				}
-			}
-
-			break;
-	}
+	//if theres an event handler, run it
+	eventHandlerMap.get(event.type)?.(server, roomID, event);
 });
-
-async function banCheck(server, roomID, event) {
-	//this will be the end of the timeline event loop. it comes after everything
-	const rules = banlist.getRulesForUser(event.sender, roomID);
-	if (!(rules?.length > 0)) return;
-
-	//generate reason
-	let reason = "";
-	for (const rule of rules) {
-		reason += `${rule.shortCode} (${rule.event.content?.reason}) `;
-	}
-
-	const s = event.sender.split(":")[1];
-
-	const parent = clients.stateManager.getParent(roomID);
-
-	try {
-		await clients.makeSDKrequest(
-			{ preferredServers: [s], roomID },
-			true,
-			async (c) =>
-				await c.sendStateEvent(roomID, "m.room.member", event.sender, {
-					membership: "ban",
-					reason,
-					policy: rules,
-				}),
-		);
-	} catch (e) {
-		const errMessage = `Attempted to ban ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>, failed with error:\n<pre><code>${e}\n</code></pre>\n`;
-
-		console.error(errMessage);
-
-		//notify cant ban
-		clients.makeSDKrequest(
-			{ roomID },
-			false,
-			async (c) => await c.sendHtmlNotice(parent, errMessage),
-		);
-
-		return;
-	}
-
-	//notify of ban
-	clients.makeSDKrequest(
-		{ roomID },
-		false,
-		async (c) =>
-			await c.sendHtmlNotice(
-				parent,
-				`Banned ${event.sender} in <a href=\"https://matrix.to/#/${roomID}\">${roomID}</a> for reason <code>${reason}</code>.`,
-			),
-	);
-}

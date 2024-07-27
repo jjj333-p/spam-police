@@ -223,7 +223,7 @@ class BanlistReader {
 						e.type === "m.room.member" &&
 						(e.content.membership === "join" ||
 							e.content.membership === "invite") &&
-						this.banlist.ruleMatchesUser(e.state_key, event),
+						this.ruleMatchesUser(e.state_key, event),
 				);
 
 				//for each ^

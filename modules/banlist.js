@@ -131,7 +131,7 @@ class BanlistReader {
 			reason += `${rule.shortCode} (${rule.event.content?.reason}) `;
 		}
 
-		const powerLevels = this.clients.getPowerLevels(roomID);
+		const powerLevels = this.clients.stateManager.getPowerLevels(roomID);
 
 		//technically possible, but only really happens on dendrite and means we cant do anything anyways
 		//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
@@ -145,8 +145,7 @@ class BanlistReader {
 
 		const parent = this.clients.stateManager.getParent(roomID);
 
-		const s = event.sender.split(":")[1];
-		const acceptableServers = [s];
+		const acceptableServers = [];
 
 		//get pl of user we want to ban
 		const plOfUser =
@@ -173,16 +172,18 @@ class BanlistReader {
 				async (c) =>
 					await c.sendHtmlNotice(
 						parent,
-						`Not banning ${user} because I have no account with a high enough powerlevel. Ban reason <code>${reason}</code>`,
+						`Not banning ${event.sender} because I have no account with a high enough powerlevel. Ban reason <code>${reason}</code>`,
 					),
 			);
 
 			return;
 		}
 
+		const s = event.sender.split(":")[1];
+
 		try {
 			await this.clients.makeSDKrequest(
-				{ preferredServers: acceptableServers, roomID },
+				{ preferredServers: [s], acceptableServers, roomID },
 				true,
 				async (c) =>
 					await c.sendStateEvent(roomID, "m.room.member", event.sender, {
@@ -253,7 +254,7 @@ class BanlistReader {
 			const banlists = config?.banlists;
 			if (typeof banlists !== "object") continue;
 
-			const powerLevels = this.clients.getPowerLevels(r);
+			const powerLevels = this.clients.stateManager.getPowerLevels(r);
 
 			//technically possible, but only really happens on dendrite and means we cant do anything anyways
 			//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
@@ -288,10 +289,7 @@ class BanlistReader {
 
 				//for each ^
 				for (const { state_key: user } of banworthyUsers) {
-					//if possible ban on the server the user is on, prevent softfailed events and fedi lag where important
-					const s = event.content.entity?.split(":")[1];
-
-					const acceptableServers = [s];
+					const acceptableServers = [];
 
 					//get pl of user we want to ban
 					const plOfUser =
@@ -329,7 +327,7 @@ class BanlistReader {
 
 					try {
 						await this.clients.makeSDKrequest(
-							{ preferredServers: acceptableServers, roomID: r },
+							{ preferredServers: [s], acceptableServers, roomID: r },
 							true,
 							async (c) =>
 								await c.sendStateEvent(r, "m.room.member", user, {

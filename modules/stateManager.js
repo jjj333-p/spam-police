@@ -266,10 +266,10 @@ class StateManager {
 
 	//returns the content of the powerlevel event for that room
 	getPowerLevels(roomID) {
-		this.getState(
+		return this.getState(
 			roomID,
 			(e) => e.type === "m.room.power_levels" && e.state_key === "",
-		)?.content;
+		)?.[0]?.content;
 	}
 
 	getRawConfig(roomID) {

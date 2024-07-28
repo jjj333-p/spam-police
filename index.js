@@ -51,3 +51,59 @@ await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if theres an event handler, run it
 	eventHandlerMap.get(event.type)?.(server, roomID, event);
 });
+
+async function membershipChange(server, roomID, event) {
+	//ban sync is disabled
+	// if(!clients.stateManager.getConfig(roomID)?.sync_bans) return;
+
+	const parent = clients.stateManager.getParent(roomID);
+
+	let childShortCode = "here"
+	if (parent !== roomID) {
+		childShortCode = Object.keys(clients.stateManager.getConfig(parent)?.children)
+	}
+
+	const eventLink = `<a href="https://matrix.to/#/${roomID}/${event.event_id}?via=${server}">${childShortCode}</a>`
+
+	const banlistOBJ = clients.stateManager.getConfig(parent)?.banlists
+	const banlistShortCodes = Object.keys(banlistOBJ)
+
+	if (
+		event.content?.membership === "ban" &&
+		event.unsigned?.prev_content?.membership !== "ban"
+	) {
+		//attempt to message in parent room before reacting
+		let msgID
+		try {
+			msgID = await clients.makeSDKrequest(
+				{ roomID:parent },
+				true,
+				async (c) =>
+					await c.sendHtmlText(parent, `${event.state_key} banned in ${childShortCode} for reason ${event.content?.reason} by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`),
+			);
+		} catch (e) {return}
+
+		// biome-ignore lint/complexity/noForEach: these can be exectued async
+		banlistShortCodes.forEach(async shortcode => {
+
+			//catch the reaction
+			eventCatcher.catch(((event, roomID) => {
+				
+				//right reaction on right event
+				if (event.content?.["m.relates_to"]?.key !== shortcode) return false;
+				if (event.content?.["m.relates_to"]?.event_id !== msgID ) return false
+
+				//TODO powerlevels check
+			
+			}), //TODO on reaction)
+
+			//TODO reacting for options
+		})
+		
+	} else if (
+		event.content?.membership !== "ban" &&
+		event.unsigned?.prev_content?.membership === "ban"
+	) {
+		//TODO on unban
+	}
+}

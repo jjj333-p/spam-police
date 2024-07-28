@@ -86,15 +86,31 @@ async function membershipChange(server, roomID, event) {
 		// biome-ignore lint/complexity/noForEach: these can be exectued async
 		banlistShortCodes.forEach(async shortcode => {
 
+			const banlistID = banlistOBJ[shortcode]
+
 			//catch the reaction
-			eventCatcher.catch(((event, roomID) => {
+			eventCatcher.catch((event, roomID) => {
 				
 				//right reaction on right event
+				if (roomID !== parent) return false;
 				if (event.content?.["m.relates_to"]?.key !== shortcode) return false;
-				if (event.content?.["m.relates_to"]?.event_id !== msgID ) return false
+				if (event.content?.["m.relates_to"]?.event_id !== msgID ) return false;
+
+				//anonymous writes from within its management room
+				const anonWrite = (clients.stateManager.getParent(banlistID) === parent)
+
+				//managed rooms check the pl of the management room
+				let rtc = banlistID
+				if (anonWrite) rtc = parent	
+
+				const powerLevels = clients.stateManager.getPowerLevels(rtc)
 
 				//TODO powerlevels check
-			
+
+
+			//on caught reaction
+			}, (event, roomID) => {
+
 			}), //TODO on reaction)
 
 			//TODO reacting for options

@@ -58,64 +58,121 @@ async function membershipChange(server, roomID, event) {
 
 	const parent = clients.stateManager.getParent(roomID);
 
-	let childShortCode = "here"
+	let childShortCode = "here";
 	if (parent !== roomID) {
-		childShortCode = Object.keys(clients.stateManager.getConfig(parent)?.children)
+		childShortCode = Object.keys(
+			clients.stateManager.getConfig(parent)?.children,
+		);
 	}
 
-	const eventLink = `<a href="https://matrix.to/#/${roomID}/${event.event_id}?via=${server}">${childShortCode}</a>`
+	const eventLink = `<a href="https://matrix.to/#/${roomID}/${event.event_id}?via=${server}">${childShortCode}</a>`;
 
-	const banlistOBJ = clients.stateManager.getConfig(parent)?.banlists
-	const banlistShortCodes = Object.keys(banlistOBJ)
+	const banlistOBJ = clients.stateManager.getConfig(parent)?.banlists;
+	const banlistShortCodes = Object.keys(banlistOBJ);
 
 	if (
 		event.content?.membership === "ban" &&
 		event.unsigned?.prev_content?.membership !== "ban"
 	) {
 		//attempt to message in parent room before reacting
-		let msgID
+		let msgID;
 		try {
 			msgID = await clients.makeSDKrequest(
-				{ roomID:parent },
+				{ roomID: parent },
 				true,
 				async (c) =>
-					await c.sendHtmlText(parent, `${event.state_key} banned in ${childShortCode} for reason ${event.content?.reason} by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`),
+					await c.sendHtmlText(
+						parent,
+						`${event.state_key} banned in ${childShortCode} for reason ${event.content?.reason} by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
+					),
 			);
-		} catch (e) {return}
+		} catch (e) {
+			return;
+		}
 
 		// biome-ignore lint/complexity/noForEach: these can be exectued async
-		banlistShortCodes.forEach(async shortcode => {
+		banlistShortCodes.forEach(async (shortcode) => {
+			const banlistID = banlistOBJ[shortcode];
 
-			const banlistID = banlistOBJ[shortcode]
+			let botReactionID;
+			try {
+				botReactionID = await clients.makeSDKrequest(
+					{ roomID: parent },
+					true,
+					async (c) =>
+						await c.sendMessage(parent, {
+							"m.relates_to": {
+								key: shortcode,
+								event_id: msgID,
+								rel_type: "m.annotation",
+							},
+						}),
+				);
+			} catch (e) {
+				clients.makeSDKrequest(
+					{ roomID: parent },
+					false,
+					async (c) =>
+						await c.sendHtmlNotice(
+							parent,
+							`Experienced the following error trying to react with <code>${shortcode}</code>. You may react with this manually or run <code>ban <user> <shortcode | roomID> [reason]</code>.\n<code><pre>${e}</pre></code>`,
+						),
+				);
+			}
 
-			//catch the reaction
-			eventCatcher.catch((event, roomID) => {
-				
-				//right reaction on right event
-				if (roomID !== parent) return false;
-				if (event.content?.["m.relates_to"]?.key !== shortcode) return false;
-				if (event.content?.["m.relates_to"]?.event_id !== msgID ) return false;
+			//catch the selection
+			eventCatcher.catch(
+				(reactionEvent, reactionRoomID) => {
+					//dont use our own reaction event (the server should deduplicate if theres a race condition)
+					if (reactionEvent.event_id === botReactionID) return false;
 
-				//anonymous writes from within its management room
-				const anonWrite = (clients.stateManager.getParent(banlistID) === parent)
+					//right reaction on right event
+					if (reactionRoomID !== parent) return false;
+					if (reactionEvent.content?.["m.relates_to"]?.key !== shortcode)
+						return false;
+					if (reactionEvent.content?.["m.relates_to"]?.event_id !== msgID)
+						return false;
 
-				//managed rooms check the pl of the management room
-				let rtc = banlistID
-				if (anonWrite) rtc = parent	
+					//anonymous writes from within its management room
+					const anonWrite =
+						clients.stateManager.getParent(banlistID) === parent;
 
-				const powerLevels = clients.stateManager.getPowerLevels(rtc)
+					//managed rooms check the pl of the management room
+					let rtc = banlistID;
+					if (anonWrite) rtc = parent;
 
-				//TODO powerlevels check
+					const powerLevels = clients.stateManager.getPowerLevels(rtc);
 
+					//technically possible, but only really happens on dendrite and means we cant do anything anyways
+					//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+					if (
+						typeof powerLevels !== "object" ||
+						Object.keys(powerLevels).length < 1
+					) {
+						clients.makeSDKrequest(
+							{ roomID: parent },
+							false,
+							async (c) =>
+								await c.sendMessage(reactionRoomID, {
+									body: `${event.sender}: Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
+									"m.mentions": { user_ids: [event.sender] },
+								}),
+						);
+					}
 
-			//on caught reaction
-			}, (event, roomID) => {
+					let plToWrite = powerLevels.state_default;
 
-			}), //TODO on reaction)
+					if (powerLevels.events?.)
+
+					//TODO powerlevels check
+
+					//on caught reaction
+				},
+				(reactionEvent, reactionRoomID) => {},
+			);
 
 			//TODO reacting for options
-		})
-		
+		});
 	} else if (
 		event.content?.membership !== "ban" &&
 		event.unsigned?.prev_content?.membership === "ban"

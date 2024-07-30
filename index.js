@@ -92,7 +92,7 @@ async function membershipChange(server, roomID, event) {
 				true,
 				async (c) =>
 					await c.sendMessage(parent, {
-						body: `${event.state_key} banned in "${childShortCode}" for reason "${event.content?.reason}" by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
+						body: `${event.state_key} banned in "${childShortCode}" for "${event.content?.reason || "<No reason provided>"}" by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
 						msgtype: "m.text",
 						"m.mentions": { user_ids: [event.sender] },
 					}),
@@ -231,17 +231,9 @@ async function membershipChange(server, roomID, event) {
 
 					let reason;
 					if (anonWrite) {
-						if (event.content?.reason) {
-							reason = event.content.reason;
-						} else {
-							reason = "<No reason provided>";
-						}
+						reason = event.content.reason || "<No reason provided>";
 					} else {
-						if (event.content?.reason) {
-							reason = `${reactionEvent.sender} - ${event.content.reason}`;
-						} else {
-							reason = `${reactionEvent.sender} - <No reason provided>`;
-						}
+						reason = `${reactionEvent.sender} - ${event.content.reason || "<No reason provided>"}`;
 					}
 
 					try {

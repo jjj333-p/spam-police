@@ -8,6 +8,8 @@ A complete copy of this codebase as well as runtime instructions can be found at
 https://github.com/jjj333-p/spam-police/
 */
 
+import crypto from "node:crypto";
+
 class EventCatcher {
 	constructor() {
 		this.associations = [];
@@ -15,7 +17,7 @@ class EventCatcher {
 
 	//reserves a condition to be caught
 	catch(conditional, run) {
-		this.associations.push({ id: this.associations.length, conditional, run });
+		this.associations.push({ id: this.newID(), conditional, run });
 	}
 
 	check(event, roomID) {
@@ -31,6 +33,10 @@ class EventCatcher {
 		hold.run(event, roomID);
 
 		return true;
+	}
+
+	newID() {
+		return crypto.randomBytes(32).toString("base64");
 	}
 }
 

@@ -94,6 +94,31 @@ async function membershipChange(server, roomID, event) {
 		banlistShortCodes.forEach(async (shortcode) => {
 			const banlistID = banlistOBJ[shortcode];
 
+			const powerLevels = clients.stateManager.getPowerLevels(rtc);
+
+			//technically possible, but only really happens on dendrite and means we cant do anything anyways
+			//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+			if (
+				typeof powerLevels !== "object" ||
+				Object.keys(powerLevels).length < 1
+			) {
+				clients.makeSDKrequest(
+					{ roomID: parent },
+					false,
+					async (c) =>
+						await c.sendMessage(reactionRoomID, {
+							body: `${event.sender}: 🤔 | Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
+							"m.mentions": { user_ids: [event.sender] },
+						}),
+				);
+				return;
+			}
+
+			let plToWrite = powerLevels.state_default;
+
+			if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
+				plToWrite = powerLevels.events?.["m.policy.rule.user"];
+
 			let botReactionID;
 			try {
 				botReactionID = await clients.makeSDKrequest(
@@ -115,7 +140,7 @@ async function membershipChange(server, roomID, event) {
 					async (c) =>
 						await c.sendHtmlNotice(
 							parent,
-							`Experienced the following error trying to react with <code>${shortcode}</code>. You may react with this manually or run <code>ban <user> <shortcode | roomID> [reason]</code>.\n<code><pre>${e}</pre></code>`,
+							`🍃 | Experienced the following error trying to react with <code>${shortcode}</code>. You may react with this manually or run <code>ban <user> <shortcode | roomID> [reason]</code>.\n<code><pre>${e}</pre></code>`,
 						),
 				);
 			}
@@ -141,34 +166,100 @@ async function membershipChange(server, roomID, event) {
 					let rtc = banlistID;
 					if (anonWrite) rtc = parent;
 
-					const powerLevels = clients.stateManager.getPowerLevels(rtc);
-
-					//technically possible, but only really happens on dendrite and means we cant do anything anyways
-					//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
-					if (
-						typeof powerLevels !== "object" ||
-						Object.keys(powerLevels).length < 1
-					) {
+					//check if user  pl is high enough
+					const userPL = powerLevels.users?.[event.sender];
+					if (userPL < plToWrite) {
 						clients.makeSDKrequest(
 							{ roomID: parent },
 							false,
 							async (c) =>
-								await c.sendMessage(reactionRoomID, {
-									body: `${event.sender}: Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
-									"m.mentions": { user_ids: [event.sender] },
-								}),
+								await c.sendNotice(
+									parent,
+									`🍃 | ${reactionEvent.sender} you do not have permission to write to ${shortcode}.`,
+								),
+						);
+
+						return false;
+					}
+
+					//passes all checks
+					return true;
+				},
+				//on caught reaction
+				async (reactionEvent, reactionRoomID) => {
+					const acceptableServers = [];
+
+					for (const bs of Array.from(this.clients.accounts.keys())) {
+						//get pl of this account
+						const pl =
+							powerLevels.users?.[
+								await this.clients.accounts.get(bs).getUserId()
+							] ||
+							powerLevels.users_default ||
+							0;
+
+						//too low pl to ban
+						if (pl < plToBan) continue;
+
+						//pl must be higher than user we want to ban
+						if (pl > plOfUser) acceptableServers.push(bs);
+					}
+
+					if (acceptableServers.length < 1) {
+						clients.makeSDKrequest(
+							{ roomID: parent },
+							false,
+							async (c) =>
+								await c.sendNotice(
+									parent,
+									`🍃 | I do not have the required PL to write to ${shortcode}.`,
+								),
 						);
 					}
 
-					let plToWrite = powerLevels.state_default;
+					const newStateKey = event.state_key
+						.toString("base64")
+						.substring(0, 255);
 
-					if (powerLevels.events?.)
+					let reason;
+					if (anonWrite) {
+						if (event.content?.reason) {
+							reason = event.content.reason;
+						} else {
+							reason = "<No reason provided>";
+						}
+					} else {
+						if (event.content?.reason) {
+							reason = `${reactionEvent.sender} - ${event.content.reason}`;
+						} else {
+							reason = `${reactionEvent.sender} - <No reason provided>`;
+						}
+					}
 
-					//TODO powerlevels check
-
-					//on caught reaction
+					try {
+						clients.makeSDKrequest(
+							{ roomID: banlistID, acceptableServers },
+							true,
+							async (c) =>
+								await c.sendStateEvent(
+									banlistID,
+									"m.policy.rule.user",
+									newStateKey,
+									{ entity: event.state_key, reason, recommendation: "m.ban" },
+								),
+						);
+					} catch (e) {
+						clients.makeSDKrequest(
+							{ roomID: parent },
+							false,
+							async (c) =>
+								await c.sendNotice(
+									parent,
+									`‼️ | Experienced the following error trying to write ban for ${event.state_key}\n${e}`,
+								),
+						);
+					}
 				},
-				(reactionEvent, reactionRoomID) => {},
 			);
 
 			//TODO reacting for options

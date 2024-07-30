@@ -231,7 +231,7 @@ class Clients {
 
 		//actually go and make/queue the request
 		this.internalMakeSDKrequest({
-			requestedServers: preference,
+			preference,
 			request,
 			throwError,
 			promise: {

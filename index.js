@@ -40,6 +40,7 @@ const eventHandlerMap = new Map();
 eventHandlerMap.set("m.policy.rule.user", (...args) =>
 	banlist.newUserRule(...args),
 );
+eventHandlerMap.set("m.room.member", (...args) => membershipChange(...args));
 
 await clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally
@@ -67,8 +68,17 @@ async function membershipChange(server, roomID, event) {
 
 	const eventLink = `<a href="https://matrix.to/#/${roomID}/${event.event_id}?via=${server}">${childShortCode}</a>`;
 
+	//get banlists
 	const banlistOBJ = clients.stateManager.getConfig(parent)?.banlists;
+
+	//cant do anything if none fetched
+	if (!banlistOBJ) return;
+
+	//convert to keys
 	const banlistShortCodes = Object.keys(banlistOBJ);
+
+	//nothing to write to
+	if (banlistShortCodes.length < 1) return;
 
 	if (
 		event.content?.membership === "ban" &&
@@ -81,10 +91,11 @@ async function membershipChange(server, roomID, event) {
 				{ roomID: parent },
 				true,
 				async (c) =>
-					await c.sendHtmlText(
-						parent,
-						`${event.state_key} banned in ${childShortCode} for reason ${event.content?.reason} by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
-					),
+					await c.sendMessage(parent, {
+						body: `${event.state_key} banned in "${childShortCode}" for reason "${event.content?.reason}" by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
+						msgtype: "m.text",
+						"m.mentions": { user_ids: [event.sender] },
+					}),
 			);
 		} catch (e) {
 			return;
@@ -93,6 +104,13 @@ async function membershipChange(server, roomID, event) {
 		// biome-ignore lint/complexity/noForEach: these can be exectued async
 		banlistShortCodes.forEach(async (shortcode) => {
 			const banlistID = banlistOBJ[shortcode];
+
+			//anonymous writes from within its management room
+			const anonWrite = clients.stateManager.getParent(banlistID) === parent;
+
+			//managed rooms check the pl of the management room
+			let rtc = banlistID;
+			if (anonWrite) rtc = parent;
 
 			const powerLevels = clients.stateManager.getPowerLevels(rtc);
 
@@ -125,7 +143,7 @@ async function membershipChange(server, roomID, event) {
 					{ roomID: parent },
 					true,
 					async (c) =>
-						await c.sendMessage(parent, {
+						await c.sendEvent(parent, "m.reaction", {
 							"m.relates_to": {
 								key: shortcode,
 								event_id: msgID,
@@ -158,14 +176,6 @@ async function membershipChange(server, roomID, event) {
 					if (reactionEvent.content?.["m.relates_to"]?.event_id !== msgID)
 						return false;
 
-					//anonymous writes from within its management room
-					const anonWrite =
-						clients.stateManager.getParent(banlistID) === parent;
-
-					//managed rooms check the pl of the management room
-					let rtc = banlistID;
-					if (anonWrite) rtc = parent;
-
 					//check if user  pl is high enough
 					const userPL = powerLevels.users?.[event.sender];
 					if (userPL < plToWrite) {
@@ -189,20 +199,17 @@ async function membershipChange(server, roomID, event) {
 				async (reactionEvent, reactionRoomID) => {
 					const acceptableServers = [];
 
-					for (const bs of Array.from(this.clients.accounts.keys())) {
+					for (const bs of Array.from(clients.accounts.keys())) {
 						//get pl of this account
 						const pl =
-							powerLevels.users?.[
-								await this.clients.accounts.get(bs).getUserId()
-							] ||
+							powerLevels.users?.[await clients.accounts.get(bs).getUserId()] ||
 							powerLevels.users_default ||
 							0;
 
 						//too low pl to ban
-						if (pl < plToBan) continue;
+						if (pl < plToWrite) continue;
 
-						//pl must be higher than user we want to ban
-						if (pl > plOfUser) acceptableServers.push(bs);
+						acceptableServers.push(bs);
 					}
 
 					if (acceptableServers.length < 1) {
@@ -215,11 +222,12 @@ async function membershipChange(server, roomID, event) {
 									`🍃 | I do not have the required PL to write to ${shortcode}.`,
 								),
 						);
+
+						return;
 					}
 
-					const newStateKey = event.state_key
-						.toString("base64")
-						.substring(0, 255);
+					//what if you wanted to use a mxid as a state key but god said "Error: M_FORBIDDEN: You are not allowed to set others state"
+					const newStateKey = `_${event.state_key?.substring(1)}`;
 
 					let reason;
 					if (anonWrite) {
@@ -237,7 +245,7 @@ async function membershipChange(server, roomID, event) {
 					}
 
 					try {
-						clients.makeSDKrequest(
+						await clients.makeSDKrequest(
 							{ roomID: banlistID, acceptableServers },
 							true,
 							async (c) =>

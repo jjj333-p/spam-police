@@ -4,6 +4,85 @@ class BanHandler {
 		this.eventCatcher = eventCatcher;
 	}
 
+	async writeBan(
+		roomID,
+		powerLevels,
+		moderator,
+		shortcode,
+		banlistID,
+		bannedUser,
+		userProvidedReason,
+		anonWrite,
+	) {
+		let plToWrite = powerLevels.state_default;
+
+		if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
+			plToWrite = powerLevels.events?.["m.policy.rule.user"];
+
+		const acceptableServers = [];
+
+		for (const bs of Array.from(this.clients.accounts.keys())) {
+			//get pl of this account
+			const pl =
+				powerLevels.users?.[await this.clients.accounts.get(bs).getUserId()] ||
+				powerLevels.users_default ||
+				0;
+
+			//too low pl to ban
+			if (pl < plToWrite) continue;
+
+			acceptableServers.push(bs);
+		}
+
+		if (acceptableServers.length < 1) {
+			this.clients.makeSDKrequest(
+				{ roomID },
+				false,
+				async (c) =>
+					await c.sendNotice(
+						roomID,
+						`🍃 | I do not have the required PL to write to ${shortcode}.`,
+					),
+			);
+
+			return;
+		}
+
+		//what if you wanted to use a mxid as a state key but god said "Error: M_FORBIDDEN: You are not allowed to set others state"
+		const newStateKey = `_${bannedUser?.substring(1)}`;
+
+		//just element things
+		let reason = userProvidedReason || "<No reason provided>";
+
+		//allow writing from any room at the expense of anonimity
+		if (!anonWrite) {
+			reason = `${moderator} - ${reason}`;
+		}
+
+		try {
+			await this.clients.makeSDKrequest(
+				{ roomID: banlistID, acceptableServers },
+				true,
+				async (c) =>
+					await c.sendStateEvent(banlistID, "m.policy.rule.user", newStateKey, {
+						entity: bannedUser,
+						reason,
+						recommendation: "m.ban",
+					}),
+			);
+		} catch (e) {
+			this.clients.makeSDKrequest(
+				{ roomID },
+				false,
+				async (c) =>
+					await c.sendNotice(
+						parent,
+						`‼️ | Experienced the following error trying to write ban for ${bannedUser} in ${shortcode}\n${e}`,
+					),
+			);
+		}
+	}
+
 	async membershipChange(server, roomID, event) {
 		//ban sync is disabled
 		// if(!clients.stateManager.getConfig(roomID)?.sync_bans) return;
@@ -149,74 +228,16 @@ class BanHandler {
 					},
 					//on caught reaction
 					async (reactionEvent, reactionRoomID) => {
-						const acceptableServers = [];
-
-						for (const bs of Array.from(this.clients.accounts.keys())) {
-							//get pl of this account
-							const pl =
-								powerLevels.users?.[
-									await this.clients.accounts.get(bs).getUserId()
-								] ||
-								powerLevels.users_default ||
-								0;
-
-							//too low pl to ban
-							if (pl < plToWrite) continue;
-
-							acceptableServers.push(bs);
-						}
-
-						if (acceptableServers.length < 1) {
-							this.clients.makeSDKrequest(
-								{ roomID: parent },
-								false,
-								async (c) =>
-									await c.sendNotice(
-										parent,
-										`🍃 | I do not have the required PL to write to ${shortcode}.`,
-									),
-							);
-
-							return;
-						}
-
-						//what if you wanted to use a mxid as a state key but god said "Error: M_FORBIDDEN: You are not allowed to set others state"
-						const newStateKey = `_${event.state_key?.substring(1)}`;
-
-						let reason;
-						if (anonWrite) {
-							reason = event.content.reason || "<No reason provided>";
-						} else {
-							reason = `${reactionEvent.sender} - ${event.content.reason || "<No reason provided>"}`;
-						}
-
-						try {
-							await this.clients.makeSDKrequest(
-								{ roomID: banlistID, acceptableServers },
-								true,
-								async (c) =>
-									await c.sendStateEvent(
-										banlistID,
-										"m.policy.rule.user",
-										newStateKey,
-										{
-											entity: event.state_key,
-											reason,
-											recommendation: "m.ban",
-										},
-									),
-							);
-						} catch (e) {
-							this.clients.makeSDKrequest(
-								{ roomID: parent },
-								false,
-								async (c) =>
-									await c.sendNotice(
-										parent,
-										`‼️ | Experienced the following error trying to write ban for ${event.state_key}\n${e}`,
-									),
-							);
-						}
+						this.writeBan(
+							parent,
+							powerLevels,
+							reactionEvent.sender,
+							shortcode,
+							banlistID,
+							event.state_key,
+							event.content?.reason,
+							anonWrite,
+						);
 					},
 				);
 

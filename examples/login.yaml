@@ -10,6 +10,12 @@ command-room: '!dSGCuhsxXDDJxhJxJH:matrix.org'
 #room for the bot to log any caught errors
 console-room: '!fwgXQ4VMAqON2gxg:pain.agency'
 
+# default prefix for starting commands
+prefix: '+'
+
+# used for mention detection, up to the sysadmin to ensure this matches
+displayname: "Spam Police Bot"
+
 # Authorized Users
 # Users who can run admin commands on the bot (Restarting, blacklist, etc.)
 authorized-users:

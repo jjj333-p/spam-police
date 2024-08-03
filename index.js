@@ -37,6 +37,8 @@ const eventCatcher = new EventCatcher();
 const banlist = new BanlistReader(clients, eventCatcher);
 const banHandler = new BanHandler(clients, eventCatcher);
 
+const commandHandlerMap = new Map();
+
 //organize events
 const eventHandlerMap = new Map();
 eventHandlerMap.set("m.policy.rule.user", (...args) =>
@@ -45,6 +47,41 @@ eventHandlerMap.set("m.policy.rule.user", (...args) =>
 eventHandlerMap.set("m.room.member", (...args) =>
 	banHandler.membershipChange(...args),
 );
+eventHandlerMap.set("m.room.message", async (server, roomID, event) => {
+	const prefix =
+		clients.stateManager.getConfig(roomID)?.prefix ||
+		loginParsed?.prefix ||
+		console.error("No prefix supplied in login.yaml, using + as the prefix.") ||
+		"+";
+
+	//prefix required for command
+	if (!event.content?.body?.startsWith(prefix)) {
+		//get all mxids
+		const mxids = [];
+		for (const client of Array.from(clients.accounts.values()))
+			mxids.push(await client.getUserId());
+
+		//check for display name
+		if (
+			event.content?.body?.includes(loginParsed.displayname) ||
+			mxids.some((m) => event.content?.body?.includes(m))
+		) {
+			clients.makeSDKrequest(
+				{ preferredServers: [server], roomID },
+				false,
+				async (c) => {
+					await c.sendEvent(roomID, "m.reaction", {
+						"m.relates_to": {
+							event_id: event.event_id,
+							key: `${prefix}help`,
+							rel_type: "m.annotation",
+						},
+					});
+				},
+			);
+		}
+	}
+});
 
 clients.setOnTimelineEvent(async (server, roomID, event) => {
 	//if there was a hold on that event we wont handle it externally

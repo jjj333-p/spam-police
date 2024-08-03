@@ -39,10 +39,11 @@ class BanHandler {
 				{ roomID },
 				false,
 				async (c) =>
-					await c.sendNotice(
-						roomID,
-						`🍃 | I do not have the required PL to write to ${shortcode}.`,
-					),
+					await c.sendMessage(roomID, {
+						body: `🍃 | I do not have the required PL to write to ${shortcode}.`,
+						msgtype: "m.text",
+						"m.mentions": { user_ids: [moderator] },
+					}),
 			);
 
 			return;
@@ -59,8 +60,9 @@ class BanHandler {
 			reason = `${moderator} - ${reason}`;
 		}
 
+		let policyID;
 		try {
-			await this.clients.makeSDKrequest(
+			policyID = await this.clients.makeSDKrequest(
 				{ roomID: banlistID, acceptableServers },
 				true,
 				async (c) =>
@@ -75,12 +77,32 @@ class BanHandler {
 				{ roomID },
 				false,
 				async (c) =>
-					await c.sendNotice(
-						parent,
-						`‼️ | Experienced the following error trying to write ban for ${bannedUser} in ${shortcode}\n${e}`,
-					),
+					await c.sendMessage(parent, {
+						body: `‼️ | Experienced the following error trying to write ban for ${bannedUser} in ${shortcode}\n${e}`,
+						msgtype: "m.text",
+						"m.mentions": { user_ids: [moderator] },
+					}),
 			);
+			return;
 		}
+
+		const body = `➕ | Successfully wrote policy banning ${bannedUser} on behalf of ${moderator} with reason <code>${reason}</code>\n<a href="https://matrix.to/#/${banlistID}/${policyID}">Link to policy in ${shortcode}/a>`;
+		const p = this.clients.stateManager.getParent(banlistID);
+
+		//post success in both the room you ran the command, and the banlist parent, unless they are the same
+		for (const r of [roomID, ...(p === roomID ? [] : [p])])
+			this.clients.makeSDKrequest(
+				{ roomID },
+				false,
+				async (c) =>
+					await c.sendMessage(r, {
+						body,
+						format: "org.matrix.custom.html",
+						formatted_body: body,
+						msgtype: "m.text",
+						"m.mentions": { user_ids: [moderator] },
+					}),
+			);
 	}
 
 	async membershipChange(server, roomID, event) {
@@ -114,6 +136,8 @@ class BanHandler {
 			event.content?.membership === "ban" &&
 			event.unsigned?.prev_content?.membership !== "ban"
 		) {
+			const body = `${event.state_key} banned in ${eventLink} for <code>${event.content?.reason || "<No reason provided>"}</code> by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`;
+
 			//attempt to message in parent room before reacting
 			let msgID;
 			try {
@@ -122,7 +146,9 @@ class BanHandler {
 					true,
 					async (c) =>
 						await c.sendMessage(parent, {
-							body: `${event.state_key} banned in "${childShortCode}" for "${event.content?.reason || "<No reason provided>"}" by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`,
+							body,
+							format: "org.matrix.custom.html",
+							formatted_body: body,
 							msgtype: "m.text",
 							"m.mentions": { user_ids: [event.sender] },
 						}),
@@ -240,8 +266,6 @@ class BanHandler {
 						);
 					},
 				);
-
-				//TODO reacting for options
 			});
 		} else if (
 			event.content?.membership !== "ban" &&

@@ -16,6 +16,9 @@ prefix: '+'
 # used for mention detection, up to the sysadmin to ensure this matches
 displayname: "Spam Police Bot"
 
+# the url to link to for code and help
+git: "https://github.com/jjj333-p/spam-police#readme"
+
 # Authorized Users
 # Users who can run admin commands on the bot (Restarting, blacklist, etc.)
 authorized-users:

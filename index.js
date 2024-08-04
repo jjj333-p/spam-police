@@ -37,7 +37,21 @@ const eventCatcher = new EventCatcher();
 const banlist = new BanlistReader(clients, eventCatcher);
 const banHandler = new BanHandler(clients, eventCatcher);
 
+//handle commands `handler(server, roomID, event, prefix, prefixOffset, commandWords);`
 const commandHandlerMap = new Map();
+commandHandlerMap.set("help", (server, roomID, event, prefix) => {
+	const s = event.sender.split(":")[1];
+	clients.makeSDKrequest(
+		{ roomID, preferredServers: [s] },
+		false,
+		async (c) =>
+			await c.replyHtmlNotice(
+				roomID,
+				event,
+				`👋 | Hi, I am ${loginParsed.displayname}! My prefix in this room is <code>${prefix}</code>, use it to run commands like this one. You can find out more about me, and my command list <a href="${loginParsed.git}">on my GitHub</a> ☺️`,
+			),
+	);
+});
 
 //organize events
 const eventHandlerMap = new Map();
@@ -47,7 +61,12 @@ eventHandlerMap.set("m.policy.rule.user", (...args) =>
 eventHandlerMap.set("m.room.member", (...args) =>
 	banHandler.membershipChange(...args),
 );
+
+//handle message
 eventHandlerMap.set("m.room.message", async (server, roomID, event) => {
+	//redacted event, not for use
+	if (!event.content?.body) return;
+
 	const prefix =
 		clients.stateManager.getConfig(roomID)?.prefix ||
 		loginParsed?.prefix ||
@@ -80,7 +99,37 @@ eventHandlerMap.set("m.room.message", async (server, roomID, event) => {
 				},
 			);
 		}
+
+		return;
 	}
+
+	//get how far out the command is
+	let prefixOffset = prefix.length;
+	if (event.content.body[prefixOffset] === " ") prefixOffset++;
+
+	//clearly just doing some something
+	if (!/^[a-zA-Z]$/.test(event.content?.body?.[prefixOffset])) return;
+
+	const commandWords = event.content?.body?.substring(prefixOffset).split(" ");
+	const handler = commandHandlerMap.get(commandWords[0]);
+	if (handler) {
+		handler(server, roomID, event, prefix, prefixOffset, commandWords);
+		return;
+	}
+
+	clients.makeSDKrequest(
+		{ preferredServers: [server], roomID },
+		false,
+		async (c) => {
+			await c.sendEvent(roomID, "m.reaction", {
+				"m.relates_to": {
+					event_id: event.event_id,
+					key: `${prefix}help`,
+					rel_type: "m.annotation",
+				},
+			});
+		},
+	);
 });
 
 clients.setOnTimelineEvent(async (server, roomID, event) => {

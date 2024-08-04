@@ -72,6 +72,7 @@ eventHandlerMap.set("m.room.message", async (server, roomID, event) => {
 	//only respond to text based messages, m.notice are bot messages
 	if (event.content.msgtype !== "m.text") return;
 
+	//abusing truthys for "clean"
 	const prefix =
 		clients.stateManager.getConfig(roomID)?.prefix ||
 		loginParsed?.prefix ||

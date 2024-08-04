@@ -67,6 +67,11 @@ eventHandlerMap.set("m.room.message", async (server, roomID, event) => {
 	//redacted event, not for use
 	if (!event.content?.body) return;
 
+	//TODO protections / detections
+
+	//only respond to text based messages, m.notice are bot messages
+	if (event.content.msgtype !== "m.text") return;
+
 	const prefix =
 		clients.stateManager.getConfig(roomID)?.prefix ||
 		loginParsed?.prefix ||

@@ -189,7 +189,7 @@ class BanlistReader {
 					await c.sendStateEvent(roomID, "m.room.member", event.sender, {
 						membership: "ban",
 						reason,
-						policy: rules,
+						"agency.pain.anti-scam.policy": rules,
 					}),
 			);
 		} catch (e) {
@@ -333,7 +333,7 @@ class BanlistReader {
 								await c.sendStateEvent(r, "m.room.member", user, {
 									membership: "ban",
 									reason,
-									policy: [event],
+									"agency.pain.anti-scam.policy": [event],
 								}),
 						);
 					} catch (e) {

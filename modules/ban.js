@@ -234,7 +234,7 @@ class BanHandler {
 							return false;
 
 						//check if user  pl is high enough
-						const userPL = powerLevels.users?.[event.sender];
+						const userPL = powerLevels.users?.[reactionEvent.sender];
 						if (userPL < plToWrite) {
 							this.clients.makeSDKrequest(
 								{ roomID: parent },
@@ -267,12 +267,91 @@ class BanHandler {
 					},
 				);
 			});
-		} else if (
+		} /* else if (
 			event.content?.membership !== "ban" &&
 			event.unsigned?.prev_content?.membership === "ban"
 		) {
 			//TODO on unban
+		}*/
+	}
+
+	async banCommand(server, roomID, event, prefix, prefixOffset, commandWords) {
+		//[0] is "ban"
+		const entity = commandWords[1];
+		let reasonOffset =
+			prefixOffset + 4 /*"ban_" cmd*/ + entity.length + 1; /*_*/
+
+		const parent = this.clients.stateManager.getParent(roomID);
+		const banlists = parent?.banlists;
+
+		const shortcode = commandWords[2];
+
+		// if its not a shortcode, treat it as an id
+		let banlistID = banlists?.[shortcode] || shortcode;
+
+		//attempt to resolve for validity
+		if (!banlistID) {
+			banlistID = await this.clients.makeSDKrequest(
+				{},
+				false,
+				async (c) => await c.resolveRoom(banlistID),
+			);
 		}
+
+		//add to offset
+		if (banlistID) {
+			reasonOffset += banlistID.length + 1; /*"_"*/
+
+			//anonymous writes from within its management room
+			const anonWrite =
+				this.clients.stateManager.getParent(banlistID) === parent;
+
+			//managed rooms check the pl of the management room
+			let rtc = banlistID;
+			if (anonWrite) rtc = parent;
+
+			const powerLevels = this.clients.stateManager.getPowerLevels(rtc);
+
+			//technically possible, but only really happens on dendrite and means we cant do anything anyways
+			//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+			if (
+				typeof powerLevels !== "object" ||
+				Object.keys(powerLevels).length < 1
+			) {
+				this.clients.makeSDKrequest(
+					{ roomID: parent },
+					false,
+					async (c) =>
+						await c.sendMessage(reactionRoomID, {
+							body: `${event.sender}: 🤔 | Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
+							"m.mentions": { user_ids: [event.sender] },
+						}),
+				);
+				return;
+			}
+
+			let plToWrite = powerLevels.state_default;
+
+			if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
+				plToWrite = powerLevels.events?.["m.policy.rule.user"];
+
+			//check if user  pl is high enough
+			const userPL = powerLevels.users?.[event.sender];
+			if (userPL < plToWrite) {
+				this.clients.makeSDKrequest(
+					{ roomID },
+					false,
+					async (c) =>
+						await c.sendNotice(
+							roomID,
+							`🍃 | ${reactionEvent.sender} you do not have permission to write to ${shortcode}.`,
+						),
+				);
+			}
+		}
+
+		//passes all checks
+		return true;
 	}
 }
 

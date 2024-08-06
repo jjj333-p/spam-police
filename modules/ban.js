@@ -184,6 +184,7 @@ class BanHandler {
 							await c.sendMessage(reactionRoomID, {
 								body: `${event.sender}: 🤔 | Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
 								"m.mentions": { user_ids: [event.sender] },
+								msgtype: "m.text",
 							}),
 					);
 					return;
@@ -276,6 +277,9 @@ class BanHandler {
 	}
 
 	async banCommand(server, roomID, event, prefix, prefixOffset, commandWords) {
+		//preferred server
+		const s = event.sender.split(":")[1];
+
 		//[0] is "ban"
 		const entity = commandWords[1];
 		let reasonOffset =
@@ -319,12 +323,18 @@ class BanHandler {
 				Object.keys(powerLevels).length < 1
 			) {
 				this.clients.makeSDKrequest(
-					{ roomID: parent },
+					{ roomID: parent, preferredServers: s },
 					false,
 					async (c) =>
-						await c.sendMessage(reactionRoomID, {
+						await c.sendMessage(roomID, {
 							body: `${event.sender}: 🤔 | Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
 							"m.mentions": { user_ids: [event.sender] },
+							"m.relates_to": {
+								"m.in_reply_to": {
+									event_id: event.event_id,
+								},
+							},
+							msgtype: "m.text",
 						}),
 				);
 				return;
@@ -342,12 +352,74 @@ class BanHandler {
 					{ roomID },
 					false,
 					async (c) =>
-						await c.sendNotice(
-							roomID,
-							`🍃 | ${reactionEvent.sender} you do not have permission to write to ${shortcode}.`,
-						),
+						await c.sendMessage(roomID, {
+							body: `🍃 | ${event.sender} you do not have permission to write to ${shortcode}.`,
+							"m.mentions": { user_ids: [event.sender] },
+							"m.relates_to": {
+								"m.in_reply_to": {
+									event_id: event.event_id,
+								},
+							},
+							msgtype: "m.text",
+						}),
 				);
 			}
+		} else {
+			//anonymous writes from within its management room
+			const anonWrite = roomID === parent;
+
+			const powerLevels = this.clients.stateManager.getPowerLevels(parent);
+
+			//technically possible, but only really happens on dendrite and means we cant do anything anyways
+			//more likely means we havent loaded the room state yet which means we cant check config so nothing to do anyways
+			if (
+				typeof powerLevels !== "object" ||
+				Object.keys(powerLevels).length < 1
+			) {
+				this.clients.makeSDKrequest(
+					{ roomID, preferredServers: s },
+					false,
+					async (c) =>
+						await c.sendMessage(roomID, {
+							body: `${event.sender}: 🤔 | Unable to find powerlevels event. This may be a temporary resolution error.`,
+							"m.mentions": { user_ids: [event.sender] },
+							"m.relates_to": {
+								"m.in_reply_to": {
+									event_id: event.event_id,
+								},
+							},
+							msgtype: "m.text",
+						}),
+				);
+				return;
+			}
+
+			const plToWrite = powerLevels.ban;
+
+			//check if user  pl is high enough
+			const userPL = powerLevels.users?.[event.sender];
+			if (userPL < plToWrite) {
+				this.clients.makeSDKrequest(
+					{ roomID },
+					false,
+					async (c) =>
+						await c.sendMessage(roomID, {
+							body: `🍃 | ${event.sender} you do not have permission to write to ban ${entity}.`,
+							"m.mentions": { user_ids: [event.sender] },
+							"m.relates_to": {
+								"m.in_reply_to": {
+									event_id: event.event_id,
+								},
+							},
+							msgtype: "m.text",
+						}),
+				);
+			}
+
+			const family = this.clients.stateManager.getFamily(roomID)
+
+			for (const shortCode of family.shortCodes) {
+
 		}
 
 		//passes all checks

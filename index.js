@@ -35,7 +35,7 @@ const loginParsed = parse(loginFile);
 const clients = new Clients(loginParsed);
 const eventCatcher = new EventCatcher();
 const banlist = new BanlistReader(clients, eventCatcher);
-const banHandler = new BanHandler(clients, eventCatcher);
+const banHandler = new BanHandler(clients, eventCatcher, banlist);
 
 //handle commands `handler(server, roomID, event, prefix, prefixOffset, commandWords);`
 const commandHandlerMap = new Map();

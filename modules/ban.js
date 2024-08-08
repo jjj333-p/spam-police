@@ -1,7 +1,8 @@
 class BanHandler {
-	constructor(clients, eventCatcher) {
+	constructor(clients, eventCatcher, banHandler) {
 		this.clients = clients;
 		this.eventCatcher = eventCatcher;
+		this.banlist = this.banlist;
 	}
 
 	async writeBan(
@@ -57,7 +58,7 @@ class BanHandler {
 
 		//allow writing from any room at the expense of anonimity
 		if (!anonWrite) {
-			reason = `${moderator} - ${reason}`;
+			reason = `${moderator} - "${reason}"`;
 		}
 
 		let policyID;
@@ -416,10 +417,35 @@ class BanHandler {
 				);
 			}
 
-			const family = this.clients.stateManager.getFamily(roomID)
+			let reason =
+				event.content.body.substring(reasonOffset) || "<no reason provided>";
+			if (!anonWrite) {
+				reason = `${event.sender} - "reason"`;
+			}
+
+			const family = this.clients.stateManager.getFamily(roomID);
 
 			for (const shortCode of family.shortCodes) {
+				const rID = family.map.get(shortCode);
 
+				//get joined users matching that entity
+				const banworthyUsers =
+					this.clients.stateManager.getState(
+						rID,
+						(se) =>
+							e.type === "m.room.member" &&
+							//create mockup policy event to compare against
+							this.banlist.ruleMatchesUser(se.state_key, {
+								content: { entity, recommendation: "m.ban", reason },
+							}),
+					) ?? [];//default to empty array
+
+				for (const {state_key:user} of banworthyUsers){
+					const entityPL = powerLevels.users?
+
+					//TODO PL checks and ban
+				}
+			}
 		}
 
 		//passes all checks

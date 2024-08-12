@@ -294,21 +294,22 @@ class BanHandler {
 			prefixOffset + 4 /*"ban_" cmd*/ + entity.length + 1; /*_*/
 
 		const parent = this.clients.stateManager.getParent(roomID);
-		const banlists = parent?.banlists;
+
+		let banlists;
+		if (parent)
+			banlists = this.clients.stateManager.getConfig(parent)?.banlists;
 
 		const shortcode = commandWords[2];
 
 		// if its not a shortcode, treat it as an id
-		let banlistID = banlists?.[shortcode] || shortcode;
+		let banlistID;
 
-		//attempt to resolve for validity
-		if (!banlistID) {
-			banlistID = await this.clients.makeSDKrequest(
-				{},
-				false,
-				async (c) => await c.resolveRoom(banlistID),
-			);
-		}
+		//run a resolve for clarity
+		banlistID = await this.clients.makeSDKrequest(
+			{},
+			false,
+			async (c) => await c.resolveRoom(banlists?.[shortcode] || shortcode),
+		);
 
 		//add to offset
 		if (banlistID) {
@@ -331,7 +332,7 @@ class BanHandler {
 				Object.keys(powerLevels).length < 1
 			) {
 				this.clients.makeSDKrequest(
-					{ roomID: parent, preferredServers: s },
+					{ roomID: parent, preferredServers: [s] },
 					false,
 					async (c) =>
 						await c.sendMessage(roomID, {
@@ -405,7 +406,7 @@ class BanHandler {
 				Object.keys(powerLevels).length < 1
 			) {
 				this.clients.makeSDKrequest(
-					{ roomID, preferredServers: s },
+					{ roomID, preferredServers: [s] },
 					false,
 					async (c) =>
 						await c.sendMessage(roomID, {
@@ -452,7 +453,7 @@ class BanHandler {
 
 			const family = this.clients.stateManager.getFamily(roomID);
 
-			for (const shortCode of family.shortCodes) {
+			for (const shortCode of family?.shortCodes ?? []) {
 				const rID = family.map.get(shortCode);
 
 				//get joined users matching that entity
@@ -566,14 +567,22 @@ class BanHandler {
 								}),
 						);
 					}
-
-					//TODO PL checks and ban
 				}
 			}
-		}
 
-		//passes all checks
-		return true;
+			this.clients.makeSDKrequest(
+				{ roomID },
+				false,
+				async (c) =>
+					await c.sendEvent(roomID, "m.reaction", {
+						"m.relates_to": {
+							event_id: event.event_id,
+							key: "✅",
+							rel_type: "m.annotation",
+						},
+					}),
+			);
+		}
 	}
 }
 

@@ -287,6 +287,8 @@ class Clients {
 			}
 		}
 
+		console.log(typeof preferredServers);
+
 		//if one of the preferred options exists and is available, use it
 		if (preferredServers) {
 			server = preferredServers.find(

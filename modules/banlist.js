@@ -289,6 +289,8 @@ class BanlistReader {
 
 				//for each ^
 				for (const { state_key: user } of banworthyUsers) {
+					const s = user?.split(":")[1];
+
 					const acceptableServers = [];
 
 					//get pl of user we want to ban

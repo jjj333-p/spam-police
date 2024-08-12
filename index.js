@@ -52,6 +52,9 @@ commandHandlerMap.set("help", (server, roomID, event, prefix) => {
 			),
 	);
 });
+commandHandlerMap.set("ban", (...args) => {
+	banHandler.banCommand(...args);
+});
 
 //organize events
 const eventHandlerMap = new Map();

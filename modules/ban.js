@@ -372,7 +372,27 @@ class BanHandler {
 						}),
 				);
 			}
+
+			//write the ban
+			this.writeBan(
+				roomID,
+				event.sender,
+				shortcode,
+				banlistID,
+				entity,
+				event.content.body.substring(reasonOffset),
+				anonWrite,
+			);
+			/*
+
+
+			*/
 		} else {
+			/* if no shortcode
+			
+
+
+			*/
 			//anonymous writes from within its management room
 			const anonWrite = roomID === parent;
 
@@ -504,13 +524,47 @@ class BanHandler {
 							false,
 							async (c) =>
 								await c.sendMessage(roomID, {
-									body: `🍃 | I do not have the required PL to write to ${shortcode}.`,
+									body: `🍃 | ${event.sender} I do not have a high enough powerlevel to ban ${bu}.`,
+									"m.mentions": { user_ids: [event.sender] },
+									"m.relates_to": {
+										"m.in_reply_to": {
+											event_id: event.event_id,
+										},
+									},
 									msgtype: "m.text",
-									"m.mentions": { user_ids: [moderator] },
 								}),
 						);
 
 						return;
+					}
+
+					//try to ban
+					try {
+						await this.clients.makeSDKrequest(
+							{ roomID, acceptableServers },
+							true,
+							async (c) =>
+								await c.sendStateEvent(roomID, "m.room.member", bu, {
+									membership: "ban",
+									reason,
+								}),
+						);
+					} catch (e) {
+						this.clients.makeSDKrequest(
+							{ roomID },
+							false,
+							async (c) =>
+								await c.sendMessage(roomID, {
+									body: `🍃 | ${event.sender} I ran into the following error trying to ban ${bu}.\n${e}`,
+									"m.mentions": { user_ids: [event.sender] },
+									"m.relates_to": {
+										"m.in_reply_to": {
+											event_id: event.event_id,
+										},
+									},
+									msgtype: "m.text",
+								}),
+						);
 					}
 
 					//TODO PL checks and ban

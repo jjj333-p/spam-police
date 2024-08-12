@@ -7,7 +7,6 @@ class BanHandler {
 
 	async writeBan(
 		roomID,
-		powerLevels,
 		moderator,
 		shortcode,
 		banlistID,
@@ -15,24 +14,33 @@ class BanHandler {
 		userProvidedReason,
 		anonWrite,
 	) {
-		let plToWrite = powerLevels.state_default;
-
-		if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
-			plToWrite = powerLevels.events?.["m.policy.rule.user"];
+		//fetch pl of actual banlist to see if *we* can do it
+		const powerLevels = this.clients.stateManager.getPowerLevels(banlistID);
 
 		const acceptableServers = [];
 
-		for (const bs of Array.from(this.clients.accounts.keys())) {
-			//get pl of this account
-			const pl =
-				powerLevels.users?.[await this.clients.accounts.get(bs).getUserId()] ||
-				powerLevels.users_default ||
+		//if no pls to check, dont waste resource, next check will report
+		if (powerLevels) {
+			//optional chain similar to event auth
+			const plToWrite =
+				powerLevels?.events?.["m.policy.rule.user"] ??
+				powerLevels?.state_default ??
 				0;
 
-			//too low pl to ban
-			if (pl < plToWrite) continue;
+			for (const bs of Array.from(this.clients.accounts.keys())) {
+				//get pl of this account
+				const pl =
+					powerLevels?.users?.[
+						await this.clients.accounts.get(bs).getUserId()
+					] ||
+					powerLevels?.users_default ||
+					0;
 
-			acceptableServers.push(bs);
+				//too low pl to ban
+				if (pl < plToWrite) continue;
+
+				acceptableServers.push(bs);
+			}
 		}
 
 		if (acceptableServers.length < 1) {
@@ -191,10 +199,10 @@ class BanHandler {
 					return;
 				}
 
-				let plToWrite = powerLevels.state_default;
-
-				if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
-					plToWrite = powerLevels.events?.["m.policy.rule.user"];
+				const plToWrite =
+					powerLevels.events?.["m.policy.rule.user"] ??
+					powerLevels.state_default ??
+					0;
 
 				let botReactionID;
 				try {
@@ -258,7 +266,6 @@ class BanHandler {
 					async (reactionEvent, reactionRoomID) => {
 						this.writeBan(
 							parent,
-							powerLevels,
 							reactionEvent.sender,
 							shortcode,
 							banlistID,
@@ -398,14 +405,14 @@ class BanHandler {
 			const plToWrite = powerLevels.ban;
 
 			//check if user  pl is high enough
-			const userPL = powerLevels.users?.[event.sender];
-			if (userPL < plToWrite) {
+			const modPL = powerLevels.users?.[event.sender];
+			if (modPL < plToWrite) {
 				this.clients.makeSDKrequest(
 					{ roomID },
 					false,
 					async (c) =>
 						await c.sendMessage(roomID, {
-							body: `🍃 | ${event.sender} you do not have permission to write to ban ${entity}.`,
+							body: `🍃 | ${event.sender} you do not have permission to ban ${entity}.`,
 							"m.mentions": { user_ids: [event.sender] },
 							"m.relates_to": {
 								"m.in_reply_to": {
@@ -438,10 +445,73 @@ class BanHandler {
 							this.banlist.ruleMatchesUser(se.state_key, {
 								content: { entity, recommendation: "m.ban", reason },
 							}),
-					) ?? [];//default to empty array
+					) ?? []; //default to empty array
 
-				for (const {state_key:user} of banworthyUsers){
-					const entityPL = powerLevels.users?
+				for (const { state_key: bu } of banworthyUsers) {
+					const entityPL = powerLevels.users?.[bu];
+
+					//make sure have perm to ban user
+					if (!(bu < modPL)) {
+						this.clients.makeSDKrequest(
+							{ roomID },
+							false,
+							async (c) =>
+								await c.sendMessage(roomID, {
+									body: `🍃 | ${event.sender} you do not have a high enough powerlevel to ban ${bu}.`,
+									"m.mentions": { user_ids: [event.sender] },
+									"m.relates_to": {
+										"m.in_reply_to": {
+											event_id: event.event_id,
+										},
+									},
+									msgtype: "m.text",
+								}),
+						);
+
+						continue;
+					}
+
+					//fetch pl of actual banlist to see if *we* can do it
+					const rpl = this.clients.stateManager.getPowerLevels(banlistID);
+
+					const acceptableServers = [];
+
+					//if no pls to check, dont waste resource, next check will report
+					if (rpl) {
+						//optional chain similar to event auth
+						const plToWrite = rpl?.ban ?? rpl?.state_default ?? 0;
+
+						for (const bs of Array.from(this.clients.accounts.keys())) {
+							//get pl of this account
+							const pl =
+								rpl?.users?.[await this.clients.accounts.get(bs).getUserId()] ||
+								rpl?.users_default ||
+								0;
+
+							//pl of user we want to ban
+							const epl = rpl?.users?.[bu] || rpl?.users_default || 0;
+
+							//too low pl to ban, or our pl isnt higher
+							if (pl < plToWrite || !(pl > epl)) continue;
+
+							acceptableServers.push(bs);
+						}
+					}
+
+					if (acceptableServers.length < 1) {
+						this.clients.makeSDKrequest(
+							{ roomID },
+							false,
+							async (c) =>
+								await c.sendMessage(roomID, {
+									body: `🍃 | I do not have the required PL to write to ${shortcode}.`,
+									msgtype: "m.text",
+									"m.mentions": { user_ids: [moderator] },
+								}),
+						);
+
+						return;
+					}
 
 					//TODO PL checks and ban
 				}

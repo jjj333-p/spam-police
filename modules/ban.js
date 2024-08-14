@@ -1,8 +1,8 @@
 class BanHandler {
-	constructor(clients, eventCatcher, banHandler) {
+	constructor(clients, eventCatcher, banlist) {
 		this.clients = clients;
 		this.eventCatcher = eventCatcher;
-		this.banlist = this.banlist;
+		this.banlist = banlist;
 	}
 
 	async writeBan(
@@ -448,6 +448,7 @@ class BanHandler {
 							msgtype: "m.text",
 						}),
 				);
+				return;
 			}
 
 			let reason =
@@ -466,7 +467,7 @@ class BanHandler {
 					this.clients.stateManager.getState(
 						rID,
 						(se) =>
-							e.type === "m.room.member" &&
+							se.type === "m.room.member" &&
 							//create mockup policy event to compare against
 							this.banlist.ruleMatchesUser(se.state_key, {
 								content: { entity, recommendation: "m.ban", reason },
@@ -478,7 +479,7 @@ class BanHandler {
 						powerLevels.users?.[bu] ?? powerLevels?.users_default ?? 0;
 
 					//make sure have perm to ban user
-					if (!(bu < modPL)) {
+					if (!(entityPL < modPL)) {
 						this.clients.makeSDKrequest(
 							{ roomID },
 							false,
@@ -499,7 +500,7 @@ class BanHandler {
 					}
 
 					//fetch pl of actual banlist to see if *we* can do it
-					const rpl = this.clients.stateManager.getPowerLevels(banlistID);
+					const rpl = this.clients.stateManager.getPowerLevels(rID);
 
 					const acceptableServers = [];
 

@@ -341,6 +341,7 @@ class StateManager {
 		res.map.set("parent", parent);
 		res.shortCodes.push("parent");
 		res.ids.push(parent);
+		return res;
 	}
 }
 

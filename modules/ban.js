@@ -32,8 +32,8 @@ class BanHandler {
 				const pl =
 					powerLevels?.users?.[
 						await this.clients.accounts.get(bs).getUserId()
-					] ||
-					powerLevels?.users_default ||
+					] ??
+					powerLevels?.users_default ??
 					0;
 
 				//too low pl to ban
@@ -244,7 +244,10 @@ class BanHandler {
 							return false;
 
 						//check if user  pl is high enough
-						const userPL = powerLevels.users?.[reactionEvent.sender];
+						const userPL =
+							powerLevels.users?.[reactionEvent.sender] ??
+							powerLevels?.users_default ??
+							0;
 						if (userPL < plToWrite) {
 							this.clients.makeSDKrequest(
 								{ roomID: parent },
@@ -308,7 +311,7 @@ class BanHandler {
 		banlistID = await this.clients.makeSDKrequest(
 			{},
 			false,
-			async (c) => await c.resolveRoom(banlists?.[shortcode] || shortcode),
+			async (c) => await c.resolveRoom(banlists?.[shortcode] ?? shortcode),
 		);
 
 		//add to offset
@@ -349,13 +352,14 @@ class BanHandler {
 				return;
 			}
 
-			let plToWrite = powerLevels.state_default;
-
-			if (powerLevels.events?.["m.policy.rule.user"] !== undefined)
-				plToWrite = powerLevels.events?.["m.policy.rule.user"];
+			const plToWrite =
+				powerLevels.events?.["m.policy.rule.user"] ??
+				powerLevels.state_default ??
+				0;
 
 			//check if user  pl is high enough
-			const userPL = powerLevels.users?.[event.sender];
+			const userPL =
+				powerLevels.users?.[event.sender] ?? powerLevels?.users_default ?? 0;
 			if (userPL < plToWrite) {
 				this.clients.makeSDKrequest(
 					{ roomID },
@@ -426,7 +430,8 @@ class BanHandler {
 			const plToWrite = powerLevels.ban;
 
 			//check if user  pl is high enough
-			const modPL = powerLevels.users?.[event.sender];
+			const modPL =
+				powerLevels.users?.[event.sender] ?? powerLevels?.users_default ?? 0;
 			if (modPL < plToWrite) {
 				this.clients.makeSDKrequest(
 					{ roomID },
@@ -469,7 +474,8 @@ class BanHandler {
 					) ?? []; //default to empty array
 
 				for (const { state_key: bu } of banworthyUsers) {
-					const entityPL = powerLevels.users?.[bu];
+					const entityPL =
+						powerLevels.users?.[bu] ?? powerLevels?.users_default ?? 0;
 
 					//make sure have perm to ban user
 					if (!(bu < modPL)) {
@@ -505,12 +511,12 @@ class BanHandler {
 						for (const bs of Array.from(this.clients.accounts.keys())) {
 							//get pl of this account
 							const pl =
-								rpl?.users?.[await this.clients.accounts.get(bs).getUserId()] ||
-								rpl?.users_default ||
+								rpl?.users?.[await this.clients.accounts.get(bs).getUserId()] ??
+								rpl?.users_default ??
 								0;
 
 							//pl of user we want to ban
-							const epl = rpl?.users?.[bu] || rpl?.users_default || 0;
+							const epl = rpl?.users?.[bu] ?? rpl?.users_default ?? 0;
 
 							//too low pl to ban, or our pl isnt higher
 							if (pl < plToWrite || !(pl > epl)) continue;

@@ -8,6 +8,8 @@ A complete copy of this codebase as well as runtime instructions can be found at
 https://github.com/jjj333-p/spam-police/
 */
 
+import yaml from "yaml";
+
 class BanlistReader {
 	constructor(clients, eventCatcher) {
 		this.clients = clients;
@@ -287,6 +289,20 @@ class BanlistReader {
 						this.ruleMatchesUser(e.state_key, event),
 				);
 
+				if (r === parent) {
+					const ruleYaml = yaml.stringify(event, null, 2);
+
+					this.clients.makeSDKrequest(
+						{ roomID },
+						false,
+						async (c) =>
+							await c.sendHtmlNotice(
+								r,
+								`<a href="https://matrix.to/#/${roomID}/${event.event_id}">${shortCode}</a> added/updated policy <code>${event.state_key}</code><br><br><pre><code  class=\"language-yaml\">${ruleYaml}</code></pre>`,
+							),
+					);
+				}
+
 				//for each ^
 				for (const { state_key: user } of banworthyUsers) {
 					const s = user?.split(":")[1];
@@ -364,6 +380,8 @@ class BanlistReader {
 							),
 					);
 				}
+
+				break;
 			}
 		}
 	}

@@ -12,7 +12,7 @@ https://github.com/jjj333-p/spam-police/
 
 //Import dependencies
 import { readFileSync } from "node:fs";
-import { parse } from "yaml";
+import yaml from "yaml";
 // import mps from "@gnuxie/matrix-protection-suite";
 
 //Import modules
@@ -30,7 +30,7 @@ import { BanHandler } from "./modules/ban.js";
 
 //Parse YAML configuration file
 const loginFile = readFileSync("./db/login.yaml", "utf8");
-const loginParsed = parse(loginFile);
+const loginParsed = yaml.parse(loginFile);
 
 const clients = new Clients(loginParsed);
 const eventCatcher = new EventCatcher();

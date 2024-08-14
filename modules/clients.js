@@ -29,11 +29,7 @@ class Clients {
 				//we fetch state manually later, hopefully with better load balancing
 				state: {
 					senders: [],
-					not_types: [
-						"im.vector.modular.widgets",
-						"im.ponies.room_emotes",
-						"m.room.pinned_events",
-					],
+					not_types: ["im.vector.modular.widgets"],
 					lazy_load_members: true,
 				},
 				//we will manually fetch events before wakeup anyways, this is an acceptable amount for online sync
@@ -358,7 +354,7 @@ class Clients {
 			} else {
 				//log error and return nothing
 				console.warn(
-					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server}\n${e}`,
+					`UNCAUGHT ERROR WHEN MAKING SDK REQUEST ON SERVER ${server} with preference ${JSON.stringify(args.preference)}\n${e}`,
 				);
 				promise.resolve();
 

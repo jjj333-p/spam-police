@@ -50,7 +50,7 @@ class BanHandler {
 				async (c) =>
 					await c.sendMessage(roomID, {
 						body: `🍃 | I do not have the required PL to write to ${shortcode}.`,
-						msgtype: "m.text",
+						msgtype: "m.notice",
 						"m.mentions": { user_ids: [moderator] },
 					}),
 			);
@@ -88,14 +88,14 @@ class BanHandler {
 				async (c) =>
 					await c.sendMessage(parent, {
 						body: `‼️ | Experienced the following error trying to write ban for ${bannedUser} in ${shortcode}\n${e}`,
-						msgtype: "m.text",
+						msgtype: "m.notice",
 						"m.mentions": { user_ids: [moderator] },
 					}),
 			);
 			return;
 		}
 
-		const body = `➕ | Successfully wrote policy banning ${bannedUser} on behalf of ${moderator} with reason <code>${reason}</code>\n<a href="https://matrix.to/#/${banlistID}/${policyID}">Link to policy in ${shortcode}/a>`;
+		const body = `➕ | Successfully wrote policy banning ${bannedUser} on behalf of ${moderator} with reason <code>${reason}</code>\n<a href="https://matrix.to/#/${banlistID}/${policyID}">Link to policy in ${shortcode}</a>`;
 		const p = this.clients.stateManager.getParent(banlistID);
 
 		//post success in both the room you ran the command, and the banlist parent, unless they are the same
@@ -108,7 +108,7 @@ class BanHandler {
 						body,
 						format: "org.matrix.custom.html",
 						formatted_body: body,
-						msgtype: "m.text",
+						msgtype: "m.notice",
 						"m.mentions": { user_ids: [moderator] },
 					}),
 			);
@@ -143,7 +143,8 @@ class BanHandler {
 
 		if (
 			event.content?.membership === "ban" &&
-			event.unsigned?.prev_content?.membership !== "ban"
+			event.unsigned?.prev_content?.membership !== "ban" &&
+			!event.content?.["agency.pain.anti-scam.policy"]
 		) {
 			const body = `${event.state_key} banned in ${eventLink} for <code>${event.content?.reason || "<No reason provided>"}</code> by ${event.sender}. If you would like to write this ban recommendation to a list, select its shortcode below:`;
 
@@ -158,7 +159,7 @@ class BanHandler {
 							body,
 							format: "org.matrix.custom.html",
 							formatted_body: body,
-							msgtype: "m.text",
+							msgtype: "m.notice",
 							"m.mentions": { user_ids: [event.sender] },
 						}),
 				);
@@ -193,7 +194,7 @@ class BanHandler {
 							await c.sendMessage(reactionRoomID, {
 								body: `${event.sender}: 🤔 | Unable to find powerlevels event for ${shortcode}. This may be a temporary resolution error.`,
 								"m.mentions": { user_ids: [event.sender] },
-								msgtype: "m.text",
+								msgtype: "m.notice",
 							}),
 					);
 					return;
@@ -316,7 +317,7 @@ class BanHandler {
 
 		//add to offset
 		if (banlistID) {
-			reasonOffset += banlistID.length + 1; /*"_"*/
+			reasonOffset += shortcode.length + 1; /*"_"*/
 
 			//anonymous writes from within its management room
 			const anonWrite =
@@ -346,7 +347,7 @@ class BanHandler {
 									event_id: event.event_id,
 								},
 							},
-							msgtype: "m.text",
+							msgtype: "m.notice",
 						}),
 				);
 				return;
@@ -373,7 +374,7 @@ class BanHandler {
 									event_id: event.event_id,
 								},
 							},
-							msgtype: "m.text",
+							msgtype: "m.notice",
 						}),
 				);
 			}
@@ -421,7 +422,7 @@ class BanHandler {
 									event_id: event.event_id,
 								},
 							},
-							msgtype: "m.text",
+							msgtype: "m.notice",
 						}),
 				);
 				return;
@@ -445,7 +446,7 @@ class BanHandler {
 									event_id: event.event_id,
 								},
 							},
-							msgtype: "m.text",
+							msgtype: "m.notice",
 						}),
 				);
 				return;
@@ -492,7 +493,7 @@ class BanHandler {
 											event_id: event.event_id,
 										},
 									},
-									msgtype: "m.text",
+									msgtype: "m.notice",
 								}),
 						);
 
@@ -539,7 +540,7 @@ class BanHandler {
 											event_id: event.event_id,
 										},
 									},
-									msgtype: "m.text",
+									msgtype: "m.notice",
 								}),
 						);
 
@@ -563,14 +564,14 @@ class BanHandler {
 							false,
 							async (c) =>
 								await c.sendMessage(roomID, {
-									body: `🍃 | ${event.sender} I ran into the following error trying to ban ${bu}.\n${e}`,
+									body: `🍃 | ${event.sender} I ran into the following error trying to ban ${bu} in ${roomID}.\n${e}`,
 									"m.mentions": { user_ids: [event.sender] },
 									"m.relates_to": {
 										"m.in_reply_to": {
 											event_id: event.event_id,
 										},
 									},
-									msgtype: "m.text",
+									msgtype: "m.notice",
 								}),
 						);
 					}

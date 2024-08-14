@@ -298,7 +298,7 @@ class BanlistReader {
 						async (c) =>
 							await c.sendHtmlNotice(
 								r,
-								`<a href="https://matrix.to/#/${roomID}/${event.event_id}">${shortCode}</a> added/updated policy <code>${event.state_key}</code><br><br><pre><code  class=\"language-yaml\">${ruleYaml}</code></pre>`,
+								`<a href="https://matrix.to/#/${roomID}/${event.event_id}">${shortCode}</a> added or updated policy <code>${event.state_key}</code><br><br><pre><code  class=\"language-yaml\">${ruleYaml}</code></pre>`,
 							),
 					);
 				}

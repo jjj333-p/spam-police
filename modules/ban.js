@@ -294,6 +294,69 @@ class BanHandler {
 
 		//[0] is "ban"
 		const entity = commandWords[1];
+
+		if (!entity) {
+			//deal empty
+			this.clients.makeSDKrequest(
+				{ roomID, preferredServers: [s] },
+				false,
+				async (c) =>
+					await c.replyHtmlNotice(
+						roomID,
+						event,
+						"🤔 | You didnt specify someone to ban.",
+					),
+			);
+		} else if (entity.startsWith("@") && entity.includes(":")) {
+			//req for mxid, even with wildcards
+			this.banUserCommand(
+				server,
+				roomID,
+				event,
+				prefix,
+				prefixOffset,
+				commandWords,
+			);
+		} else if (!/[^a-zA-Z0-9.-]/.test(entity)) {
+			//if doesnt contain chars illegal in a domain name, is banning server
+			this.clients.makeSDKrequest(
+				{ roomID, preferredServers: [s] },
+				false,
+				async (c) =>
+					await c.replyNotice(
+						roomID,
+						event,
+						"‼️ | I should be banning that as a server right now, but that code seems to be missing.",
+					),
+			);
+		} else {
+			//deal invalid
+			this.clients.makeSDKrequest(
+				{ roomID, preferredServers: [s] },
+				false,
+				async (c) =>
+					await c.replyHtmlNotice(
+						roomID,
+						event,
+						`🤔 | <code>${entity}</code> is not a valid user or server I can ban.`,
+					),
+			);
+		}
+	}
+
+	async banUserCommand(
+		server,
+		roomID,
+		event,
+		prefix,
+		prefixOffset,
+		commandWords,
+	) {
+		//preferred server
+		const s = event.sender.split(":")[1];
+
+		//[0] is "ban"
+		const entity = commandWords[1];
 		let reasonOffset =
 			prefixOffset + 4 /*"ban_" cmd*/ + entity.length + 1; /*_*/
 

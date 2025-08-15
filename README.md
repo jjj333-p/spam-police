@@ -1,7 +1,9 @@
-> **IMPORTANT !!**
+> # ⚠️ ARCHIVED ⚠️
 >
-> This instance of the bot is currently not being maintained. The project is not abandoned, but the bot is currently being rewritten, and this stable version kinda sucks right now. Proceed with caution and keep an eye on the 2024 rewrite branch. I will release an announcement when its ready.
-
+> I have left the mmatrix ecosystem. I no longer host a matrix server, I open to check in once every 2 weeks at best, I cannot be bothered to keep up. You can reach out directly to me if you have any questions, but I have no intention to maintain or update this project ever, and its been left in a somewhat non-working state. Use at your own peril.
+>
+> <img width="200" height=auto alt="image" src="https://github.com/user-attachments/assets/ab26f14d-95b2-4b05-9369-8c3b0c37c031" />
+ 
 # Spam Police
 
 A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam spamming across the Matrix platform, for example in rooms with a permanently offline admin.
@@ -9,13 +11,6 @@ A [Matrix](https://matrix.org/) bot to monitor and respond to investment scam sp
 > **Warning**
 >
 > This bot does not support encrypted rooms yet. This has been implemented in the sdk and likely could be added to the bot easy enough, however I don't currently have the proper access to the bot account required to set this up due to not being able to currently set up my desktop workstation.
-
-## Discussion
-
-- Matrix Space: [`#spam-police:matrix.org`](https://matrix.to/#/#spam-police:matrix.org)
-- Support Room: [`#anti-scam-support:matrix.org`](https://matrix.to/#/#anti-scam-support:matrix.org)
-- Update and Announcement Room: [`#spam-police-rss:matrix.org`](https://matrix.to/#/#spam-police-rss:matrix.org)
-- General Moderation Automation Ideas Room: [`#mod-ideas:matrix.org`](https://matrix.to/#/#mod-ideas:matrix.org)
 
 ## Inviting the bot
 
